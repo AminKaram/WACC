@@ -1,34 +1,28 @@
-# Sample Makefile for the WACC Compiler lab: edit this to build your own comiler
-# Locations
+# edit this makefile so that running make compiles your enigma program
+CC = g++
+CFLAGS = -Wall -std=c++11
+SRCDIR = src
+#JUNK := $(COMPONENT_DIR)/junk
+SRCS = $(wildcard $(SRCDIR)/*.cpp)
+OBJS = $(SRCS:.cpp=.o)
+EXECUTABLE = compiler
 
-ANTLR_DIR	:= antlr
-SOURCE_DIR	:= src
-OUTPUT_DIR	:= bin 
+all : $(EXECUTABLE)
 
-# Tools
+$(EXECUTABLE): $(OBJS)
+	$(CC) $(CFLAGS) $^ -o $@
 
-ANTLR	:= antlrBuild
-FIND	:= find
-RM	:= rm -rf
-MKDIR	:= mkdir -p
-JAVA	:= java
-JAVAC	:= javac
+#pull the depenecies for the existing object files
+-include $(OBJS:.o=.d)
 
-JFLAGS	:= -sourcepath $(SOURCE_DIR) -d $(OUTPUT_DIR) -cp lib/antlr-4.4-complete.jar 
-
-# the make rules
-
-all: rules
-
-# runs the antlr build script then attempts to compile all .java files within src
-rules:
-	cd $(ANTLR_DIR) && ./$(ANTLR) 
-	$(FIND) $(SOURCE_DIR) -name '*.java' > $@
-	$(MKDIR) $(OUTPUT_DIR)
-	$(JAVAC) $(JFLAGS) @$@
-	$(RM) rules
+$(SRCDIR)%.o: $(SRCDIR)%.cpp 
+	$(CC) -c $(CFLAGS) $< -o $@
+	$(CC) -MM $(CFLAGS) $< > $*.d
 
 clean:
-	$(RM) rules $(OUTPUT_DIR)
+	rm -rf enigma *.o *.d
 
+srcs:
+	echo $(SRCS)
 
+.PHONY: all clean srcs
