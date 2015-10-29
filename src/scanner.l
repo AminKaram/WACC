@@ -13,7 +13,8 @@ number        {digit}+
 letter        [a-zA-Z]
 identifier    {letter}+
 whitespace    [ \t\n]+
-comment       #[^\n]* 
+comment       #[^\n]*
+charlit       \'.{1}\'
 stringlit     \"(\\.|[^\\"])*\"
 
 %% 
@@ -45,6 +46,8 @@ pair         {cout <<" PAIR      "<<endl;} // return PAIR;
 len          {cout <<" LEN       "<<endl;} // return LEN; 
 ord          {cout <<" ORD       "<<endl;} // return ORD; 
 chr          {cout <<" CHR       "<<endl;} // return CHR; 
+is           {cout <<" IS        "<<endl;} // return IS;
+null         {cout<<" NULL       "<<endl;} // return NULL;
 "="          {cout <<" EQUAL     "<<endl;} // return EQUAL;
 "<"          {cout <<" LESS      "<<endl;} // return LESS; 
 ">"          {cout <<" GREATER   "<<endl;} // return GREATER;
