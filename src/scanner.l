@@ -70,7 +70,7 @@ null         {cout<<" NULL       "<<endl;} // return NULL;
 {whitespace}  { }
 {stringlit}   {cout <<" STRINGLIT " << yytext << endl;} //yylval.string = new std::string(yytext,yyleng); return STRINGLIT; 
 
-{comment}     { cout << "Comment" <<  yytext << endl;}  
+{comment}     { } 
 .             return ERROR; 
 
 %%  
