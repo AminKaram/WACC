@@ -19,6 +19,7 @@ $(SRCDIR)%.o: $(SRCDIR)%.cpp
 	$(CC) -c $(CFLAGS) $< -o $@
 	$(CC) -MM $(CFLAGS) $< > $*.d
 
+$(SRCDIR)
 clean:
 	rm -rf enigma *.o *.d
 
