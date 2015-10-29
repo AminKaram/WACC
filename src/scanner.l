@@ -69,7 +69,7 @@ null         {cout<<" NULL       "<<endl;} // return NULL;
 {identifier}  {cout <<" IDENT "      << endl;} //yylval.string = new std::string(yytext,yyleng); return IDENTIFIER; 
 {whitespace}  { }
 {stringlit}   {cout <<" STRINGLIT " << yytext << endl;} //yylval.string = new std::string(yytext,yyleng); return STRINGLIT; 
-
+{charlit}     {cout <<" CHARLIT   " << yytext << endl;} 
 {comment}     { cout << "Comment" <<  yytext << endl;}  
 .             return ERROR; 
 
