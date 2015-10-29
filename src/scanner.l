@@ -13,7 +13,7 @@ number        {digit}+
 letter        [a-zA-Z]
 identifier    {letter}+
 whitespace    [ \t\n]+
-comment       #[^\n]*\n 
+comment       #[^\n]* 
 stringlit     \"(\\.|[^\\"])*\"
 
 %% 
