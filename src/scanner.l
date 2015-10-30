@@ -30,31 +30,30 @@ fi            return FI;
 while         return WHILE; 
 do            return DO; 
 done          return DONE; 
-read          return READ; 
-write         return WRITE;
-print         return PRINT; 
-println       return PRINTLN; 
 skip          return SKIP; 
 free          return FREE; 
 exit          return EXIT; 
-pair          return PAIR; 
-newpair       return NEWPAIR; 
-fst           return FST; 
-snd           return SND; 
 is            return IS;
 return        return RETURN; 
 call          return CALL; 
+pair          return PAIR; 
 int           return INT; 
 bool          return BOOL; 
 char          return CHAR; 
 string        return STRING; 
 null          return NULL;
+print         return PRINT; 
+println       return PRINTLN; 
+read          return READ; 
+newpair       return NEWPAIR; 
+fst           return FST; 
+snd           return SND; 
 len           return LEN; 
 ord           return ORD; 
 chr           return CHR; 
-"<="          return LESSTHAN;
+"<="          return LESSEQUALS;
 "<"           return LESS;
-">="          return GREATERThan
+">="          return GREATEREQUALS;
 ">"           return GRATER
 "=="          return EQUALS;
 "="           return ASSIGN;
@@ -77,7 +76,7 @@ chr           return CHR;
 {identifier}  yylval.string = new std::string(yytext,yyleng); return IDENTIFIER; 
 {whitespace} 
 {stringlit}   yylval.string = new std::string(yytext,yyleng); return STRINGLIT; 
-{comment}    
+{comment}     { } 
 {charlit}     yylval.string = new std::string(yytext,yyleng); return CHARLIT;  
 .             return ERROR; 
 

@@ -34,13 +34,24 @@ StatSeq *ast;     /* Pointer to root of Abstract Syntax Tree */
   FunctionDeclaration 	*fundec;
 }
 
-%token <token>  BEGINN END IF THEN ELSE WHILE DO REPEAT UNTIL READ WRITE
-%token <token>  BECOMES EQUALS LESSTHAN PLUS MINUS STAR SLASH 
-%token <token>  LPAREN RPAREN SEMICOLON COMMA ERROR
-%token <string> INTEGER  IDENTIFIER
+%token <token>  BEGIN END IF THEN ELSE FI WHILE DO DONE SKIP FREE EXIT
+
+%token <token>  IS RETURN CALL
+
+%token <token> PAIR INT BOOL CHAR STRING NULL
+
+%token <token>  ASSIGN EQUALS LESSTHAN LESS GREATEREQUALS GREATER EQUALS ASSIGN 
+%token <token>  PLUS MINUS STAR SLASH MODULO LOGAND LOGOR
+
+%token <token>  LPAREN RPAREN LSQUARE RSQUARE SEMICOLON COMMA ERROR
+
+%token <token> PRINT PRINTLN READ NEWPAIR FSTSND LEN ORD CHR
+
+%token <string> INTEGER IDENTIFIER STRINGLIT CHARLIT
+
 
 %type <id>	   identifier
-%type <statseq>    program statement_sequence  
+/* %type <statseq>    program statement_sequence */  
 %type <statement>  statement begin_statement assign_statement  
 %type <statement>  if_statement while_statement 
 %type <statement>  repeat_statement read_statement write_statement
@@ -52,15 +63,15 @@ StatSeq *ast;     /* Pointer to root of Abstract Syntax Tree */
 %type <fundec>     function_declaration
 
 /* Precedence of operators */
-%left PLUS MINUS STAR SLASH 
+%left PLUS MINUS STAR SLASH MODULO 
 
 /* Start symbol. If omitted will default to first non-terminal symbol */
 %start program 
 
 %%
 program: 					  /* program */
-  statement_sequence END
-  { ast = $1; } 
+  BEGIN statement_sequence END
+  { ast = $2; } 
 ;
 
 statement_sequence:                               /* statement_sequence */ 
@@ -97,7 +108,7 @@ statement:                                        /* statement */
 ;
      
 begin_statement:                                  /* begin_statement */
-  BEGINN statement_sequence END
+  BEGIN statement_sequence END
   { $$ = $2; }
 ;
 
