@@ -50,15 +50,15 @@ StatSeq *ast;     /* Pointer to root of Abstract Syntax Tree */
 %token <string> INTEGER IDENTIFIER STRINGLIT CHARLIT
 
 
-%type <id>	   identifier
-/* %type <statseq>    program statement_sequence */  
+%type <id>	       identifier
+%type <statseq>    statement_sequence  
 %type <statement>  statement begin_statement assign_statement  
 %type <statement>  if_statement while_statement 
 %type <statement>  repeat_statement read_statement write_statement
 %type <expression> expression  number
 %type <exprlist>   actual_parameters
 %type <varlist>    formal_parameters
-%type <token>	   comparator
+%type <token>	     comparator
 %type <vardec>	   variable_declaration
 %type <fundec>     function_declaration
 
@@ -69,162 +69,38 @@ StatSeq *ast;     /* Pointer to root of Abstract Syntax Tree */
 %start program 
 
 %%
-program: 					  /* program */
-  BEGIN statement_sequence END
-  { ast = $2; } 
-;
+program: 
+    BEGIN func_list stat END
 
-statement_sequence:                               /* statement_sequence */ 
-  statement 
-  { $$ = new StatSeq(); 
-    $$->statements.push_back($1);
-  }
-| statement_sequence SEMICOLON statement
-  { $1->statements.push_back($3); 
-  }
-;
+func_list:
+/* empty */
+| fundec
+| funclist fundec
 
-statement:                                        /* statement */ 
-  begin_statement 
-  { $$ = $1; }                                        
-| if_statement 
-  { $$ = $1; }
-| while_statement 
-  { $$ = $1; }
-| repeat_statement 
-  { $$ = $1; }
-| read_statement   
-  { $$ = $1; }
-| write_statement  
-  { $$ = $1; }
-| assign_statement 
-  { $$ = $1; }                                       
-| variable_declaration
-  { $$ = $1; }
-| function_declaration
-  { $$ = $1; }
-| error            
-  { $$ = NULL; }
-;
-     
-begin_statement:                                  /* begin_statement */
-  BEGIN statement_sequence END
-  { $$ = $2; }
-;
+function_declaration:
+  type id LPAREN param_list RPAREN IS stat END
 
-assign_statement:                                 /* assignment_statement */
-  identifier BECOMES expression
-  { $$ = new Assignment(*$1, *$3); }
-;
+param_list:
+    param
+  | param , param_list
 
-if_statement:                                     /* if_statement */
-  IF expression THEN statement_sequence END
-  { $$ = new IfStatement(*$2, *$4); }
-| IF expression THEN statement_sequence ELSE statement_sequence END
-  { $$ = new IfStatement(*$2, *$4, $6); }
-;
+param:
+    type id
 
-while_statement:                                  /* while_statement */
-  WHILE expression DO statement_sequence END
-  { $$ = new WhileStatement(*$2, *$4); }
-;
-                                                           
-repeat_statement:                                 /* repeat_statement */
-  REPEAT statement_sequence UNTIL expression
-  { $$ = new RepeatStatement(*$2, *$4); }
-;
+statement:
+    SKIP
+  | type id ASSIGN ass_rhs
+  | ass_lhs ASSIGN ass_rhs
+  | READ ass_lhs
+  | free expr
+  | exit INTEGER
+  | print expr
+  | println expr
+  | IF expr THEN stat ELSE stat FI
+  | WHILE expr DO stat DONE
+  | stat SEMICOLON stat
+  
 
-read_statement:                                   /* read_statement */
-  READ identifier
-  { $$ = new ReadStatement(*$2); }
-;
-
-write_statement:                                  /* write_statement */
-  WRITE expression 
-  { $$ = new WriteStatement(*$2); }
-;
-
-expression:                                       /* expression */
-  identifier 
-  { $$ = $1; }
-| number
-  { $$ = $1; }
-| expression STAR expression 
-  { $$ = new Operator(*$1, $2, *$3); }
-| expression SLASH expression 
-  { $$ = new Operator(*$1, $2, *$3); }
-| expression PLUS expression 
-  { $$ = new Operator(*$1, $2, *$3); }
-| expression MINUS expression 
-  { $$ = new Operator(*$1, $2, *$3); }
-| expression comparator expression 
-  { $$ = new Operator(*$1, $2, *$3); }
-| LPAREN expression RPAREN 
-  { $$ = $2; }
-| identifier LPAREN actual_parameters RPAREN 
-  { $$ = new FunctionCall(*$1, *$3); 
-    delete $3; 
-  }
-;
-
-identifier:                                      /* identifier */
-  IDENTIFIER 
-  { $$ = new Identifier(*$1); 
-    delete $1; 
-  }
-;
-
-number:                                		/* number */
-  INTEGER 
-  { $$ = new Number(atol($1->c_str())); 
-    delete $1; 
-  }
-;
-
-comparator:                                     /* comparator */  
-  EQUALS 
-| LESSTHAN
-;
-
-
-/* EXTRAS ---------------------------------------------------------------- */
-	
-variable_declaration: 
-  identifier identifier 
-  { $$ = new VariableDeclaration(*$1, *$2); }
-| identifier identifier EQUALS expression 
-  { $$ = new VariableDeclaration(*$1, *$2, $4); }
-;
-
-function_declaration: 
-  identifier identifier LPAREN formal_parameters RPAREN statement_sequence
-  { $$ = new FunctionDeclaration(*$1, *$2, *$4, *$6); 
-    delete $4; 
-  }
-;
-	
-formal_parameters: 
-  /* empty */  
-  { $$ = new VariableList(); }
-| variable_declaration 
-  { $$ = new VariableList(); 
-    $$->push_back($1); 
-  }
-| formal_parameters COMMA variable_declaration 
-  { $1->push_back($3); 
-  }
-;
-
-actual_parameters: 
-  /* empty */  
-  { $$ = new ExpressionList(); }
-| expression 
-  { $$ = new ExpressionList(); 
-    $$->push_back($1); 
-  }
-| actual_parameters COMMA expression  
-  { $1->push_back($3); }
-;
 
 
 %%
