@@ -21,6 +21,8 @@ charlit       \'[^\'"]{1}|\0|\b|\n|\r|\"|\'|\\\'
 stringlit     \"(\\.|[^\\"])*\"
 
 %% 
+begin         return BEGIN;
+end           return END;
 if            return IF; 
 then          return THEN; 
 else          return ELSE; 
@@ -29,43 +31,47 @@ while         return WHILE;
 do            return DO; 
 done          return DONE; 
 read          return READ; 
+write         return WRITE;
 print         return PRINT; 
 println       return PRINTLN; 
 skip          return SKIP; 
 free          return FREE; 
-return        return RETURN; 
 exit          return EXIT; 
+pair          return PAIR; 
 newpair       return NEWPAIR; 
-call          return CALL; 
 fst           return FST; 
 snd           return SND; 
+is            return IS;
+return        return RETURN; 
+call          return CALL; 
 int           return INT; 
 bool          return BOOL; 
 char          return CHAR; 
 string        return STRING; 
-pair          return PAIR; 
+null          return NULL;
 len           return LEN; 
 ord           return ORD; 
 chr           return CHR; 
-is            return IS;
-null          return NULL;
-"="           return EQUAL;
-"<"           return LESS; 
-">"           return GREATER;
+"<="          return LESSTHAN;
+"<"           return LESS;
+">="          return GREATERThan
+">"           return GRATER
+"=="          return EQUALS;
+"="           return ASSIGN;
 "!"           return BANG;
 "+"           return PLUS; 
 "-"           return MINUS; 
 "*"           return STAR; 
 "/"           return SLASH; 
 "%"           return MODULO;
+"&&"          return LOGAND;
+"||"          return LOGOR;
 "("           return LPAREN; 
 ")"           return RPAREN; 
 ";"           return SEMICOLON; 
 ","           return COMMA; 
 "["           return LSQUARE;
 "]"           return RSQUARE;
-"&&"          return LOGAND;
-"||"          return LOGOR;
 
 {number}      yylval.string = new std::string(yytext,yyleng); return INTEGER;; 
 {identifier}  yylval.string = new std::string(yytext,yyleng); return IDENTIFIER; 
