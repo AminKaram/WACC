@@ -1,8 +1,11 @@
 %{
   #include <iostream>
+  #include <fstream>
   using namespace std;
   #include "astnode.h"
-  #include "parser.hpp"
+  int error_count = 0;
+  //#include "parser.hpp"
+
 %}
 
 /* bison compatibility directive */
@@ -11,10 +14,10 @@
 digit         [0-9]
 number        {digit}+
 letter        [a-zA-Z]
-identifier    {letter}+
+identifier    [a-zA-Z|_]{1}[a-zA-Z|0-9|_]*
 whitespace    [ \t\n]+
 comment       #[^\n]*
-charlit       \'.{1}\'
+charlit       \'[^\'"]{1}|\0|\b|\n|\r|\"|\'|\\\'
 stringlit     \"(\\.|[^\\"])*\"
 
 %% 
@@ -47,7 +50,7 @@ len          {cout <<" LEN       "<<endl;} // return LEN;
 ord          {cout <<" ORD       "<<endl;} // return ORD; 
 chr          {cout <<" CHR       "<<endl;} // return CHR; 
 is           {cout <<" IS        "<<endl;} // return IS;
-null         {cout<<" NULL       "<<endl;} // return NULL;
+null         {cout <<" NULL      "<<endl;} // return NULL;
 "="          {cout <<" EQUAL     "<<endl;} // return EQUAL;
 "<"          {cout <<" LESS      "<<endl;} // return LESS; 
 ">"          {cout <<" GREATER   "<<endl;} // return GREATER;
@@ -56,6 +59,7 @@ null         {cout<<" NULL       "<<endl;} // return NULL;
 "-"          {cout <<" MINUS     "<<endl;} // return MINUS; 
 "*"          {cout <<" STAR      "<<endl;} // return STAR; 
 "/"          {cout <<" SLASH     "<<endl;} // return SLASH; 
+"%"          {cout <<" MODULO    "<<endl;} // return MODULO;
 "("          {cout <<" LPAREN    "<<endl;} // return LPAREN; 
 ")"          {cout <<" RPAREN    "<<endl;} // return RPAREN; 
 ";"          {cout <<" SEMICOLON "<<endl;} // return SEMICOLON; 
@@ -71,7 +75,27 @@ null         {cout<<" NULL       "<<endl;} // return NULL;
 {stringlit}   {cout <<" STRINGLIT " << yytext << endl;} //yylval.string = new std::string(yytext,yyleng); return STRINGLIT; 
 {comment}     { } 
 {charlit}     {cout <<" CHARLIT   " << yytext << endl;} 
-.             return ERROR; 
+.             {cout <<"ERROR      " << yytext << endl; error_count ++; exit(0);} //return ERROR; 
 
 %%  
+int main(int argc, char** argv) {
+
+    ++argv; --argc;
+	
+    if(argc > 0) {
+	    // open a file handle to a particular file
+	    FILE *myfile = fopen(*argv, "r");
+	    // make sure it's valid:
+	    if (!myfile) {
+		    cout << "I can't open the file." << argv << endl;
+		    return -1;
+	    }
+	    // set lex to read from it instead of defaulting to STDIN:
+	    yyin = myfile;
+    }
+	
+	// lex through the input:
+	yylex();
+    cout << "# errors" << error_count << endl;
+}
 
