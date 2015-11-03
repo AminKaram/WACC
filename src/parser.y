@@ -11,7 +11,7 @@ void yyerror(const char *message) {  /* action on encountering an error */
   std::exit(1); 
 }
 	
-StatSeq *ast;     /* Pointer to root of Abstract Syntax Tree */
+statementSeq *ast;     /* Pointer to root of Abstract Syntax Tree */
 
 %}
 
@@ -25,8 +25,8 @@ StatSeq *ast;     /* Pointer to root of Abstract Syntax Tree */
   std::string   *string;
 
   Identifier 		*id;
-  StatSeq 		*statseq;
-  Statement 		*statement;
+  statementSeq 		*statementseq;
+  statement 		*statement;
   Expression 		*expression;
   ExpressionList 	*exprlist;
   VariableList   	*varlist;
@@ -40,18 +40,18 @@ StatSeq *ast;     /* Pointer to root of Abstract Syntax Tree */
 
 %token <token> PAIR INT BOOL CHAR STRING NULL
 
-%token <token>  ASSIGN EQUALS LESSEQUALS LESS GREATEREQUALS GREATER EQUALS  
-%token <token>  NOTEQUALS ASSIGN PLUS MINUS STAR SLASH MODULO LOGAND LOGOR
+%token <token>  ASSIGN LESSEQUALS LESS GREATEREQUALS GREATER EQUALS BANG  
+%token <token>  NOTEQUALS PLUS MINUS STAR SLASH MODULO LOGAND LOGOR
 
 %token <token>  LPAREN RPAREN LSQUARE RSQUARE SEMICOLON COMMA ERROR
 
-%token <token> PRINT PRINTLN READ NEWPAIR FSTSND LEN ORD CHR
+%token <token> PRINT PRINTLN READ NEWPAIR FST SND LEN ORD CHR
 
-%token <string> INTEGER IDENTIFIER STRINGLIT CHARLIT
+%token <string> INTEGER IDENTIFIER STRINGLIT CHARLIT TRUE FALSE
 
 
-%type <id>	       identifier
-%type <statseq>    statement_sequence  
+/*%type <id>	       identifier
+%type <statementseq>    statement_sequence  
 %type <statement>  statement begin_statement assign_statement  
 %type <statement>  if_statement while_statement 
 %type <statement>  repeat_statement read_statement write_statement
@@ -61,6 +61,7 @@ StatSeq *ast;     /* Pointer to root of Abstract Syntax Tree */
 %type <token>	     comparator
 %type <vardec>	   variable_declaration
 %type <fundec>     function_declaration
+*/
 
 /* Precedence of operators */
 %left PLUS MINUS STAR SLASH MODULO 
@@ -70,54 +71,59 @@ StatSeq *ast;     /* Pointer to root of Abstract Syntax Tree */
 
 %%
 program: 
-    BEGIN func_list stat END
+    BEGIN func_list statement END
 
 func_list:
 /* empty */
-| fundec
-| funclist fundec
+| function_declaration
+| func_list function_declaration
 
 function_declaration:
-  type id LPAREN param_list RPAREN IS stat END
+  type ident LPAREN param_list RPAREN IS statement END
 
 param_list:
     param
-  | param , param_list
+  | param COMMA param_list
 
 param:
-    type id
+    type ident
 
 statement:
     SKIP
-  | type id ASSIGN ass_rhs
-  | ass_lhs ASSIGN ass_rhs
-  | READ ass_lhs
-  | free expr
-  | exit INTEGER
-  | print expr
-  | println expr
-  | IF expr THEN stat ELSE stat FI
-  | WHILE expr DO stat DONE
-  | stat SEMICOLON stat
-  
+  | type ident ASSIGN assign-rhs
+  | assign-lhs ASSIGN assign-rhs
+  | READ assign-lhs
+  | FREE expr
+  | EXIT INTEGER
+  | PRINT expr
+  | PRINTLN expr
+  | IF expr THEN statement ELSE statement FI
+  | WHILE expr DO statement DONE
+  | statement SEMICOLON statement
+
 assign-lhs:
-    ident
-  | array_liter
-  | newpair LPAREN expr COMMA expr RPAREN
+		ident
+  | array-elem
+	| pair-elem
+
+assign-rhs:
+    expr
+  | array-liter
+  | NEWPAIR LPAREN expr COMMA expr RPAREN
   | pair-elem
-  | call ident LPAREN opt-arg-list RPAREN
+  | CALL ident LPAREN opt-arg-list RPAREN
 
 opt-arg-list:
 /* empty */
   | arg-list
 
 arg-list:
-  expr
-  |expr, arg-list
+    expr
+  | expr COMMA arg-list
 
 pair-elem:
-    fst expr
-  | snd expr
+    FST expr
+  | SND expr
 
 type:
     base-type
@@ -134,7 +140,7 @@ array-type:
   type LSQUARE RSQUARE
 
 pair-type:
-  PAIR LPAREN pair-elem_type COMMA pair-elem-type RPAREN
+  PAIR LPAREN pair-elem-type COMMA pair-elem-type RPAREN
 
 pair-elem-type:
     base-type
@@ -144,7 +150,7 @@ pair-elem-type:
 expr:
     int-liter
   | bool-liter
-  | char-liter
+  | char-liter 
   | str-liter
   | pair-liter
   | ident
@@ -178,7 +184,39 @@ binary-oper:
 ident:
     IDENTIFIER 
 
-array-elem
-    ident 
+array-elem:
+    ident array-index
+
+array-index:
+		LSQUARE expr RSQUARE
+	| LSQUARE expr RSQUARE array-index
+
+int-liter:
+		int-sign INTEGER
+
+int-sign:
+/* empty */
+	|	PLUS
+	| MINUS
+
+bool-liter:
+		TRUE		
+	| FALSE
+
+char-liter:
+		CHARLIT
+
+str-liter:
+		STRINGLIT
+
+array-liter:
+	RSQUARE expr-list LSQUARE
+
+expr-list:
+		expr
+	| expr COMMA expr-list
+
+pair-liter:
+		NULL 
 
 %%
