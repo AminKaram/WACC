@@ -40,8 +40,8 @@ StatSeq *ast;     /* Pointer to root of Abstract Syntax Tree */
 
 %token <token> PAIR INT BOOL CHAR STRING NULL
 
-%token <token>  ASSIGN EQUALS LESSTHAN LESS GREATEREQUALS GREATER EQUALS ASSIGN 
-%token <token>  PLUS MINUS STAR SLASH MODULO LOGAND LOGOR
+%token <token>  ASSIGN EQUALS LESSEQUALS LESS GREATEREQUALS GREATER EQUALS  
+%token <token>  NOTEQUALS ASSIGN PLUS MINUS STAR SLASH MODULO LOGAND LOGOR
 
 %token <token>  LPAREN RPAREN LSQUARE RSQUARE SEMICOLON COMMA ERROR
 
@@ -100,7 +100,85 @@ statement:
   | WHILE expr DO stat DONE
   | stat SEMICOLON stat
   
+assign-lhs:
+    ident
+  | array_liter
+  | newpair LPAREN expr COMMA expr RPAREN
+  | pair-elem
+  | call ident LPAREN opt-arg-list RPAREN
 
+opt-arg-list:
+/* empty */
+  | arg-list
 
+arg-list:
+  expr
+  |expr, arg-list
+
+pair-elem:
+    fst expr
+  | snd expr
+
+type:
+    base-type
+  | array-type
+  | pair-type
+
+base-type:
+    INT
+  | BOOL
+  | CHAR
+  | STRING
+
+array-type:
+  type LSQUARE RSQUARE
+
+pair-type:
+  PAIR LPAREN pair-elem_type COMMA pair-elem-type RPAREN
+
+pair-elem-type:
+    base-type
+  | array-type
+  | PAIR
+
+expr:
+    int-liter
+  | bool-liter
+  | char-liter
+  | str-liter
+  | pair-liter
+  | ident
+  | array-elem
+  | unary-oper expr
+  | expr binary-oper expr
+  | LPAREN expr RPAREN
+
+unary-oper:
+    BANG
+  | MINUS
+  | LEN
+  | ORD
+  | CHR
+
+binary-oper:
+    STAR
+  | SLASH
+  | MODULO
+  | PLUS 
+  | MINUS
+  | GREATER
+  | GREATEREQUALS
+  | LESS
+  | LESSEQUALS
+  | EQUALS
+  | NOTEQUALS
+  | LOGAND
+  | LOGOR
+
+ident:
+    IDENTIFIER 
+
+array-elem
+    ident 
 
 %%

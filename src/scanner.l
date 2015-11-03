@@ -56,6 +56,7 @@ chr           return CHR;
 ">="          return GREATEREQUALS;
 ">"           return GRATER
 "=="          return EQUALS;
+"!="          return NOTEQUALS;
 "="           return ASSIGN;
 "!"           return BANG;
 "+"           return PLUS; 
