@@ -14,6 +14,15 @@ typedef std::vector<Expression*> ExpressionList;
 class Statement : public ASTnode { };
 typedef std::vector<Statement*> StatementList;
 
+typedef std::vector<FunctionDeclaration*> FunctionList;
+
+class Program : public ASTnode{
+  FunctionList functionDeclarations;
+  StatSeq statements;
+  
+  Program() {}
+}
+
 
 class StatSeq : public Statement {
 public:
@@ -37,6 +46,31 @@ public:
   Assignment(Identifier& var, Expression& expr) 
     : var(var), expr(expr) {}
 };
+
+class SkipStatement : public Statement {
+  
+}
+
+class FreeStatement : public Statement {
+  public:
+    Expression& expr;
+
+    FreeStatement(Expression& expr) : expr(expr) {}
+}
+
+class ReturnStatement : public Statement {
+  public:
+    Expression& expr;
+
+    ReturnStatement(Expression& expr) : expr(expr) {}
+}
+
+class ExitStatement : public Statement {
+  public:
+    Expression& expr;
+
+    ExitStatement(Expression& expr) : expr(expr) {}
+}
 
 class IfStatement : public Statement {
 public:
@@ -76,11 +110,18 @@ public:
   ReadStatement(Identifier& id) : id(id) {}
 };
 
-class WriteStatement : public Statement {
+class PrintStatement : public Statement {
 public:
   Expression& expr;
 
-  WriteStatement(Expression& expr) : expr(expr) {}
+  PrintStatement(Expression& expr) : expr(expr) {}
+};
+
+class PrintlnStatement : public Statement {
+public:
+  Expression& expr;
+
+  PrintlnStatement(Expression& expr) : expr(expr) {}
 };
 
 class Number : public Expression {
@@ -90,13 +131,38 @@ public:
   Number(int value) : value(value) {}
 };
 
-class Operator : public Expression {
+class Boolean : public Expression {
+  public:
+    bool value;
+
+    Boolean(bool value) : value(value) {}
+}
+
+class Char : public Expression {
+  public:
+    char value;
+
+    Char(char value) : value(value) {}
+}
+
+class String : public Expression {
+  public:
+    std::string value;
+
+    String(std::string value) : value(value) {}
+}
+
+class Null : public Expression {
+}
+
+
+class BinaryOperator : public Expression {
 public:
   int op;
   Expression& left;
   Expression& right;
 	
-  Operator(Expression& left, int op, Expression& right) 
+  BinaryOperator(Expression& left, int op, Expression& right) 
     : left(left), right(right), op(op) {}
 };
 
