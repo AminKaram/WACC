@@ -1,4 +1,3 @@
-
 #include <vector>
 #include <iostream>
 
@@ -14,15 +13,18 @@ typedef std::vector<Expression*> ExpressionList;
 class Statement : public ASTnode { };
 typedef std::vector<Statement*> StatementList;
 
-typedef std::vector<FunctionDeclaration*> FunctionList;
+class AssignLhs : public ASTnode {
+};
 
-class Program : public ASTnode{
-  FunctionList functionDeclarations;
-  StatSeq statements;
-  
-  Program() {}
-}
+class AssignRhs : public ASTnode { 
+};
 
+class Identifier : public Expression, public AssignLhs, public AssignRhs {
+public:
+  std::string id;
+	
+  Identifier(std::string& id) : id(id) {}
+};
 
 class StatSeq : public Statement {
 public:
@@ -31,50 +33,87 @@ public:
   StatSeq () {} 
 };
 
-class Identifier : public Expression {
+class VariableDeclaration : public Statement { 
 public:
-  std::string id;
-	
-  Identifier(std::string& id) : id(id) {}
+  Identifier& type;
+  Identifier& id;
+  Expression* expr;
+
+  VariableDeclaration(Identifier& type, Identifier& id) 
+    : type(type), id(id) {}
+  VariableDeclaration(Identifier& type, Identifier& id, Expression *expr) 
+    : type(type), id(id), expr(expr) {}
+};
+typedef std::vector<VariableDeclaration*> VariableList;
+
+class FunctionDeclaration : public Statement {
+public:
+  Identifier& type;
+  Identifier& id;
+  VariableList parameters;
+  StatSeq& block;
+  
+  FunctionDeclaration(Identifier& type, Identifier& id, 
+      VariableList& parameters, StatSeq& block) 
+    : type(type), id(id), parameters(parameters), block(block) {}
+};
+typedef std::vector<FunctionDeclaration*> FunctionList;
+
+class FunctionCall : public Expression {
+public:
+  Identifier& id;
+  ExpressionList parameters;
+  
+  FunctionCall(Identifier& id, ExpressionList& parameters) 
+    : id(id), parameters(parameters) {}
+  FunctionCall(Identifier& id) 
+    : id(id) {}
+};
+
+class Program : public ASTnode{
+public:  
+	FunctionList functionDeclarations;
+  StatSeq statements;
+  
+  Program() {}
 };
 
 class Assignment : public Statement {
 public:
-  Identifier& var;
-  Expression& expr;
+  AssignLhs& lhs;
+  AssignRhs& rhs;
 
-  Assignment(Identifier& var, Expression& expr) 
-    : var(var), expr(expr) {}
+  Assignment(AssignLhs& lhs, AssignRhs& rhs) 
+    : lhs(lhs), rhs(rhs) {}
 };
 
 class SkipStatement : public Statement {
-  
-}
+};
 
 class FreeStatement : public Statement {
-  public:
-    Expression& expr;
+public:
+	Expression& expr;
 
-    FreeStatement(Expression& expr) : expr(expr) {}
-}
+  FreeStatement(Expression& expr) : expr(expr) {}
+};
 
 class ReturnStatement : public Statement {
-  public:
-    Expression& expr;
+public:
+  Expression& expr;
 
-    ReturnStatement(Expression& expr) : expr(expr) {}
-}
+  ReturnStatement(Expression& expr) : expr(expr) {}
+};
 
 class ExitStatement : public Statement {
-  public:
-    Expression& expr;
+public:
+  Expression& expr;
 
-    ExitStatement(Expression& expr) : expr(expr) {}
-}
+  ExitStatement(Expression& expr) : expr(expr) {}
+};
 
 class IfStatement : public Statement {
 public:
-  Expression&   expr;
+  Expression& expr;
   StatSeq& thenS;
   StatSeq* elseS; 
 
@@ -132,29 +171,28 @@ public:
 };
 
 class Boolean : public Expression {
-  public:
-    bool value;
+public:
+  bool value;
 
-    Boolean(bool value) : value(value) {}
-}
+  Boolean(bool value) : value(value) {}
+};
 
 class Char : public Expression {
-  public:
-    char value;
+public:
+  char value;
 
-    Char(char value) : value(value) {}
-}
+  Char(char value) : value(value) {}
+};
 
 class String : public Expression {
-  public:
-    std::string value;
+public:
+  std::string value;
 
-    String(std::string value) : value(value) {}
-}
+  String(std::string value) : value(value) {}
+};
 
 class Null : public Expression {
-}
-
+};
 
 class BinaryOperator : public Expression {
 public:
@@ -166,38 +204,42 @@ public:
     : left(left), right(right), op(op) {}
 };
 
-class VariableDeclaration : public Statement { 
+class ArrayElem : public AssignLhs {
 public:
-  Identifier& type;
-  Identifier& id;
-  Expression* expr;
+	Identifier& id;
+	Expression& expr;
 
-  VariableDeclaration(Identifier& type, Identifier& id) 
-    : type(type), id(id) {}
-  VariableDeclaration(Identifier& type, Identifier& id, Expression *expr) 
-    : type(type), id(id), expr(expr) {}
-};
-typedef std::vector<VariableDeclaration*> VariableList;
-
-class FunctionDeclaration : public Statement {
-public:
-  Identifier& type;
-  Identifier& id;
-  VariableList parameters;
-  StatSeq& block;
-  
-  FunctionDeclaration(Identifier& type, Identifier& id, 
-      VariableList& parameters, StatSeq& block) 
-    : type(type), id(id), parameters(parameters), block(block) {}
+	ArrayElem(Identifier& id, Expression& expr) : id(id), expr(expr) {}
 };
 
-class FunctionCall : public Expression {
+class PairElem : public AssignLhs, public AssignRhs {
 public:
-  Identifier& id;
-  ExpressionList parameters;
-  
-  FunctionCall(Identifier& id, ExpressionList& parameters) 
-    : id(id), parameters(parameters) {}
-  FunctionCall(Identifier& id) 
-    : id(id) {}
+	bool fst;
+	Expression& expr;
+	
+	PairElem(bool fst, Expression& expr) : fst(fst), expr(expr) {}
 };
+
+class ArrayLiter : public AssignRhs {
+public:
+	ExpressionList elems;
+
+	ArrayLiter(ExpressionList& elems) : elems(elems) {}
+};
+
+class NewPair : public AssignRhs {
+public: 
+	Expression& fst;
+	Expression& snd;
+
+	NewPair(Expression& fst, Expression& snd) : fst(fst), snd(snd) {}
+};
+
+class UnaryOperator : public Expression	{
+public:	
+	int op;
+	Expression& expr;
+
+	UnaryOperator(int op, Expression& expr) : op(op), expr(expr) {}
+};
+
