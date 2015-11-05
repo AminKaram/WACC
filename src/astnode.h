@@ -28,23 +28,31 @@ public:
 
 class StatSeq : public Statement {
 public:
-  StatementList statements;
+  StatementList& statements;
 
-  StatSeq () {} 
+  StatSeq() : statements(new StatementList()) {} 
 };
 
 class VariableDeclaration : public Statement { 
 public:
   Identifier& type;
   Identifier& id;
-  Expression* expr;
+  AssignRhs* rhs;
 
   VariableDeclaration(Identifier& type, Identifier& id) 
     : type(type), id(id) {}
-  VariableDeclaration(Identifier& type, Identifier& id, Expression *expr) 
-    : type(type), id(id), expr(expr) {}
+
+  VariableDeclaration(Identifier& type, Identifier& id, AssignRhs *rhs) 
+    : type(type), id(id), rhs(rhs) {}
 };
 typedef std::vector<VariableDeclaration*> VariableList;
+
+class FunctionDecList : public ASTnode {
+public:
+	FunctionList& funcs;
+
+	FunctionDecList() : funcs(new FunctionList()) {}
+};
 
 class FunctionDeclaration : public Statement {
 public:
@@ -53,6 +61,9 @@ public:
   VariableList parameters;
   StatSeq& block;
   
+  FunctionDeclaration(Identifier& type, Identifier& id, StatSeq& block) 
+    : type(type), id(id), parameters(new VariableList()), block(block) {}
+
   FunctionDeclaration(Identifier& type, Identifier& id, 
       VariableList& parameters, StatSeq& block) 
     : type(type), id(id), parameters(parameters), block(block) {}
@@ -72,10 +83,11 @@ public:
 
 class Program : public ASTnode{
 public:  
-	FunctionList functionDeclarations;
-  StatSeq statements;
+	FunctionDecList& functions;
+  StatSeq& statements;
   
-  Program() {}
+  Program(FunctionDecList& fs, StatSeq& stats)
+		 : functions(fs), statements(stats) {}
 };
 
 class Assignment : public Statement {
@@ -144,9 +156,9 @@ public:
 
 class ReadStatement : public Statement {
 public:
-  Identifier& id;
+  AssignLhs& id;
   
-  ReadStatement(Identifier& id) : id(id) {}
+  ReadStatement(AssignLhs& id) : id(id) {}
 };
 
 class PrintStatement : public Statement {

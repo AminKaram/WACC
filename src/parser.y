@@ -11,7 +11,7 @@ void yyerror(const char *message) {  /* action on encountering an error */
   std::exit(1); 
 }
 	
-statementSeq *ast;     /* Pointer to root of Abstract Syntax Tree */
+Program *ast;     /* Pointer to root of Abstract Syntax Tree */
 
 %}
 
@@ -21,17 +21,17 @@ statementSeq *ast;     /* Pointer to root of Abstract Syntax Tree */
 /* %define api.value.type variant - need if  proper C++ typing is used */
 
 %union {
-  int           token;
-  std::string   *string;
+  int                 token;
+  std::string         *string;
 
-  Identifier 		*id;
-  statementSeq 		*statementseq;
-  statement 		*statement;
-  Expression 		*expression;
-  ExpressionList 	*exprlist;
-  VariableList   	*varlist;
-  VariableDeclaration 	*vardec;
-  FunctionDeclaration 	*fundec;
+  Identifier 		 		  *id;
+  StatementSeq 	 		  *statementseq;
+  Statement 		 		  *statement;
+  Expression     		  *expression;
+  ExpressionList 		 	*exprlist;
+  VariableList        *varlist;
+  VariableDeclaration *vardec;
+  FunctionDeclaration *fundec;
 }
 
 %token <token>  BEGIN END IF THEN ELSE FI WHILE DO DONE SKIP FREE EXIT
@@ -71,70 +71,118 @@ statementSeq *ast;     /* Pointer to root of Abstract Syntax Tree */
 
 %%
 program: 
-    BEGIN func_list statement END
+    BEGIN func_list statement_seq END
+		{ ast = new Program($2, $3) }
 
 func_list:
-/* empty */
-| function_declaration
-| func_list function_declaration
+	/* empty */ 
+		{ $$ = new FunctionDecList(); }
+	| function_declaration 
+		{ $$ = new FunctionDecList(); 
+			$$->funcs.push_back(&$1); }
+	| func_list function_declaration
+		{ $1->funcs.push_back(&$2); }
 
 function_declaration:
-  type ident LPAREN param_list RPAREN IS statement END
+		type ident LPAREN RPAREN IS statement END
+		{ $$ = new FunctionDeclaration($1, $2, $6); }
+	| type ident LPAREN param_list RPAREN IS statement END
+		{ $$ = new FunctionDeclaration($1, $2, $4, $7); }
 
 param_list:
     param
-  | param COMMA param_list
+		{ $$ = new VariableList();
+			$$.push_back_(&$1); }
+  | param_list COMMA param
+		{ $1.push_back(&$3); }
 
 param:
-    type ident
+		type ident
+		{ $$ = new VariableDeclaration($1, $2); }
+
+statement_seq:
+		statement
+		{ $$ = new StatSeq();
+			$$->statements.push_back($1); }
+	| statement_seq SEMICOLON statement
+		{ $1->statements.push_back($3); }
 
 statement:
     SKIP
+		{ $$ = new SkipStatement(); }
   | type ident ASSIGN assign-rhs
+		{ $$ = new VariableDeclaration($1, $2, &$4); }
   | assign-lhs ASSIGN assign-rhs
+		{ $$ = new Assignment($1, $3); }
   | READ assign-lhs
+		{ $$ = new Read($2); }
   | FREE expr
-  | EXIT INTEGER
+		{ $$ = new FreeStatement($2); }
+  | EXIT expr
+		{ $$ = new ExitStatement($2); }
   | PRINT expr
+		{ $$ = new PrintStatement($2); }
   | PRINTLN expr
+		{ $$ = new PrintlnStatement($2); }
   | IF expr THEN statement ELSE statement FI
+		{ $$ = new IfStatement($2, $4, &$6);  }
   | WHILE expr DO statement DONE
-  | statement SEMICOLON statement
-
+		{ $$ = new WhileStatement($2, $4); }
+  | statement_seq
+		{ $$ = $1; }
+		
 assign-lhs:
 		ident
+		{ $$ = $1; } 
   | array-elem
+		{ $$ = $1; } 
 	| pair-elem
+		{ $$ = $1; } 
 
 assign-rhs:
     expr
+		{ $$ = $1; } 
   | array-liter
+		{ $$ = $1; } 
   | NEWPAIR LPAREN expr COMMA expr RPAREN
+		{ $$ = new NewPair($3, $5); } 
   | pair-elem
-  | CALL ident LPAREN opt-arg-list RPAREN
-
-opt-arg-list:
-/* empty */
-  | arg-list
+		{ $$ = $1; } 
+	| CALL ident LPAREN RPAREN
+		{ $$ = new FunctionCall($2); }
+  | CALL ident LPAREN arg-list RPAREN
+		{ $$ = new FunctionCall($2, $4); }
 
 arg-list:
     expr
-  | expr COMMA arg-list
+		{ $$ = new ExpressionList();
+			$$.push_back($1); } 
+  | arg-list COMMA expr 
+		{ $1.push_back($3); }
 
 pair-elem:
     FST expr
+		{ $$ = new PairElem(true, $2); }
   | SND expr
+		{ $$ = new PairElem(false, $2); }
 
 type:
     base-type
+		{ $$ = $1; }
   | array-type
+		{ $$ = $1; }
   | pair-type
+		{ $$ = $1; }
 
 base-type:
     INT
+		{ $$ = new Identifier("int"); }
   | BOOL
+		{ $$ = new Identifier("bool"); }
   | CHAR
+		{ $$ = new Identifier("char"); }
   | STRING
+		{ $$ = new Identifier("string"); }
 
 array-type:
   type LSQUARE RSQUARE
