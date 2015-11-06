@@ -1,10 +1,10 @@
 %{
-  #include <iostream>
-  #include <fstream>
+  include <iostream>
+  include <fstream>
   using namespace std;
-  #include "astnode.h"
+  include "astnode.h"
   int error_count = 0;
-  #include "parser.hpp"
+  include "parser.hpp"
 
 %}
 
@@ -51,8 +51,8 @@ snd           return SND;
 len           return LEN; 
 ord           return ORD; 
 chr           return CHR; 
-true					return TRUE;
-false 				return FALSE;
+true		  return TRUE;
+false 		  return FALSE;
 "<="          return LESSEQUALS;
 "<"           return LESS;
 ">="          return GREATEREQUALS;
@@ -75,12 +75,12 @@ false 				return FALSE;
 "["           return LSQUARE;
 "]"           return RSQUARE;
 
-{number}      yylval.string = new std::string(yytext,yyleng); return INTEGER;; 
+{number}      yylval.intValue = atoi(yytext);                 return INTEGER; 
 {identifier}  yylval.string = new std::string(yytext,yyleng); return IDENTIFIER; 
 {whitespace} 
 {stringlit}   yylval.string = new std::string(yytext,yyleng); return STRINGLIT; 
 {comment}     { } 
-{charlit}     yylval.string = new std::string(yytext,yyleng); return CHARLIT;  
+{charlit}     yylval.charValue = yytext[0];                   return CHARLIT;  
 .             return ERROR; 
 
 %%  

@@ -19,6 +19,50 @@ class AssignLhs : public ASTnode {
 class AssignRhs : public ASTnode { 
 };
 
+class Type : public ASTnode {
+};
+
+class IntegerType : public Type {
+public:
+	int& integer;
+
+	IntegerType(int& integer) : integer(integer) {} 
+};
+
+//class FloatType : public Type {
+//public:
+//	float& flt;;
+
+//	FloatType(float& flt) : flt(flt) {} 
+//};
+
+class BoolType : public Type {
+};
+
+class CharType : public Type {
+};
+
+class StringType : public Type {
+};
+
+class ArrayType : public Type {
+public:
+	Type& type;
+	
+	ArrayType(Type& type) : type(type) {}	
+};
+
+class PairKeyword : public Type {
+};
+
+class PairType : public Type {
+public:
+	Type& fst;
+	Type& snd;
+
+	PairType(Type& fst, Type& snd) : fst(fst) : snd(snd) {}
+};
+
 class Identifier : public Expression, public AssignLhs, public AssignRhs {
 public:
   std::string id;
@@ -35,14 +79,14 @@ public:
 
 class VariableDeclaration : public Statement { 
 public:
-  Identifier& type;
+  Type& type;
   Identifier& id;
   AssignRhs* rhs;
 
-  VariableDeclaration(Identifier& type, Identifier& id) 
+  VariableDeclaration(Type& type, Identifier& id) 
     : type(type), id(id) {}
 
-  VariableDeclaration(Identifier& type, Identifier& id, AssignRhs *rhs) 
+  VariableDeclaration(Type& type, Identifier& id, AssignRhs *rhs) 
     : type(type), id(id), rhs(rhs) {}
 };
 typedef std::vector<VariableDeclaration*> VariableList;
@@ -56,15 +100,15 @@ public:
 
 class FunctionDeclaration : public Statement {
 public:
-  Identifier& type;
+  Type& type;
   Identifier& id;
   VariableList parameters;
   StatSeq& block;
   
-  FunctionDeclaration(Identifier& type, Identifier& id, StatSeq& block) 
+  FunctionDeclaration(Type& type, Identifier& id, StatSeq& block) 
     : type(type), id(id), parameters(new VariableList()), block(block) {}
 
-  FunctionDeclaration(Identifier& type, Identifier& id, 
+  FunctionDeclaration(Type& type, Identifier& id, 
       VariableList& parameters, StatSeq& block) 
     : type(type), id(id), parameters(parameters), block(block) {}
 };
@@ -122,6 +166,13 @@ public:
 
   ExitStatement(Expression& expr) : expr(expr) {}
 };
+
+class BeginStatement : public Statement {
+public:
+	StatSeq& scope;
+
+	BeginStatement(StatSeq& scope) : scope(scope) {}
+}
 
 class IfStatement : public Statement {
 public:
@@ -219,9 +270,9 @@ public:
 class ArrayElem : public AssignLhs {
 public:
 	Identifier& id;
-	Expression& expr;
+	ExpressionList& idxs;
 
-	ArrayElem(Identifier& id, Expression& expr) : id(id), expr(expr) {}
+	ArrayElem(Identifier& id, ExpressionList& idxs) : id(id), idxs(idxs) {}
 };
 
 class PairElem : public AssignLhs, public AssignRhs {
@@ -234,7 +285,7 @@ public:
 
 class ArrayLiter : public AssignRhs {
 public:
-	ExpressionList elems;
+	ExpressionList& elems;
 
 	ArrayLiter(ExpressionList& elems) : elems(elems) {}
 };
