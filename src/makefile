@@ -8,7 +8,7 @@ CPPFLAGS = -Wno-deprecated-register
 	g++ -c $(CPPFLAGS) -o $@ $<
 
 parser.cpp: parser.y
-	bison -d -o $@ $^
+	bison -r state -d -o $@ $^
 	
 parser.hpp: parser.cpp
 
@@ -22,5 +22,5 @@ parser: $(OBJS)
 	g++ -o $@ $(OBJS)  
 
 clean:
-	$(RM) -rf parser.cpp parser.hpp parser scanner.cpp $(OBJS)
+	$(RM) -rf parser.output parser.cpp parser.hpp parser scanner.cpp $(OBJS)
 

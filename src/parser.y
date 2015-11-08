@@ -15,24 +15,28 @@ Program *ast;     /* Pointer to root of Abstract Syntax Tree */
 
 %}
 
-/* BISON DECLARATIONS  ---------------------------------------------------- */
+/* BISON DECLARATIONS  _--------------------------------------------------- */
 
 /* Define all possible syntactic values */
-/* %define api.value.type variant - need if  proper C++ typing is used */
+/* %define api.value.type variant _ need if  proper C++ typing is used */
 
 %union {
- // int                 token;
-  std::string         	*string;
-	int 									intValue;
-	char									charValue;
- // identifier 		 		  *id;
- // StatementSeq 	 		  *statementseq;
- // Statement 		 		  *statement;
- // Expression     		  *expression;
- // ExpressionList 		 	*exprlist;
- // VariableList        *varlist;
- // VariableDeclaration *vardec;
- // FunctionDeclaration *fundec;
+  int                     token;
+  std::string         	  *string;
+	int 									  intValue;
+	char									  charValue;
+  Program                 program;
+  Identifier 		 		      id;
+  Type                    type;
+  Statement 		 		      statement;
+  AssignLhs               assignlhs;
+  AssignRhs               assignrhs;
+  Expression     		      expression;
+  ExpressionList 		     	exprlist;
+  VariableList            varlist;
+  VariableDeclaration     vardec;
+  FunctionDeclaration     fundec;
+  FunctionList         funlist;
 }
 
 %token <token>  BEGIN END IF THEN ELSE FI WHILE DO DONE SKIP FREE EXIT TRUE FALSE
@@ -50,75 +54,74 @@ Program *ast;     /* Pointer to root of Abstract Syntax Tree */
 
 %token <string> IDENTIFIER STRINGLIT
 
-%token<char> CHARLIT
+%token<charValue> CHARLIT
 
-%token<int> INTEGER
+%token<intValue> INTEGER
 
-%type <id>	       			ident
-%type <statementseq>    statement_seq  
-%type <statement>  			statement begin_statement assign_statement  
-%type <statement>  			if_statement while_statement 
-%type <statement>  			repeat_statement read_statement write_statement
-%type <expression> 			expression  number
-%type <exprlist>   			actual_parameters
-%type <varlist>    			formal_parameters
-%type <token>	     			comparator
-%type <vardec>	   			variable_declaration
+%type <program>         program
+/*%type <id>	       			ident*/
+%type <type>            type base_type array_type pair_type pair_elem_type
+%type <statement>  		  statement statement_seq	
+%type <assignlhs>       assign_lhs array_elem_lhs pair_elem_lhs
+%type <assignrhs>       assign_rhs expr array_liter pair_elem_rhs
+%type <expression> 			int_liter bool_liter char_liter str_liter
+%type <expression>      pair_liter array_elem_exp
+%type <exprlist>   			arg_list expr_list array_index
+%type <varlist>    			param_list
+%type <vardec>          param
+%type <token>	     			unary_oper binary_oper int_sign
 %type <fundec>     			function_declaration
-
+%type <funlist>         func_list
 
 /* Precedence of operators */
 %left PLUS MINUS STAR SLASH MODULO 
 
-/* Start symbol. If omitted will default to first non-terminal symbol */
+/* Start symbol. If omitted will default to first non_terminal symbol */
 %start program 
 
 %%
 program: 
     BEGIN func_list statement_seq END
 		{ ast = new Program($2, $3) }
-
+  ;
 func_list:
-	/* empty */ 
-		{ $$ = new FunctionDecList(); }
-	| function_declaration 
-		{ $$ = new FunctionDecList(); 
-			$$->funcs.push_back(&$1); }
 	| func_list function_declaration
-		{ $1->funcs.push_back(&$2); }
-
+    { $1.push_back(&$2); }
+	/* empty */ 
+		{ $$ = new FunctionList(); }
+  ;
 function_declaration:
 		type ident LPAREN RPAREN IS statement END
-		{ $$ = new FunctionDeclaration($1, $2, $6); }
+		{ $$ = new FunctionDeclaration($1, $<id>2, $6); }
 	| type ident LPAREN param_list RPAREN IS statement END
-		{ $$ = new FunctionDeclaration($1, $2, $4, $7); }
-
+		{ $$ = new FunctionDeclaration($1, $<id>2, $4, $7); }
+    ;
 param_list:
     param
 		{ $$ = new VariableList();
 			$$.push_back_(&$1); }
   | param_list COMMA param
 		{ $1.push_back(&$3); }
-
+    ;
 param:
 		type ident
-		{ $$ = new VariableDeclaration($1, $2); }
-
+		{ $$ = new VariableDeclaration($1, $<id>2); }
+    ;
 statement_seq:
 		statement
 		{ $$ = new StatSeq();
 			$$->statements.push_back($1); }
 	| statement_seq SEMICOLON statement
 		{ $1->statements.push_back($3); }
-
+    ;
 statement:
     SKIP
 		{ $$ = new SkipStatement(); }
-  | type ident ASSIGN assign-rhs
-		{ $$ = new VariableDeclaration($1, $2, &$4); }
-  | assign-lhs ASSIGN assign-rhs
+  | type ident ASSIGN assign_rhs
+		{ $$ = new VariableDeclaration($1, $<id>2, &$4); }
+  | assign_lhs ASSIGN assign_rhs
 		{ $$ = new Assignment($1, $3); }
-  | READ assign-lhs
+  | READ assign_lhs
 		{ $$ = new Read($2); }
   | FREE expr
 		{ $$ = new FreeStatement($2); }
@@ -136,51 +139,57 @@ statement:
 		{ $$ = new WhileStatement($2, $4); }
   | statement_seq
 		{ $$ = $1; }
-		
-assign-lhs:
+	    ;	
+assign_lhs:
 		ident
+		{ $$ = $<assignlhs>1; } 
+  | array_elem_lhs
 		{ $$ = $1; } 
-  | array-elem
+	| pair_elem_lhs
 		{ $$ = $1; } 
-	| pair-elem
-		{ $$ = $1; } 
-
-assign-rhs:
+    ;
+assign_rhs:
     expr
-		{ $$ = $1; } 
-  | array-liter
+		{ $<assingrhs>$ = $1; } 
+  | array_liter
 		{ $$ = $1; } 
   | NEWPAIR LPAREN expr COMMA expr RPAREN
 		{ $$ = new NewPair($3, $5); } 
-  | pair-elem
+  | pair_elem_rhs
 		{ $$ = $1; } 
 	| CALL ident LPAREN RPAREN
-		{ $$ = new FunctionCall($2); }
-  | CALL ident LPAREN arg-list RPAREN
-		{ $$ = new FunctionCall($2, $4); }
-
-arg-list:
+		{ $$ = new FunctionCall($<id>2); }
+  | CALL ident LPAREN arg_list RPAREN
+		{ $$ = new FunctionCall($<id>2, $4); }
+    ;
+arg_list:
     expr
 		{ $$ = new ExpressionList();
 			$$.push_back($1); } 
-  | arg-list COMMA expr 
+  | arg_list COMMA expr 
 		{ $1.push_back($3); }
-
-pair-elem:
+    ;
+pair_elem_rhs:
     FST expr
 		{ $$ = new PairElem(true, $2); }
   | SND expr
 		{ $$ = new PairElem(false, $2); }
-
+    ;
+pair_elem_lhs:
+    FST expr
+		{ $$ = new PairElem(true, $2); }
+  | SND expr
+		{ $$ = new PairElem(false, $2); }
+    ;
 type:
-    base-type
+    base_type
 		{ $$ = $1; }
-  | array-type
+  | array_type
 		{ $$ = $1; }
-  | pair-type
+  | pair_type
 		{ $$ = $1; }
-
-base-type:
+    ;
+base_type:
     INT
 		{ $$ = new IntegerType($1); }
   | BOOL
@@ -189,46 +198,46 @@ base-type:
 		{ $$ = new CharType($1); }
   | STRING
 		{ $$ = new StringType($1); }
-
-array-type:
+    ;
+array_type:
   type LSQUARE RSQUARE
 	{ $$ = new ArrayType($1); }
-
-pair-type:
-  PAIR LPAREN pair-elem-type COMMA pair-elem-type RPAREN
+    ;
+pair_type:
+  PAIR LPAREN pair_elem_type COMMA pair_elem_type RPAREN
 	{ $$ = new PairType($3, $5); }
-
-pair-elem-type:
-    base-type
+    ;
+pair_elem_type:
+    base_type
 		{ $$ = $1; }
-  | array-type
+  | array_type
 		{ $$ = $1; }
   | PAIR
-	{ $$ = new PairKeyword(); }
-
+	  { $$ = new PairKeyword(); }
+    ;
 expr:
-    int-liter
+    int_liter
 		{ $$ = $1; }
-  | bool-liter
+  | bool_liter
 		{ $$ = $1; }
-  | char-liter 
+  | char_liter 
 		{ $$ = $1; }
-  | str-liter
+  | str_liter
 		{ $$ = $1; }
-  | pair-liter
+  | pair_liter
 		{ $$ = $1; }
   | ident
+		{ $$ = $<expression>1; }
+  | array_elem_exp
 		{ $$ = $1; }
-  | array-elem
-		{ $$ = $1; }
-  | unary-oper expr
+  | unary_oper expr
 		{ $$ = new UnaryOperator($1, $2); }
-  | expr binary-oper expr
+  | expr binary_oper expr
 		{ $$ = new BinaryOperator($1, $2, $3); }
   | LPAREN expr RPAREN
 	 	{ $$ = $2; }
-
-unary-oper:
+    ;
+unary_oper:
     BANG
 		{ $$ = 1; }
   | MINUS
@@ -239,8 +248,8 @@ unary-oper:
 		{ $$ = 5; }
   | CHR
 		{ $$ = 2; }
-
-binary-oper:
+    ;
+binary_oper:
     STAR
 		{ $$ = 18; }
   | SLASH
@@ -267,61 +276,65 @@ binary-oper:
 		{ $$ = 11; }
   | LOGOR
 		{ $$ = 12; } 
-
+    ;
 ident:
     IDENTIFIER
-		{ $$ = new Identifier($<string>1); } 
-
-array-elem:
-    ident array-index
-		{ $$ = new ArrayElem($1, $2); }
-
-array-index:
+		{ $<id>$ = new Identifier($<string>1); } 
+    ;
+array_elem_exp:
+    ident array_index
+		{ $$ = new ArrayElem($<id>1, $2); }
+    ;
+array_elem_lhs:
+    ident array_index
+		{ $$ = new ArrayElem($<id>1, $2); }
+    ;
+array_index:
 		LSQUARE expr RSQUARE
 		{ $$ = new ExpressionList();
 			$$.push_back($2); }
-	| array-index LSQUARE expr RSQUARE
+	| array_index LSQUARE expr RSQUARE
 		{ $1.push_back($3); }
-
-int-liter:
-		int-sign INTEGER
+    ;
+int_liter:
+		int_sign INTEGER
 		{ $$ = new Number($1 * $<intValue>2)}
-
-int-sign:
+    ;
+int_sign:
 		/* empty */
 		{ $$ = 1; }
 	|	PLUS
 		{ $$ = 1; }
 	| MINUS
-		{ $$ = -1; }
-
-bool-liter:
+		{ $$ = _1; }
+    ;
+bool_liter:
 		TRUE		
 		{ $$ = new Boolean(true); }
 	| FALSE
 		{ $$ = new Boolean(false); }
-
-char-liter:
+    ;
+char_liter:
 		CHARLIT
 		{ $$ = new Char($<charValue>1); }
-
-str-liter:
+    ;
+str_liter:
 		STRINGLIT
 		{ $$ = new String($<string>1); }
-
-array-liter:
-	RSQUARE expr-list LSQUARE
+    ;
+array_liter:
+	RSQUARE expr_list LSQUARE
 	{ $$ = new ArrayLiter($2); }
-
-expr-list:
+    ;
+expr_list:
 		expr
 		{ $$ = new ExpressionList();
 			$$.push_back($1); }
-	| expr-list COMMA expr
+	| expr_list COMMA expr
 		{ $1.push_back($3); }
-
-pair-liter:
+    ;
+pair_liter:
 		NULL 
 		{ $$ = new Null(); }
-
+    ;
 %%

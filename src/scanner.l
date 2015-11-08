@@ -1,10 +1,10 @@
 %{
-  include <iostream>
-  include <fstream>
+  #include <iostream>
+  #include <fstream>
+  # include "parser.hpp"
+  # include "astnode.h"
   using namespace std;
-  include "astnode.h"
   int error_count = 0;
-  include "parser.hpp"
 
 %}
 

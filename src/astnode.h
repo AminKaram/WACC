@@ -29,13 +29,6 @@ public:
 	IntegerType(int& integer) : integer(integer) {} 
 };
 
-//class FloatType : public Type {
-//public:
-//	float& flt;;
-
-//	FloatType(float& flt) : flt(flt) {} 
-//};
-
 class BoolType : public Type {
 };
 
@@ -90,13 +83,6 @@ public:
     : type(type), id(id), rhs(rhs) {}
 };
 typedef std::vector<VariableDeclaration*> VariableList;
-
-class FunctionDecList : public ASTnode {
-public:
-	FunctionList& funcs;
-
-	FunctionDecList() : funcs(new FunctionList()) {}
-};
 
 class FunctionDeclaration : public Statement {
 public:
