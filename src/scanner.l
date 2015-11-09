@@ -2,7 +2,7 @@
   #include <string>
   # include "parser.hpp"
   # include "astnode.h"
-%}
+}
 
 /* bison compatibility directive */
 %option noyywrap 
@@ -52,7 +52,7 @@ false 		    return FALSE;
 "<="          return LESSEQUALS;
 "<"           return LESS;
 ">="          return GREATEREQUALS;
-">"           return GRATER
+">"           return GREATER
 "=="          return EQUALS;
 "!="          return NOTEQUALS;
 "="           return ASSIGN;

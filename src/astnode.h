@@ -53,7 +53,7 @@ public:
 	Type& fst;
 	Type& snd;
 
-	PairType(Type& fst, Type& snd) : fst(fst) : snd(snd) {}
+	PairType(Type& fst, Type& snd) : fst(fst), snd(snd) {}
 };
 
 class Identifier : public Expression, public AssignLhs, public AssignRhs {
@@ -67,7 +67,7 @@ class StatSeq : public Statement {
 public:
   StatementList& statements;
 
-  StatSeq() : statements(new StatementList()) {} 
+  StatSeq(StatementList& stats) : statements(stats) { } 
 };
 
 class VariableDeclaration : public Statement { 
@@ -88,14 +88,14 @@ class FunctionDeclaration : public Statement {
 public:
   Type& type;
   Identifier& id;
-  VariableList parameters;
+  VariableList *parameters;
   StatSeq& block;
   
   FunctionDeclaration(Type& type, Identifier& id, StatSeq& block) 
-    : type(type), id(id), parameters(new VariableList()), block(block) {}
+    : type(type), id(id), parameters(0), block(block) {}
 
   FunctionDeclaration(Type& type, Identifier& id, 
-      VariableList& parameters, StatSeq& block) 
+      VariableList *parameters, StatSeq& block) 
     : type(type), id(id), parameters(parameters), block(block) {}
 };
 typedef std::vector<FunctionDeclaration*> FunctionList;
@@ -113,10 +113,10 @@ public:
 
 class Program : public ASTnode{
 public:  
-	FunctionDecList& functions;
+	FunctionList& functions;
   StatSeq& statements;
   
-  Program(FunctionDecList& fs, StatSeq& stats)
+  Program(FunctionList& fs, StatSeq& stats)
 		 : functions(fs), statements(stats) {}
 };
 
@@ -158,7 +158,7 @@ public:
 	StatSeq& scope;
 
 	BeginStatement(StatSeq& scope) : scope(scope) {}
-}
+};
 
 class IfStatement : public Statement {
 public:

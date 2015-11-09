@@ -18,25 +18,24 @@ Program *ast;     /* Pointer to root of Abstract Syntax Tree */
 /* BISON DECLARATIONS  _--------------------------------------------------- */
 
 /* Define all possible syntactic values */
-/* %define api.value.type variant _ need if  proper C++ typing is used */
 
 %union {
-  int                     token;
-  std::string         	  *string;
-	int 									  intValue;
-	char									  charValue;
-  Program                 program;
-  Identifier 		 		      id;
-  Type                    type;
-  Statement 		 		      statement;
-  AssignLhs               assignlhs;
-  AssignRhs               assignrhs;
-  Expression     		      expression;
-  ExpressionList 		     	exprlist;
-  VariableList            varlist;
-  VariableDeclaration     vardec;
-  FunctionDeclaration     fundec;
-  FunctionList            funlist;
+  int                    token;
+  std::string         	 *string;
+	int 									 intValue;
+	char									 charValue;
+  Program                *program;
+  Identifier 		 		     *id;
+  Type                   *type;
+  Statement 		 		     *statement;
+  AssignLhs              *assignlhs;
+  AssignRhs              *assignrhs;
+  Expression     		     *expression;
+  ExpressionList 		     *exprlist;
+  VariableList           *varlist;
+  VariableDeclaration    *vardec;
+  FunctionDeclaration    *fundec;
+  FunctionList           *funlist;
 }
 
 %token <token>  BEGIN END IF THEN ELSE FI WHILE DO DONE SKIP FREE EXIT TRUE FALSE
@@ -108,7 +107,7 @@ param:
     ;
 statement_seq:
 		statement
-		{ $$ = new StatSeq();
+		{ $$ = new StatSeq(new StatementList());
 			$$->statements.push_back($1); }
 	| statement_seq SEMICOLON statement
 		{ $1->statements.push_back($3); }
