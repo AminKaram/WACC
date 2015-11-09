@@ -85,10 +85,10 @@ program:
 		{ ast = new Program($2, $3) }
   ;
 func_list:
-	| func_list function_declaration
-    { $1.push_back(&$2); }
 	/* empty */ 
 		{ $$ = new FunctionList(); }
+	| func_list function_declaration
+    { $1.push_back(&$2); }
   ;
 function_declaration:
 		type ident LPAREN RPAREN IS statement END
@@ -306,7 +306,7 @@ int_sign:
 	|	PLUS
 		{ $$ = 1; }
 	| MINUS
-		{ $$ = _1; }
+		{ $$ = -1; }
     ;
 bool_liter:
 		TRUE		
