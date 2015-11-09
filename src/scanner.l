@@ -1,11 +1,7 @@
-%{
-  #include <iostream>
-  #include <fstream>
+%top{
+  #include <string>
   # include "parser.hpp"
   # include "astnode.h"
-  using namespace std;
-  int error_count = 0;
-
 %}
 
 /* bison compatibility directive */
@@ -41,7 +37,7 @@ int           return INT;
 bool          return BOOL; 
 char          return CHAR; 
 string        return STRING; 
-null          return NULL;
+null          return NULLTOKEN;
 print         return PRINT; 
 println       return PRINTLN; 
 read          return READ; 
@@ -84,24 +80,3 @@ false 		    return FALSE;
 .             return ERROR; 
 
 %%  
-int main(int argc, char** argv) {
-
-    ++argv; --argc;
-	
-    if(argc > 0) {
-	    // open a file handle to a particular file
-	    FILE *myfile = fopen(*argv, "r");
-	    // make sure it's valid:
-	    if (!myfile) {
-		    cout << "I can't open the file." << argv << endl;
-		    return -1;
-	    }
-	    // set lex to read from it instead of defaulting to STDIN:
-	    yyin = myfile;
-    }
-	
-	// lex through the input:
-	yylex();
-    cout << "# errors" << error_count << endl;
-}
-

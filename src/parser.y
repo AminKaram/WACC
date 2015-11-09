@@ -43,7 +43,7 @@ Program *ast;     /* Pointer to root of Abstract Syntax Tree */
 
 %token <token>  IS RETURN CALL
 
-%token <token> PAIR INT BOOL CHAR STRING NULL
+%token <token> PAIR INT BOOL CHAR STRING NULLTOKEN
 
 %token <token>  ASSIGN LESSEQUALS LESS GREATEREQUALS GREATER EQUALS BANG  
 %token <token>  NOTEQUALS PLUS MINUS STAR SLASH MODULO LOGAND LOGOR
@@ -64,17 +64,17 @@ Program *ast;     /* Pointer to root of Abstract Syntax Tree */
 %type <assignlhs>       assign_lhs array_elem_lhs pair_elem_lhs
 %type <assignrhs>       assign_rhs expr array_liter pair_elem_rhs
 %type <expression> 			int_liter bool_liter char_liter str_liter
-%type <expression>      pair_liter array_elem_exp
+%type <expression>      pair_liter array_elem_exp unary_op binary_op
 %type <exprlist>   			arg_list expr_list array_index
 %type <varlist>    			param_list
 %type <vardec>          param
-%type <token>	     			unary_oper binary_oper int_sign
+%type <token>	     			int_sign
 %type <fundec>     			function_declaration
 %type <funlist>         func_list
 
 /* Precedence of operators */
-%left PLUS MINUS STAR SLASH MODULO LOGOR LOGAND LESS GREATER LESSEQUALS 
-%left GREATEREQUALS NOTEQUALS EQUALS BANG LEN CHR ORD UMINUS UPLUS
+%left LESS GREATER LESSEQUALS GREATEREQUALS NOTEQUALS EQUALS PLUS MINUS STAR 
+%left SLASH MODULO LOGOR LOGAND BANG LEN CHR ORD UMINUS UPLUS
 
 /* Start symbol. If omitted will default to first non_terminal symbol */
 %start program 
@@ -233,50 +233,50 @@ expr:
 		{ $$ = $<expression>1; }
   | array_elem_exp
 		{ $$ = $1; }
-  | unary_oper expr
-		{ $$ = new UnaryOperator($1, $2); }
-  | expr binary_oper expr
-		{ $$ = new BinaryOperator($1, $2, $3); }
+  | unary_op
+		{ $$ = $1; }
+  | binary_op
+		{ $$ = $1; }
   | LPAREN expr RPAREN
 	 	{ $$ = $2; }
     ;
-unary_oper:
-    BANG
-		{ $$ = 1; }
-  | LEN
-		{ $$ = 3; }
-  | ORD
-		{ $$ = 4; }
-  | CHR
-		{ $$ = 2; }
+unary_op:
+    BANG expr
+		{ $$ = new UnaryOperator($1, $2); }
+  | LEN expr
+		{ $$ = new UnaryOperator($1, $2); }
+  | ORD expr
+		{ $$ = new UnaryOperator($1, $2); }
+  | CHR expr
+		{ $$ = new UnaryOperator($1, $2); }
     ;
-binary_oper:
-    STAR
-		{ $$ = 17; }
-  | SLASH
-		{ $$ = 16; }
-  | MODULO
-		{ $$ = 13; }
-  | PLUS 
-		{ $$ = 15; }
-  | MINUS
-		{ $$ = 12; }
-  | GREATER
-		{ $$ = 6; }
-  | GREATEREQUALS
-		{ $$ = 7; }
-  | LESS
-		{ $$ = 8; }
-  | LESSEQUALS
-		{$$ = 9; }
-  | EQUALS
-		{ $$ = 5; }		
-  | NOTEQUALS
-		{ $$ = 14;}
-  | LOGAND
-		{ $$ = 10; }
-  | LOGOR
-		{ $$ = 11; } 
+binary_op:
+    expr STAR expr
+    { $$ = new BinaryOperator($2, $1, $3); } 
+  | expr SLASH expr
+    { $$ = new BinaryOperator($2, $1, $3); } 
+  | expr MODULO expr
+    { $$ = new BinaryOperator($2, $1, $3); } 
+  | expr PLUS expr 
+    { $$ = new BinaryOperator($2, $1, $3); } 
+  | expr MINUS expr
+    { $$ = new BinaryOperator($2, $1, $3); } 
+  | expr GREATER expr
+    { $$ = new BinaryOperator($2, $1, $3); } 
+  | expr GREATEREQUALS expr
+    { $$ = new BinaryOperator($2, $1, $3); } 
+  | expr LESS expr
+    { $$ = new BinaryOperator($2, $1, $3); } 
+  | expr LESSEQUALS expr
+    { $$ = new BinaryOperator($2, $1, $3); } 
+  | expr EQUALS expr
+    { $$ = new BinaryOperator($2, $1, $3); } 
+  | expr NOTEQUALS expr
+    { $$ = new BinaryOperator($2, $1, $3); } 
+  | expr LOGAND expr
+    { $$ = new BinaryOperator($2, $1, $3); } 
+  | expr LOGOR expr
+    { $$ = new BinaryOperator($2, $1, $3); } 
     ;
 ident:
     IDENTIFIER
@@ -335,7 +335,8 @@ expr_list:
 		{ $1.push_back($3); }
     ;
 pair_liter:
-		NULL 
-		{ $$ = new Null(); }
+		NULLTOKEN 
+		{ $$ = new NULLTOKEN(); }
     ;
+
 %%
