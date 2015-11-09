@@ -59,7 +59,6 @@ Program *ast;     /* Pointer to root of Abstract Syntax Tree */
 %token<intValue> INTEGER
 
 %type <program>         program
-/*%type <id>	       			ident*/
 %type <type>            type base_type array_type pair_type pair_elem_type
 %type <statement>  		  statement statement_seq	
 %type <assignlhs>       assign_lhs array_elem_lhs pair_elem_lhs
@@ -74,11 +73,11 @@ Program *ast;     /* Pointer to root of Abstract Syntax Tree */
 %type <funlist>         func_list
 
 /* Precedence of operators */
-%left PLUS MINUS STAR SLASH MODULO
-%precedence LSQUARE
+%left PLUS MINUS STAR SLASH MODULO LOGOR LOGAND LESS GREATER LESSEQUALS 
+%left GREATEREQUALS NOTEQUALS EQUALS BANG LEN CHR ORD UMINUS UPLUS
+
 /* Start symbol. If omitted will default to first non_terminal symbol */
 %start program 
-
 %%
 program: 
     BEGIN func_list statement_seq END
@@ -305,9 +304,9 @@ int_liter:
 int_sign:
 		/* empty */
 		{ $$ = 1; }
-	|	PLUS
+	|	PLUS %prec UPLUS
 		{ $$ = 1; }
-	| MINUS
+	| MINUS %prec UMINUS
 		{ $$ = -1; }
     ;
 bool_liter:
