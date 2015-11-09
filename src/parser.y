@@ -36,7 +36,7 @@ Program *ast;     /* Pointer to root of Abstract Syntax Tree */
   VariableList            varlist;
   VariableDeclaration     vardec;
   FunctionDeclaration     fundec;
-  FunctionList         funlist;
+  FunctionList            funlist;
 }
 
 %token <token>  BEGIN END IF THEN ELSE FI WHILE DO DONE SKIP FREE EXIT TRUE FALSE
@@ -74,8 +74,8 @@ Program *ast;     /* Pointer to root of Abstract Syntax Tree */
 %type <funlist>         func_list
 
 /* Precedence of operators */
-%left PLUS MINUS STAR SLASH MODULO 
-
+%left PLUS MINUS STAR SLASH MODULO
+%precedence LSQUARE
 /* Start symbol. If omitted will default to first non_terminal symbol */
 %start program 
 
@@ -117,6 +117,8 @@ statement_seq:
 statement:
     SKIP
 		{ $$ = new SkipStatement(); }
+  | RETURN expr
+    { $$ = new ReturnStatement($2); }
   | type ident ASSIGN assign_rhs
 		{ $$ = new VariableDeclaration($1, $<id>2, &$4); }
   | assign_lhs ASSIGN assign_rhs
@@ -137,9 +139,9 @@ statement:
 		{ $$ = new IfStatement($2, $4, &$6);  }
   | WHILE expr DO statement DONE
 		{ $$ = new WhileStatement($2, $4); }
-  | statement_seq
+/*  | statement_seq
 		{ $$ = $1; }
-	    ;	
+*/	    ;	
 assign_lhs:
 		ident
 		{ $$ = $<assignlhs>1; } 
@@ -215,6 +217,8 @@ pair_elem_type:
   | PAIR
 	  { $$ = new PairKeyword(); }
     ;
+/* shift/reduce conflict at the ident and array_elem_exp, but handled by default
+shifting */
 expr:
     int_liter
 		{ $$ = $1; }
@@ -240,42 +244,40 @@ expr:
 unary_oper:
     BANG
 		{ $$ = 1; }
-  | MINUS
-		{ $$ = 4; }
   | LEN
 		{ $$ = 3; }
   | ORD
-		{ $$ = 5; }
+		{ $$ = 4; }
   | CHR
 		{ $$ = 2; }
     ;
 binary_oper:
     STAR
-		{ $$ = 18; }
-  | SLASH
 		{ $$ = 17; }
-  | MODULO
-		{ $$ = 14; }
-  | PLUS 
+  | SLASH
 		{ $$ = 16; }
-  | MINUS
+  | MODULO
 		{ $$ = 13; }
+  | PLUS 
+		{ $$ = 15; }
+  | MINUS
+		{ $$ = 12; }
   | GREATER
-		{ $$ = 7; }
+		{ $$ = 6; }
   | GREATEREQUALS
-		{ $$ = 8; }
+		{ $$ = 7; }
   | LESS
-		{ $$ = 9; }
+		{ $$ = 8; }
   | LESSEQUALS
-		{$$ = 10; }
+		{$$ = 9; }
   | EQUALS
-		{ $$ = 6; }		
+		{ $$ = 5; }		
   | NOTEQUALS
-		{ $$ = 15;}
+		{ $$ = 14;}
   | LOGAND
-		{ $$ = 11; }
+		{ $$ = 10; }
   | LOGOR
-		{ $$ = 12; } 
+		{ $$ = 11; } 
     ;
 ident:
     IDENTIFIER

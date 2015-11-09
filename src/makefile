@@ -8,7 +8,7 @@ CPPFLAGS = -Wno-deprecated-register
 	g++ -c $(CPPFLAGS) -o $@ $<
 
 parser.cpp: parser.y
-	bison -r state -d -o $@ $^
+	bison --report=solved,state -d -o $@ $^
 	
 parser.hpp: parser.cpp
 
