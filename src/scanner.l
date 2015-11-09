@@ -1,11 +1,24 @@
-%top{
+%{
+  /* C++ sting header */
   #include <string>
-  # include "parser.hpp"
-  # include "astnode.h"
-}
+  /* Implementation of yyFlexScanner */
+  #include "mc_scanner.hpp"
 
-/* bison compatibility directive */
+  /* Typedef to make return types for the tokens shorter */
+  typedef MC::MC_Parser::token token;
+
+  /* Helpful Macro */
+  #define STOKEN(x) ( new std::string(x) )
+
+  /* Define yyterminate like this instead of NULL */
+  #define yyterminate() return( token::END )
+%}
+
 %option noyywrap 
+%option debug
+%option nodefault
+%option yyclass="MC_Scanner"
+%option c++
 
 digit         [0-9]
 number        {digit}+
@@ -17,66 +30,66 @@ charlit       \'[^\'"]{1}|\0|\b|\n|\r|\"|\'|\\\'
 stringlit     \"(\\.|[^\\"])*\"
 
 %% 
-begin         return BEGIN;
-end           return END;
-if            return IF; 
-then          return THEN; 
-else          return ELSE; 
-fi            return FI; 
-while         return WHILE; 
-do            return DO; 
-done          return DONE; 
-skip          return SKIP; 
-free          return FREE; 
-exit          return EXIT; 
-is            return IS;
-return        return RETURN; 
-call          return CALL; 
-pair          return PAIR; 
-int           return INT; 
-bool          return BOOL; 
-char          return CHAR; 
-string        return STRING; 
-null          return NULLTOKEN;
-print         return PRINT; 
-println       return PRINTLN; 
-read          return READ; 
-newpair       return NEWPAIR; 
-fst           return FST; 
-snd           return SND; 
-len           return LEN; 
-ord           return ORD; 
-chr           return CHR; 
-true		      return TRUE;
-false 		    return FALSE;
-"<="          return LESSEQUALS;
-"<"           return LESS;
-">="          return GREATEREQUALS;
-">"           return GREATER
-"=="          return EQUALS;
-"!="          return NOTEQUALS;
-"="           return ASSIGN;
-"!"           return BANG;
-"+"           return PLUS; 
-"-"           return MINUS; 
-"*"           return STAR; 
-"/"           return SLASH; 
-"%"           return MODULO;
-"&&"          return LOGAND;
-"||"          return LOGOR;
-"("           return LPAREN; 
-")"           return RPAREN; 
-";"           return SEMICOLON; 
-","           return COMMA; 
-"["           return LSQUARE;
-"]"           return RSQUARE;
+begin         return (token::BEGIN);
+end           return (token::END);
+if            return (token::IF); 
+then          return (token::THEN); 
+else          return (token::ELSE); 
+fi            return (token::FI); 
+while         return (token::WHILE); 
+do            return (token::DO); 
+done          return (token::DONE); 
+skip          return (token::SKIP); 
+free          return (token::FREE); 
+exit          return (token::EXIT); 
+is            return (token::IS);
+return        return (token::RETURN); 
+call          return (token::CALL); 
+pair          return (token::PAIR); 
+int           return (token::INT); 
+bool          return (token::BOOL); 
+char          return (token::CHAR); 
+string        return (token::STRING); 
+null          return (token::NULLTOKEN);
+print         return (token::PRINT); 
+println       return (token::PRINTLN); 
+read          return (token::READ); 
+newpair       return (token::NEWPAIR); 
+fst           return (token::FST); 
+snd           return (token::SND); 
+len           return (token::LEN); 
+ord           return (token::ORD); 
+chr           return (token::CHR); 
+true		      return (token::TRUE);
+false 		    return (token::FALSE);
+"<="          return (token::LESSEQUALS);
+"<"           return (token::LESS);
+">="          return (token::GREATEREQUALS);
+">"           return (token::GREATER);
+"=="          return (token::EQUALS);
+"!="          return (token::NOTEQUALS);
+"="           return (token::ASSIGN);
+"!"           return (token::BANG);
+"+"           return (token::PLUS); 
+"-"           return (token::MINUS); 
+"*"           return (token::STAR); 
+"/"           return (token::SLASH); 
+"%"           return (token::MODULO);
+"&&"          return (token::LOGAND);
+"||"          return (token::LOGOR);
+"("           return (token::LPAREN); 
+")"           return (token::RPAREN); 
+";"           return (token::SEMICOLON); 
+","           return (token::COMMA); 
+"["           return (token::LSQUARE);
+"]"           return (token::RSQUARE);
 
-{number}      yylval.intValue = atoi(yytext);                 return INTEGER; 
-{identifier}  yylval.string = new std::string(yytext,yyleng); return IDENTIFIER; 
+{number}      yylval->iVal = std::stoi(yytext);  return (token::INTEGER); 
+{identifier}  yylval->sVal = STOKEN(yytext);     return (token::IDENTIFIER); 
 {whitespace} 
-{stringlit}   yylval.string = new std::string(yytext,yyleng); return STRINGLIT; 
+{stringlit}   yylval->sVal = SToken(yytext);     return (token::STRINGLIT); 
 {comment}     { } 
-{charlit}     yylval.charValue = yytext[0];                   return CHARLIT;  
+{charlit}     yylval->cVal = yytext[0];          return (token::CHARLIT);  
 .             return ERROR; 
 
 %%  
