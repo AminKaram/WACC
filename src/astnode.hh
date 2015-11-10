@@ -15,7 +15,7 @@ typedef std::vector<Statement*> StatementList;
 
 class StatSeq : public Statement {
 public:
-  StatementList stats;
+  StatementList statements;
   StatSeq() { }  
 };
 
@@ -101,7 +101,7 @@ public:
   FunctionDecList() { }
 };
 
-class FunctionCall : public Expression {
+class FunctionCall : public Expression , public AssignRhs {
 public:
   Identifier& id;
   ExpressionList parameters;
@@ -254,7 +254,7 @@ public:
     : left(left), right(right), op(op) {}
 };
 
-class ArrayElem : public AssignLhs {
+class ArrayElem : public AssignLhs, public Expression {
 public:
 	Identifier& id;
 	ExpressionList& idxs;

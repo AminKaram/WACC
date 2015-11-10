@@ -1,5 +1,5 @@
 %skeleton "lalr1.cc"
-%require "3.0.4"
+%require "3.0.2"
 %defines
 %define parser_class_name {parser}
 
@@ -55,20 +55,20 @@
 %token <int> INTEGER
 
 
-%type <Type>                type base_type array_type pair_type pair_elem_type
-%type <Identifier>          ident
-%type <StatSeq>  		        statement_seq	
-%type <Statement>  		      statement 
-%type <AssignLhs>           assign_lhs array_elem_lhs pair_elem_lhs
-%type <AssignRhs>           assign_rhs array_liter pair_elem_rhs
-%type <Expression> 			    expr int_liter bool_liter char_liter str_liter
-%type <Expression>          pair_liter array_elem_exp unary_op binary_op
-%type <ExpressionList>      arg_list expr_list array_index
-%type <VariableList>        param_list
-%type <VariableDeclaration> param
-%type <token>	     			    int_sign
+%type <Type>                  type base_type array_type pair_type pair_elem_type
+%type <Identifier>            ident
+%type <StatSeq>  		          statement_seq	
+%type <Statement *>  		      statement 
+%type <AssignLhs>             assign_lhs array_elem_lhs pair_elem_lhs
+%type <AssignRhs>             assign_rhs array_liter pair_elem_rhs
+%type <Expression *> 			    expr int_liter bool_liter char_liter str_liter
+%type <Expression *>          pair_liter array_elem_exp unary_op binary_op
+%type <ExpressionList>        arg_list expr_list array_index
+%type <VariableList>          param_list
+%type <VariableDeclaration *> param
+%type <int>	     			        int_sign
 %type <FunctionDeclaration *> function_declaration
-%type <FunctionDecList>     func_list
+%type <FunctionDecList>       func_list
 
 
 /* Precedence of operators */
@@ -96,52 +96,49 @@ function_declaration:
     ;
 param_list:
     param
-		{ $$ = new VariableList();
-			$$.push_back_(&$1); }
+		{ $$.push_back($1); }
   | param_list COMMA param
-		{ $1.push_back(&$3); }
+		{ $1.push_back($3); }
     ;
 param:
 		type ident
-		{ $$ = new VariableDeclaration($1, $<id>2); }
+		{ $$ = new VariableDeclaration($1, $2); }
     ;
 statement_seq:
 		statement
-		{ $$->statements.push_back($1); }
+		{ $$.statements.push_back($1); }
 	| statement_seq SEMICOLON statement
-		{ $1->statements.push_back($3); }
+		{ $1.statements.push_back($3); }
     ;
 statement:
     SKIP
 		{ $$ = new SkipStatement(); }
   | RETURN expr
-    { $$ = new ReturnStatement($2); }
+    { $$ = new ReturnStatement(*$2); }
   | type ident ASSIGN assign_rhs
-		{ $$ = new VariableDeclaration($1, $<id>2, &$4); }
+		{ $$ = new VariableDeclaration($1, $2, &$4); }
   | assign_lhs ASSIGN assign_rhs
 		{ $$ = new Assignment($1, $3); }
   | READ assign_lhs
-		{ $$ = new Read($2); }
+		{ $$ = new ReadStatement($2); }
   | FREE expr
-		{ $$ = new FreeStatement($2); }
+		{ $$ = new FreeStatement(*$2); }
   | EXIT expr
-		{ $$ = new ExitStatement($2); }
+		{ $$ = new ExitStatement(*$2); }
   | PRINT expr
-		{ $$ = new PrintStatement($2); }
+		{ $$ = new PrintStatement(*$2); }
   | PRINTLN expr
-		{ $$ = new PrintlnStatement($2); }
+		{ $$ = new PrintlnStatement(*$2); }
 	| BEGIN statement_seq END
 		{ $$ = new BeginStatement($2); }
-  | IF expr THEN statement ELSE statement FI
-		{ $$ = new IfStatement($2, $4, &$6);  }
-  | WHILE expr DO statement DONE
-		{ $$ = new WhileStatement($2, $4); }
-/*  | statement_seq
-		{ $$ = $1; }
-*/	    ;	
+  | IF expr THEN statement_seq ELSE statement_seq FI
+		{ $$ = new IfStatement(*$2, $4, &$6);  }
+  | WHILE expr DO statement_seq DONE
+		{ $$ = new WhileStatement(*$2, $4); }
+  ;
 assign_lhs:
 		ident
-		{ $$ = $<assignlhs>1; } 
+		{ $$ = $<AssignLhs>1; } 
   | array_elem_lhs
 		{ $$ = $1; } 
 	| pair_elem_lhs
@@ -149,36 +146,42 @@ assign_lhs:
     ;
 assign_rhs:
     expr
-		{ $<assingrhs>$ = $1; } 
+		{ $$ = $<AssignRhs>1; } 
   | array_liter
 		{ $$ = $1; } 
   | NEWPAIR LPAREN expr COMMA expr RPAREN
-		{ $$ = new NewPair($3, $5); } 
+		{ NewPair tmp(*$3, *$5); 
+      $$ = tmp;} 
   | pair_elem_rhs
 		{ $$ = $1; } 
 	| CALL ident LPAREN RPAREN
-		{ $$ = new FunctionCall($<id>2); }
+		{ FunctionCall tmp($2); 
+      $$ = tmp;}
   | CALL ident LPAREN arg_list RPAREN
-		{ $$ = new FunctionCall($<id>2, $4); }
+		{ FunctionCall tmp($2, $4);
+      $$ = tmp;}
     ;
 arg_list:
     expr
-		{ $$ = new ExpressionList();
-			$$.push_back($1); } 
+		{ $$.push_back($1); } 
   | arg_list COMMA expr 
 		{ $1.push_back($3); }
     ;
 pair_elem_rhs:
     FST expr
-		{ $$ = new PairElem(true, $2); }
+		{ PairElem tmp(true, *$2);
+      $$ = tmp; }
   | SND expr
-		{ $$ = new PairElem(false, $2); }
+		{ PairElem tmp(false, *$2);
+      $$ = tmp; }
     ;
 pair_elem_lhs:
     FST expr
-		{ $$ = new PairElem(true, $2); }
+		{ PairElem tmp(true, *$2);
+      $$ = tmp; }
   | SND expr
-		{ $$ = new PairElem(false, $2); }
+		{ PairElem tmp(false, *$2);
+      $$ = tmp; }
     ;
 type:
     base_type
@@ -190,21 +193,27 @@ type:
     ;
 base_type:
     INT
-		{ $$ = new IntegerType(); }
+		{ IntegerType tmp;
+      $$ = tmp; }
   | BOOL
-		{ $$ = new BoolType(); }
+		{ BoolType tmp;
+      $$ = tmp; }
   | CHAR
-		{ $$ = new CharType(); }
+		{ CharType tmp;
+      $$ = tmp; }
   | STRING
-		{ $$ = new StringType(); }
+		{ StringType tmp;
+      $$ = tmp; }
     ;
 array_type:
   type LSQUARE RSQUARE
-	{ $$ = new ArrayType($1); }
+	{ ArrayType tmp($1); 
+    $$ = tmp;}
     ;
 pair_type:
   PAIR LPAREN pair_elem_type COMMA pair_elem_type RPAREN
-	{ $$ = new PairType($3, $5); }
+	{ PairType tmp($3, $5);
+    $$ = tmp; }
     ;
 pair_elem_type:
     base_type
@@ -212,7 +221,8 @@ pair_elem_type:
   | array_type
 		{ $$ = $1; }
   | PAIR
-	  { $$ = new PairKeyword(); }
+	  { PairKeyword tmp;
+      $$ = tmp; }
     ;
 /* shift/reduce conflict at the ident and array_elem_exp, but handled by default
 shifting */
@@ -228,7 +238,7 @@ expr:
   | pair_liter
 		{ $$ = $1; }
   | ident
-		{ $$ = $<expression>1; }
+		{ $$ =&$1; }
   | array_elem_exp
 		{ $$ = $1; }
   | unary_op
@@ -240,64 +250,65 @@ expr:
     ;
 unary_op:
     BANG expr
-		{ $$ = new UnaryOperator($1, $2); }
+		{ $$ = new UnaryOperator($1, *$2); }
   | LEN expr
-		{ $$ = new UnaryOperator($1, $2); }
+		{ $$ = new UnaryOperator($1, *$2); }
   | ORD expr
-		{ $$ = new UnaryOperator($1, $2); }
+		{ $$ = new UnaryOperator($1, *$2); }
   | CHR expr
-		{ $$ = new UnaryOperator($1, $2); }
+		{ $$ = new UnaryOperator($1, *$2); }
     ;
 binary_op:
     expr STAR expr
-    { $$ = new BinaryOperator($2, $1, $3); } 
+    { $$ = new BinaryOperator(*$1, $2, *$3); } 
   | expr SLASH expr
-    { $$ = new BinaryOperator($2, $1, $3); } 
+    { $$ = new BinaryOperator(*$1, $2, *$3); } 
   | expr MODULO expr
-    { $$ = new BinaryOperator($2, $1, $3); } 
+    { $$ = new BinaryOperator(*$1, $2, *$3); } 
   | expr PLUS expr 
-    { $$ = new BinaryOperator($2, $1, $3); } 
+    { $$ = new BinaryOperator(*$1, $2, *$3); } 
   | expr MINUS expr
-    { $$ = new BinaryOperator($2, $1, $3); } 
+    { $$ = new BinaryOperator(*$1, $2, *$3); } 
   | expr GREATER expr
-    { $$ = new BinaryOperator($2, $1, $3); } 
+    { $$ = new BinaryOperator(*$1, $2, *$3); } 
   | expr GREATEREQUALS expr
-    { $$ = new BinaryOperator($2, $1, $3); } 
+    { $$ = new BinaryOperator(*$1, $2, *$3); } 
   | expr LESS expr
-    { $$ = new BinaryOperator($2, $1, $3); } 
+    { $$ = new BinaryOperator(*$1, $2, *$3); } 
   | expr LESSEQUALS expr
-    { $$ = new BinaryOperator($2, $1, $3); } 
+    { $$ = new BinaryOperator(*$1, $2, *$3); } 
   | expr EQUALS expr
-    { $$ = new BinaryOperator($2, $1, $3); } 
+    { $$ = new BinaryOperator(*$1, $2, *$3); } 
   | expr NOTEQUALS expr
-    { $$ = new BinaryOperator($2, $1, $3); } 
+    { $$ = new BinaryOperator(*$1, $2, *$3); } 
   | expr LOGAND expr
-    { $$ = new BinaryOperator($2, $1, $3); } 
+    { $$ = new BinaryOperator(*$1, $2, *$3); } 
   | expr LOGOR expr
-    { $$ = new BinaryOperator($2, $1, $3); } 
+    { $$ = new BinaryOperator(*$1, $2, *$3); } 
     ;
 ident:
     IDENTIFIER
-		{ $<id>$ = new Identifier($<string>1); } 
+		{ Identifier tmp($1);
+      $$ = tmp; } 
     ;
 array_elem_exp:
     ident array_index
-		{ $$ = new ArrayElem($<id>1, $2); }
+		{ $$ = new ArrayElem($1, $2); }
     ;
 array_elem_lhs:
     ident array_index
-		{ $$ = new ArrayElem($<id>1, $2); }
+		{ ArrayElem tmp($1, $2);
+      $$ = tmp; }
     ;
 array_index:
 		LSQUARE expr RSQUARE
-		{ $$ = new ExpressionList();
-			$$.push_back($2); }
+		{ $$.push_back($2); }
 	| array_index LSQUARE expr RSQUARE
 		{ $1.push_back($3); }
     ;
 int_liter:
 		int_sign INTEGER
-		{ $$ = new Number($1 * $<intValue>2)}
+		 { $$ = new Number($1 * $2); }
     ;
 int_sign:
 		/* empty */
@@ -315,26 +326,26 @@ bool_liter:
     ;
 char_liter:
 		CHARLIT
-		{ $$ = new Char($<charValue>1); }
+		{ $$ = new Char($1);}
     ;
 str_liter:
 		STRINGLIT
-		{ $$ = new String($<string>1); }
+		{ $$ = new String($1); }
     ;
 array_liter:
 	RSQUARE expr_list LSQUARE
-	{ $$ = new ArrayLiter($2); }
+	{ ArrayLiter tmp($2);
+    $$ = tmp; }
     ;
 expr_list:
 		expr
-		{ $$ = new ExpressionList();
-			$$.push_back($1); }
+		{ $$.push_back($1); }
 	| expr_list COMMA expr
 		{ $1.push_back($3); }
     ;
 pair_liter:
 		NULLTOKEN 
-		{ $$ = new NULLTOKEN(); }
+		{ $$ = new Null(); }
     ;
 
 %%

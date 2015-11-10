@@ -1,7 +1,6 @@
 #ifndef PARSING_DRIVER_HH
 #define PARSING_DRIVER_HH
 #include <string>
-#include <map>
 #include "parser.hh"
 // Tells Flex the lexer's prototype ...
 #define YY_DECL \ yy::parser:symbol_type yylex (parsingDriver& driver)
