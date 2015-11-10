@@ -38,8 +38,8 @@
 
 %token        PAIR INT BOOL CHAR STRING NULLTOKEN
 
-%token <int>  ASSIGN LESSEQUALS LESS GREATEREQUALS GREATER EQUALS BANG  
-%token <int>  NOTEQUALS PLUS MINUS STAR SLASH MODULO LOGAND LOGOR LEN ORD CHR
+%token <int>  ASSIGN BANG CHR EQUALS GREATER GREATEREQUALS LEN LESS LESSEQUALS    
+%token <int>  LOGAND LOGOR MINUS MODULO NOTEQUALS ORD PLUS SLASH STAR 
 
 %token        LPAREN RPAREN LSQUARE RSQUARE SEMICOLON COMMA 
 
@@ -84,8 +84,8 @@ program:
 		{ driver.ast = new Program($2, $3); }
   ;
 func_list:
-	/* empty */
-	| func_list function_declaration
+    /* Empty production as base case*/
+  | func_list function_declaration
     { $1.funcs.push_back($2); }
   ;
 function_declaration:

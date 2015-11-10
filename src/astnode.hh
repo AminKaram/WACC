@@ -62,6 +62,7 @@ class Identifier : public Expression, public AssignLhs, public AssignRhs {
 public:
   std::string id;
 	
+  Identifier() {}
   Identifier(std::string& id) : id(id) {}
 };
 

@@ -16,7 +16,7 @@
   # define yywrap() 1
 
   // The location of the current token.
-  static yy:location loc;
+  static yy::location loc;
 
   /* Typedef to make return types for the tokens shorter */
   typedef yy::parser token;
@@ -50,11 +50,12 @@ stringlit     \"(\\.|[^\\"])*\"
 
 {whitespace}+     loc.step();
 [\n]+             loc.lines(yyleng); loc.step();
+{comment}         loc.lines(yyleng); loc.step();
 
 begin         return (token::make_BEGIN(loc));
-end           return (token::make_END(loc);
+end           return (token::make_END(loc));
 if            return (token::make_IF(loc)); 
-then          return (token::make_THEN(loc); 
+then          return (token::make_THEN(loc)); 
 else          return (token::make_ELSE(loc)); 
 fi            return (token::make_FI(loc)); 
 while         return (token::make_WHILE(loc)); 
@@ -78,38 +79,40 @@ read          return (token::make_READ(loc));
 newpair       return (token::make_NEWPAIR(loc)); 
 fst           return (token::make_FST(loc)); 
 snd           return (token::make_SND(loc)); 
-len           return (token::make_LEN(loc)); 
-ord           return (token::make_ORD(loc)); 
-chr           return (token::make_CHR(loc)); 
+len           return (token::make_LEN(7, loc)); 
+ord           return (token::make_ORD(15, loc)); 
+chr           return (token::make_CHR(3, loc)); 
 true		      return (token::make_TRUE(loc));
 false 		    return (token::make_FALSE(loc));
-"<="          return (token::make_LESSEQUALS(loc));
-"<"           return (token::make_LESS(loc));
-">="          return (token::make_GREATEREQUALS(loc));
-">"           return (token::make_GREATER(loc));
-"=="          return (token::make_EQUALS(loc));
-"!="          return (token::make_NOTEQUALS(loc));
-"="           return (token::make_ASSIGN(loc));
-"!"           return (token::make_BANG(loc));
-"+"           return (token::make_PLUS(loc)); 
-"-"           return (token::make_MINUS(loc)); 
-"*"           return (token::make_STAR(loc)); 
-"/"           return (token::make_SLASH(loc)); 
-"%"           return (token::make_MODULO(loc));
-"&&"          return (token::make_LOGAND(loc));
-"||"          return (token::make_LOGOR(loc));
+"<="          return (token::make_LESSEQUALS(9, loc));
+"<"           return (token::make_LESS(8, loc));
+">="          return (token::make_GREATEREQUALS(6, loc));
+">"           return (token::make_GREATER(5, loc));
+"=="          return (token::make_EQUALS(4, loc));
+"!="          return (token::make_NOTEQUALS(14, loc));
+"="           return (token::make_ASSIGN(1, loc));
+"!"           return (token::make_BANG(2, loc));
+"+"           return (token::make_PLUS(16, loc)); 
+"-"           return (token::make_MINUS(12, loc)); 
+"*"           return (token::make_STAR(18, loc)); 
+"/"           return (token::make_SLASH(17, loc)); 
+"%"           return (token::make_MODULO(13, loc));
+"&&"          return (token::make_LOGAND(10, loc));
+"||"          return (token::make_LOGOR(11, loc));
 "("           return (token::make_LPAREN(loc)); 
 ")"           return (token::make_RPAREN(loc)); 
 ";"           return (token::make_SEMICOLON(loc)); 
 ","           return (token::make_COMMA(loc)); 
 "["           return (token::make_LSQUARE(loc));
-"]"           return (token::make_RSQUARE);
+"]"           return (token::make_RSQUARE(loc));
 
 {number}      { 
                 errno = 0;
-                int n = std::stoi(yytext, NULL, 10);
-                if(! (0 <= n && n <= INTMAX && errno != ERANGE))
+                int n = strtol(yytext, NULL, 10);
+                if(! (0 <= n && n <= INT_MAX && errno != ERANGE)) {
                   driver.error(loc, "Syntactic error: integer is out of range");
+                  exit(100);
+                }
                 return (token::make_INTEGER(n, loc));
               }
 
@@ -117,13 +120,11 @@ false 		    return (token::make_FALSE(loc));
 
 {stringlit}   return (token::make_STRINGLIT(yytext, loc));
 
-{comment}     loc.lines(yy.leng); loc.step();
-
 {charlit}     return (token::make_CHARLIT(yytext[0], loc));  
 
 .             {
                 driver.error(loc, "Syntactic error: invalid character");
-                exit(100)
+                exit(100);
               }
 
 <<EOF>>       return token::make_ENDF(loc);
@@ -136,7 +137,7 @@ void parsingDriver::scan_begin() {
     yyin = stdin;
   else if (!(yyin = fopen (file.c_str (), "r")))
     {
-      error("cannot open " + file + ": " + stderror(errno));
+      error("cannot open " + file + ": " + strerror(errno));
       exit(EXIT_FAILURE);
     }
 }

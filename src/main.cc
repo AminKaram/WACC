@@ -1,6 +1,5 @@
-
 #include <iostream>
-#include "astnode.h"
+#include "astnode.hh"
 
 using namespace std;
 

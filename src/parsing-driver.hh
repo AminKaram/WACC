@@ -3,8 +3,9 @@
 #include <string>
 #include "parser.hh"
 // Tells Flex the lexer's prototype ...
-#define YY_DECL \ yy::parser:symbol_type yylex (parsingDriver& driver)
+#define YY_DECL yy::parser::symbol_type yylex (parsingDriver& driver)
 // ... and declares it for the parser
+YY_DECL;
 
 // Does all the scanning and parsing of WACC file
 class parsingDriver {
