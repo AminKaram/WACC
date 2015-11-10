@@ -9,7 +9,7 @@ CPPFLAGS = -fmax-errors=20
 
 parser.cc: parser.yy
 	bison --report=solved,state -d -o $@ $<
-	
+      
 parser.hh: parser.cc
 
 scanner.cc: scanner.l parser.hh
@@ -17,8 +17,8 @@ scanner.cc: scanner.l parser.hh
 
 main : $(OBJS)
 	g++ $^ -o $@
-   
-clean:
-	$(RM) -rf location.hh position.hh stack.hh parser.output parser.cc parser.hh parser scanner.cc $(OBJS)
 
+clean:
+	$(RM) -rf main location.hh position.hh stack.hh parser.output parser.cc parser.hh parser scanner.cc $(OBJS)
+             
 .PHONY: all clean

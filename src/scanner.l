@@ -131,7 +131,7 @@ false 		    return (token::make_FALSE(loc));
 
 %%  
 
-void parsingDriver::scan_begin() {
+void ParsingDriver::scan_begin() {
   yy_flex_debug = trace_scanning;
   if(file.empty() || file == "-""")
     yyin = stdin;
@@ -142,6 +142,6 @@ void parsingDriver::scan_begin() {
     }
 }
 
-void parsingDriver::scan_end() {
+void ParsingDriver::scan_end() {
   fclose(yyin);
 }

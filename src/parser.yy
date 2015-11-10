@@ -10,10 +10,10 @@
 %code requires{
   #include <string>
   #include "astnode.hh"
-  class parsingDriver;
+  class ParsingDriver;
 }
 
-%param { parsingDriver& driver }
+%param { ParsingDriver& driver }
 
 %locations
 %initial-action {

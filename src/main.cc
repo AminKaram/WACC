@@ -1,14 +1,11 @@
 #include <iostream>
-#include "astnode.hh"
-
-using namespace std;
-
-extern int yyparse();
-
-extern StatSeq* ast;
+#include "parsing-driver.hh"
 
 int main(int argc, char **argv) {
-  yyparse();
-  return 0;
+  int res = 0;
+  ParsingDriver driver;
+  if(driver.parse(argv[1]))
+      res = 200;
+  return res;
 }
 

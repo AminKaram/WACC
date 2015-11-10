@@ -1,15 +1,15 @@
 #include "parsing-driver.hh"
 #include "parser.hh"
 
-parsingDriver::parsingDriver() : trace_scanning(false), 
+ParsingDriver::ParsingDriver() : trace_scanning(false), 
                                    trace_parsing(false) 
 { }
 
-parsingDriver::~parsingDriver() { 
+ParsingDriver::~ParsingDriver() { 
   delete ast;
 }
 
-int parsingDriver::parse(const std::string &f) {
+int ParsingDriver::parse(const std::string &f) {
   file = f;
   scan_begin();
   yy::parser parser(*this);
@@ -19,12 +19,12 @@ int parsingDriver::parse(const std::string &f) {
   return res;
 }
 
-void parsingDriver::error(const yy::location& l, const std::string& m)
+void ParsingDriver::error(const yy::location& l, const std::string& m)
 {
   std::cerr << l << ": " << m << std::endl;
 }
 
-void parsingDriver::error(const std::string& m)
+void ParsingDriver::error(const std::string& m)
 {
   std::cerr << m << std::endl;
 }
