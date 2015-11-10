@@ -67,7 +67,7 @@
 %type <VariableList>        param_list
 %type <VariableDeclaration> param
 %type <token>	     			    int_sign
-%type <FunctionDeclaration> function_declaration
+%type <FunctionDeclaration *> function_declaration
 %type <FunctionDecList>     func_list
 
 
@@ -86,13 +86,13 @@ program:
 func_list:
 	/* empty */
 	| func_list function_declaration
-    { $1.funcs.push_back(&$2); }
+    { $1.funcs.push_back($2); }
   ;
 function_declaration:
-		type ident LPAREN RPAREN IS statement END
+		type ident LPAREN RPAREN IS statement_seq END
 		{ $$ = new FunctionDeclaration($1, $2, $6); }
-	| type ident LPAREN param_list RPAREN IS statement END
-		{ $$ = new FunctionDeclaration($1, $2, $4, $7); }
+	| type ident LPAREN param_list RPAREN IS statement_seq END
+		{ $$ = new FunctionDeclaration($1, $2, &$4, $7); }
     ;
 param_list:
     param
