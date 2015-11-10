@@ -4,20 +4,20 @@ OBJS = scanner.o parser.o main.o parsing-driver.o
 
 CPPFLAGS = -Wno-deprecated-register
 
-%.o: %.cppi %.hh
+%.o: %.cc %.hh
 	g++ -c $(CPPFLAGS) -o $@ $<
 
-parser.cpp: parser.yy
+parser.cc: parser.yy
 	bison --report=solved,state -d -o $@ $<
 	
-parser.hpp: parser.cpp
+parser.hh: parser.cc
 
-scanner.cpp: scanner.l parser.hpp
+scanner.cc: scanner.l parser.hpp
 	flex -o $@ $^
 
 main : $(OBJS)
 	g++ -o $@ $^
    
 clean:
-	$(RM) -rf parser.output parser.cpp parser.hpp parser scanner.cpp $(OBJS)
+	$(RM) -rf location.hh position.hh stack.hh parser.output parser.cc parser.hh parser scanner.cc $(OBJS)
 

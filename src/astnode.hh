@@ -13,6 +13,12 @@ typedef std::vector<Expression*> ExpressionList;
 class Statement : public ASTnode { };
 typedef std::vector<Statement*> StatementList;
 
+class StatSeq : public Statement {
+public:
+  StatementList stats;
+  StatSeq() { }  
+};
+
 class AssignLhs : public ASTnode {
 };
 
@@ -46,6 +52,7 @@ class PairKeyword : public Type {
 
 class PairType : public Type {
 public:
+  Type& fst;
 	Type& snd;
 
 	PairType(Type& fst, Type& snd) : fst(fst), snd(snd) {}
@@ -88,6 +95,12 @@ public:
 };
 typedef std::vector<FunctionDeclaration*> FunctionList;
 
+class FunctionDecList : public ASTnode {
+public:
+  FunctionList funcs;
+  FunctionDecList() { }
+};
+
 class FunctionCall : public Expression {
 public:
   Identifier& id;
@@ -101,10 +114,10 @@ public:
 
 class Program : public ASTnode{
 public:  
-	FunctionList& functions;
-  StatementList& statements;
+	FunctionDecList& functions;
+  StatSeq& statements;
   
-  Program(FunctionList& fs, StatementList& stats)
+  Program(FunctionDecList& fs, StatSeq& stats)
 		 : functions(fs), statements(stats) {}
 };
 
