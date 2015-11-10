@@ -23,10 +23,6 @@ class Type : public ASTnode {
 };
 
 class IntegerType : public Type {
-public:
-	int& integer;
-
-	IntegerType(int& integer) : integer(integer) {} 
 };
 
 class BoolType : public Type {
@@ -50,7 +46,6 @@ class PairKeyword : public Type {
 
 class PairType : public Type {
 public:
-	Type& fst;
 	Type& snd;
 
 	PairType(Type& fst, Type& snd) : fst(fst), snd(snd) {}
@@ -61,13 +56,6 @@ public:
   std::string id;
 	
   Identifier(std::string& id) : id(id) {}
-};
-
-class StatSeq : public Statement {
-public:
-  StatementList& statements;
-
-  StatSeq(StatementList& stats) : statements(stats) { } 
 };
 
 class VariableDeclaration : public Statement { 
@@ -114,9 +102,9 @@ public:
 class Program : public ASTnode{
 public:  
 	FunctionList& functions;
-  StatSeq& statements;
+  StatementList& statements;
   
-  Program(FunctionList& fs, StatSeq& stats)
+  Program(FunctionList& fs, StatementList& stats)
 		 : functions(fs), statements(stats) {}
 };
 
