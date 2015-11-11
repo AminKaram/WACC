@@ -34,7 +34,7 @@ letter        [a-zA-Z]
 identifier    [a-zA-Z|_]{1}[a-zA-Z|0-9|_]*
 whitespace    [ \t]+
 comment       #[^\n]*
-charlit       \'([^\\ \' \"]|\\\\|\\\"|\\r|\\n|\\b|\\0)\'
+charlit       \'([^\\\'\"]|\\\\|\\\"|\\r|\\n|\\b|\\0)\'
 stringlit     \"(\\.|[^\\"])*\"
 
 %{
@@ -51,7 +51,7 @@ stringlit     \"(\\.|[^\\"])*\"
 
 {whitespace}+     loc.step();
 [\n]+             loc.lines(yyleng); loc.step();
-{comment}         loc.lines(yyleng); loc.step();
+{comment}         loc.step();
 
 begin         return (token::make_BEGIN(loc));
 end           return (token::make_END(loc));
