@@ -59,7 +59,7 @@
 %type <Type>                  type base_type array_type pair_type pair_elem_type
 %type <Identifier>            ident
 %type <StatSeq>  		          statement_seq statement_seq_ret	
-%type <Statement *>  		      statement 
+%type <Statement *>  		      statement  return_stat
 %type <AssignLhs>             assign_lhs array_elem_lhs pair_elem_lhs
 %type <AssignRhs>             assign_rhs array_liter pair_elem_rhs 
 %type <Expression *> 			    expr int_liter bool_liter char_liter str_liter
@@ -113,8 +113,8 @@ statement_seq:
     ;
 
 statement_seq_ret:
-		RETURN expr
-		{ $$.statements.push_back(new ReturnStatement(*$2)); }
+		return_stat
+		{ $$.statements.push_back($1); }
 	| statement_seq SEMICOLON statement
 		{ $1.statements.push_back($3); }
     ;
@@ -124,6 +124,8 @@ statement:
 		{ $$ = new SkipStatement(); }
   | type ident ASSIGN assign_rhs
 		{ $$ = new VariableDeclaration($1, $2, &$4); }
+  | return_stat
+    { $$ = $1; }
   | assign_lhs ASSIGN assign_rhs
 		{ $$ = new Assignment($1, $3); }
   | READ assign_lhs
@@ -143,6 +145,11 @@ statement:
   | WHILE expr DO statement_seq DONE
 		{ $$ = new WhileStatement(*$2, $4); }
   ;
+
+return_stat:
+    RETURN expr
+    { $$ = new ReturnStatement(*$2); }
+
 assign_lhs:
 		ident
 		{ AssignLhs tmp = $1;
