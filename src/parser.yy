@@ -241,7 +241,7 @@ expr:
   | pair_liter
 		{ $$ = $1; }
   | ident
-		{ $$ =&$1; }
+		{ $$ = &$1; }
   | array_elem_exp
 		{ $$ = $1; }
   | unary_op
@@ -261,6 +261,8 @@ unary_op:
 		{ $$ = new UnaryOperator($1, *$2); }
   | CHR expr
 		{ $$ = new UnaryOperator($1, *$2); }
+  | MINUS expr %prec UMINUS
+    { $$ = new UnaryOperator($1, *$2); }
     ;
 binary_op:
     expr STAR expr
@@ -319,8 +321,6 @@ int_sign:
 		{ $$ = 1; }
 	|	PLUS %prec UPLUS
 		{ $$ = 1; }
-	| MINUS %prec UMINUS
-		{ $$ = -1; }
     ;
 bool_liter:
 		TRUE		
