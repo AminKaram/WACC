@@ -8,6 +8,7 @@
 %define parse.assert
 
 %code requires{
+  #include <iostream>
   #include <string>
   #include "astnode.hh"
   class ParsingDriver;
@@ -302,7 +303,7 @@ array_elem_lhs:
     ;
 array_index:
 		LSQUARE expr RSQUARE
-		{ $$.push_back($2); }
+    { $$.push_back($2); }
 	| array_index LSQUARE expr RSQUARE
 		{ $1.push_back($3); }
     ;
@@ -333,7 +334,7 @@ str_liter:
 		{ $$ = new String($1); }
     ;
 array_liter:
-	RSQUARE expr_list LSQUARE
+	LSQUARE expr_list RSQUARE
 	{ ArrayLiter tmp($2);
     $$ = tmp; }
     ;
