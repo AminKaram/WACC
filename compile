@@ -3,4 +3,7 @@
 # You are free to change the language used for this script,
 # but do *not* change its name.
 
-cd src && ./main $1
+cd src
+
+./main $1
+exit $?
