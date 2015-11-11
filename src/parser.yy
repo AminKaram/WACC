@@ -61,7 +61,7 @@
 %type <StatSeq>  		          statement_seq	
 %type <Statement *>  		      statement 
 %type <AssignLhs>             assign_lhs array_elem_lhs pair_elem_lhs
-%type <AssignRhs>             assign_rhs array_liter pair_elem_rhs
+%type <AssignRhs>             assign_rhs array_liter pair_elem_rhs 
 %type <Expression *> 			    expr int_liter bool_liter char_liter str_liter
 %type <Expression *>          pair_liter array_elem_exp unary_op binary_op
 %type <ExpressionList>        arg_list expr_list array_index
@@ -139,7 +139,8 @@ statement:
   ;
 assign_lhs:
 		ident
-		{ $$ = $<AssignLhs>1; } 
+		{ AssignLhs tmp = $1;
+      $$ = tmp; } 
   | array_elem_lhs
 		{ $$ = $1; } 
 	| pair_elem_lhs
@@ -147,7 +148,8 @@ assign_lhs:
     ;
 assign_rhs:
     expr
-		{ $$ = $<AssignRhs>1; } 
+		{ AssignRhs tmp = *$1;
+      $$ = tmp; } 
   | array_liter
 		{ $$ = $1; } 
   | NEWPAIR LPAREN expr COMMA expr RPAREN
@@ -248,7 +250,8 @@ expr:
 		{ $$ = $1; }
   | LPAREN expr RPAREN
 	 	{ $$ = $2; }
-    ;
+  ;
+
 unary_op:
     BANG expr
 		{ $$ = new UnaryOperator($1, *$2); }

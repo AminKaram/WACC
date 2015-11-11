@@ -7,7 +7,13 @@ public:
   virtual void check() {}
 };
 
-class Expression : public ASTnode { };
+class AssignLhs : public ASTnode {
+};
+
+class AssignRhs : public ASTnode { 
+};
+
+class Expression : public AssignRhs { };
 typedef std::vector<Expression*> ExpressionList;
 
 class Statement : public ASTnode { };
@@ -17,12 +23,6 @@ class StatSeq : public Statement {
 public:
   StatementList statements;
   StatSeq() { }  
-};
-
-class AssignLhs : public ASTnode {
-};
-
-class AssignRhs : public ASTnode { 
 };
 
 class Type : public ASTnode {
@@ -58,7 +58,7 @@ public:
 	PairType(Type& fst, Type& snd) : fst(fst), snd(snd) {}
 };
 
-class Identifier : public Expression, public AssignLhs, public AssignRhs {
+class Identifier : public Expression, public AssignLhs {
 public:
   std::string id;
 	
@@ -102,7 +102,7 @@ public:
   FunctionDecList() { }
 };
 
-class FunctionCall : public Expression , public AssignRhs {
+class FunctionCall : public Expression {
 public:
   Identifier& id;
   ExpressionList parameters;

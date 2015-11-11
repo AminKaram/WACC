@@ -4,6 +4,5 @@
 # but do *not* change its name.
 
 cd src
-
 ./main $1
 exit $?
