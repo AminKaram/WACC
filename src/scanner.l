@@ -109,10 +109,11 @@ false 		    return (token::make_FALSE(loc));
 {number}      { 
                 errno = 0;
                 int n = strtol(yytext, NULL, 10);
-                if(! (0 <= n && n <= INT_MAX && errno != ERANGE)) {
+                /*if(! (0 <= n && n <= INT_MAX && errno != ERANGE)) {
                   driver.error(loc, "Syntactic error: integer is out of range");
                   exit(100);
                 }
+                */
                 return (token::make_INTEGER(n, loc));
               }
 
