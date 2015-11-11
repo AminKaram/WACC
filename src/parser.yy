@@ -113,12 +113,12 @@ statement_seq:
     ;
 
 statement_seq_ret:
-    func_if_stat
-    { $$.statements.push_back($1); }
-	| return_stat
+	  return_stat
 		{ $$.statements.push_back($1); }
 	| statement_seq SEMICOLON statement
 		{ $1.statements.push_back($3); }
+  | func_if_stat
+    { $$.statements.push_back($1); }
     ;
 
 statement:
@@ -144,6 +144,8 @@ statement:
 		{ $$ = new BeginStatement($2); }
   | IF expr THEN statement_seq ELSE statement_seq FI
 		{ $$ = new IfStatement(*$2, $4, &$6);  }
+  | func_if_stat
+    { $$ = $1; }
   | WHILE expr DO statement_seq DONE
 		{ $$ = new WhileStatement(*$2, $4); }
   ;
