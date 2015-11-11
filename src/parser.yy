@@ -342,7 +342,8 @@ array_liter:
     $$ = tmp; }
     ;
 expr_list:
-		expr
+    /* Empty rule for empty list */  
+  |	expr
 		{ $$.push_back($1); }
 	| expr_list COMMA expr
 		{ $1.push_back($3); }
