@@ -58,7 +58,7 @@
 
 %type <Type>                  type base_type array_type pair_type pair_elem_type
 %type <Identifier>            ident
-%type <StatSeq>  		          statement_seq	
+%type <StatSeq>  		          statement_seq statement_seq_ret	
 %type <Statement *>  		      statement 
 %type <AssignLhs>             assign_lhs array_elem_lhs pair_elem_lhs
 %type <AssignRhs>             assign_rhs array_liter pair_elem_rhs 
@@ -90,9 +90,9 @@ func_list:
     { $1.funcs.push_back($2); }
   ;
 function_declaration:
-		type ident LPAREN RPAREN IS statement_seq END
+		type ident LPAREN RPAREN IS statement_seq_ret END
 		{ $$ = new FunctionDeclaration($1, $2, $6); }
-	| type ident LPAREN param_list RPAREN IS statement_seq END
+	| type ident LPAREN param_list RPAREN IS statement_seq_ret END
 		{ $$ = new FunctionDeclaration($1, $2, &$4, $7); }
     ;
 param_list:
@@ -111,11 +111,17 @@ statement_seq:
 	| statement_seq SEMICOLON statement
 		{ $1.statements.push_back($3); }
     ;
+
+statement_seq_ret:
+		RETURN expr
+		{ $$.statements.push_back(new ReturnStatement(*$2)); }
+	| statement_seq SEMICOLON statement
+		{ $1.statements.push_back($3); }
+    ;
+
 statement:
     SKIP
 		{ $$ = new SkipStatement(); }
-  | RETURN expr
-    { $$ = new ReturnStatement(*$2); }
   | type ident ASSIGN assign_rhs
 		{ $$ = new VariableDeclaration($1, $2, &$4); }
   | assign_lhs ASSIGN assign_rhs
