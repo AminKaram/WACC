@@ -111,13 +111,16 @@ false 		    return (token::make_FALSE(loc));
 {number}      { 
                 errno = 0;
                 int n = strtol(yytext, NULL, 10);
-                if( minus && !(0 <= n && n+1 <= INT_MAX && errno != ERANGE)) {
-                  driver.error(loc, "syntax error: integer is out of range");
-                  exit(100);
-                }
-                else if(!(0 <= n && n <= INT_MAX && minus && errno != ERANGE)) {
-                  driver.error(loc, "syntax error: integer is out of range");
-                  exit(100);
+                if(!minus) {
+                  if(!(0 <= n && n+1 <= INT_MAX && errno != ERANGE)) {
+                    driver.error(loc, "syntax error: integer is out of range");
+                    exit(100);
+                  }
+                } else {
+                  if(!(0 <= n && n <= INT_MAX && errno != ERANGE)) {
+                    driver.error(loc, "syntax error: integer is out of range");
+                    exit(100);
+                  }
                 }
 
                 minus = false;
