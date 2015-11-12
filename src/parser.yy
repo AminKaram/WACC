@@ -10,8 +10,11 @@
 %code requires{
   #include <iostream>
   #include <string>
+  #include <typeinfo>
+  #include <vector>
   #include "astnode.hh"
   class ParsingDriver;
+  bool containsRet(StatSeq*);
 }
 
 %param { ParsingDriver& driver }
@@ -56,20 +59,20 @@
 %token <int> INTEGER
 
 
-%type <Type>                  type base_type array_type pair_type pair_elem_type
-%type <Identifier>            ident
-%type <StatSeq>  		          statement_seq	
+%type <Type*>                 type base_type array_type pair_type pair_elem_type
+%type <Identifier*>           ident
+%type <StatSeq*>  		        statement_seq	
 %type <Statement *>  		      statement 
-%type <AssignLhs>             assign_lhs array_elem_lhs pair_elem_lhs
-%type <AssignRhs>             assign_rhs array_liter pair_elem_rhs 
+%type <AssignLhs*>            assign_lhs array_elem_lhs pair_elem_lhs
+%type <AssignRhs*>            assign_rhs array_liter pair_elem_rhs 
 %type <Expression *> 			    expr int_liter bool_liter char_liter str_liter
 %type <Expression *>          pair_liter array_elem_exp unary_op binary_op
-%type <ExpressionList>        arg_list expr_list array_index
-%type <VariableList>          param_list
-%type <VariableDeclaration *> param
+%type <ExpressionList*>       arg_list expr_list array_index
+%type <VariableList*>         param_list
+%type <VariableDeclaration*>  param
 %type <int>	     			        int_sign
-%type <FunctionDeclaration *> function_declaration
-%type <FunctionDecList>       func_list
+%type <FunctionDeclaration*>  function_declaration
+%type <FunctionDecList*>      func_list
 
 
 /* Precedence of operators */
@@ -86,20 +89,29 @@ program:
   ;
 func_list:
     /* Empty production as base case*/
+    { $$ = new FunctionDecList(); } 
   | func_list function_declaration
-    { $1.funcs.push_back($2); }
+    { $1->funcs.push_back($2); }
   ;
 function_declaration:
 		type ident LPAREN RPAREN IS statement_seq END
-		{ $$ = new FunctionDeclaration($1, $2, $6); }
+		{ if(!containsRet($6)) { 
+       yy::parser::error(@6, "syntax error: function path missing RETURN"); 
+      }
+      $$ = new FunctionDeclaration($1, $2, $6); }
 	| type ident LPAREN param_list RPAREN IS statement_seq END
-		{ $$ = new FunctionDeclaration($1, $2, &$4, $7); }
+    { //std::cout << " FUNC DEC " << std::endl; 
+      if(!containsRet($7)) {
+       yy::parser::error(@6, "syntax error: function path missing RETURN"); 
+      }
+      $$ = new FunctionDeclaration($1, $2, $4, $7); }
     ;
 param_list:
     param
-		{ $$.push_back($1); }
+		{ $$ = new VariableList();
+      $$->push_back($1); }
   | param_list COMMA param
-		{ $1.push_back($3); }
+		{ $1->push_back($3); }
     ;
 param:
 		type ident
@@ -107,40 +119,45 @@ param:
     ;
 statement_seq:
 		statement
-		{ $$.statements.push_back($1); }
+   	{ //std::cout << " BROKEN " << std::endl;
+      $$ = new StatSeq();
+      $$->statements.push_back($1); } 
 	| statement_seq SEMICOLON statement
-		{ $1.statements.push_back($3); }
+		 { //std::cout << " STAT SEQ " << std::endl;
+       $1->statements.push_back($3); }
     ;
 statement:
     SKIP
 		{ $$ = new SkipStatement(); }
   | RETURN expr
-    { $$ = new ReturnStatement(*$2); }
+    { //std::cout << " HAHA " << std::endl;
+      $$ = new ReturnStatement($2); }
   | type ident ASSIGN assign_rhs
-		{ $$ = new VariableDeclaration($1, $2, &$4); }
+		{ $$ = new VariableDeclaration($1, $2, $4); }
   | assign_lhs ASSIGN assign_rhs
 		{ $$ = new Assignment($1, $3); }
   | READ assign_lhs
 		{ $$ = new ReadStatement($2); }
   | FREE expr
-		{ $$ = new FreeStatement(*$2); }
+		{ $$ = new FreeStatement($2); }
   | EXIT expr
-		{ $$ = new ExitStatement(*$2); }
+		{ $$ = new ExitStatement($2); }
   | PRINT expr
-		{ $$ = new PrintStatement(*$2); }
+		{ $$ = new PrintStatement($2); }
   | PRINTLN expr
-		{ $$ = new PrintlnStatement(*$2); }
+		{ //std::cout << " PRINTLN " << std::endl;
+      $$ = new PrintlnStatement($2); }
 	| BEGIN statement_seq END
 		{ $$ = new BeginStatement($2); }
   | IF expr THEN statement_seq ELSE statement_seq FI
-		{ $$ = new IfStatement(*$2, $4, &$6);  }
+		{ //std::cout << " IF STAT " << std::endl;
+      $$ = new IfStatement($2, $4, $6);  }
   | WHILE expr DO statement_seq DONE
-		{ $$ = new WhileStatement(*$2, $4); }
+		{ $$ = new WhileStatement($2, $4); }
   ;
 assign_lhs:
 		ident
-		{ AssignLhs tmp = $1;
-      $$ = tmp; } 
+		{ $$ = dynamic_cast<AssignLhs*>($1); } 
   | array_elem_lhs
 		{ $$ = $1; } 
 	| pair_elem_lhs
@@ -148,43 +165,36 @@ assign_lhs:
     ;
 assign_rhs:
     expr
-		{ AssignRhs tmp = *$1;
-      $$ = tmp; } 
+		{ $$ = dynamic_cast<AssignRhs*>($1); } 
   | array_liter
 		{ $$ = $1; } 
   | NEWPAIR LPAREN expr COMMA expr RPAREN
-		{ NewPair tmp(*$3, *$5); 
-      $$ = tmp;} 
+		{ $$ = new NewPair($3, $5); } 
   | pair_elem_rhs
 		{ $$ = $1; } 
 	| CALL ident LPAREN RPAREN
-		{ FunctionCall tmp($2); 
-      $$ = tmp;}
+		{ $$ = new FunctionCall($2); }
   | CALL ident LPAREN arg_list RPAREN
-		{ FunctionCall tmp($2, $4);
-      $$ = tmp;}
+		{ $$ = new FunctionCall($2, $4); }
     ;
 arg_list:
     expr
-		{ $$.push_back($1); } 
+		{ $$ = new ExpressionList();
+      $$->push_back($1);} 
   | arg_list COMMA expr 
-		{ $1.push_back($3); }
+		{ $1->push_back($3); }
     ;
 pair_elem_rhs:
     FST expr
-		{ PairElem tmp(true, *$2);
-      $$ = tmp; }
+		{ $$ = new PairElem(true, $2); }
   | SND expr
-		{ PairElem tmp(false, *$2);
-      $$ = tmp; }
+		{ $$ = new PairElem(false, $2); }
     ;
 pair_elem_lhs:
     FST expr
-		{ PairElem tmp(true, *$2);
-      $$ = tmp; }
+		{ $$ = new PairElem(true, $2); }
   | SND expr
-		{ PairElem tmp(false, *$2);
-      $$ = tmp; }
+		{ $$ = new PairElem(false, $2); }
     ;
 type:
     base_type
@@ -196,27 +206,21 @@ type:
     ;
 base_type:
     INT
-		{ IntegerType tmp;
-      $$ = tmp; }
+		{ $$ = new IntegerType(); }
   | BOOL
-		{ BoolType tmp;
-      $$ = tmp; }
+		{ $$ = new BoolType(); }
   | CHAR
-		{ CharType tmp;
-      $$ = tmp; }
+		{ $$ = new CharType(); }
   | STRING
-		{ StringType tmp;
-      $$ = tmp; }
+		{ $$ = new StringType(); }
     ;
 array_type:
   type LSQUARE RSQUARE
-	{ ArrayType tmp($1); 
-    $$ = tmp;}
+	{ $$ = new ArrayType($1); }
     ;
 pair_type:
   PAIR LPAREN pair_elem_type COMMA pair_elem_type RPAREN
-	{ PairType tmp($3, $5);
-    $$ = tmp; }
+	{ $$ = new PairType($3, $5); }
     ;
 pair_elem_type:
     base_type
@@ -224,8 +228,7 @@ pair_elem_type:
   | array_type
 		{ $$ = $1; }
   | PAIR
-	  { PairKeyword tmp;
-      $$ = tmp; }
+     { $$ = new PairKeyword(); }
     ;
 /* shift/reduce conflict at the ident and array_elem_exp, but handled by default
 shifting */
@@ -241,7 +244,7 @@ expr:
   | pair_liter
 		{ $$ = $1; }
   | ident
-		{ $$ = &$1; }
+		{ $$ = $1; }
   | array_elem_exp
 		{ $$ = $1; }
   | unary_op
@@ -254,48 +257,48 @@ expr:
 
 unary_op:
     BANG expr
-		{ $$ = new UnaryOperator($1, *$2); }
+		{ $$ = new UnaryOperator($1, $2); }
   | LEN expr
-		{ $$ = new UnaryOperator($1, *$2); }
+		{ $$ = new UnaryOperator($1, $2); }
   | ORD expr
-		{ $$ = new UnaryOperator($1, *$2); }
+		{ $$ = new UnaryOperator($1, $2); }
   | CHR expr
-		{ $$ = new UnaryOperator($1, *$2); }
+		{ $$ = new UnaryOperator($1, $2); }
   | MINUS expr %prec UMINUS
-    { $$ = new UnaryOperator($1, *$2); }
+    { $$ = new UnaryOperator($1, $2); }
     ;
 binary_op:
     expr STAR expr
-    { $$ = new BinaryOperator(*$1, $2, *$3); } 
+    { $$ = new BinaryOperator($1, $2, $3); } 
   | expr SLASH expr
-    { $$ = new BinaryOperator(*$1, $2, *$3); } 
+    { $$ = new BinaryOperator($1, $2, $3); } 
   | expr MODULO expr
-    { $$ = new BinaryOperator(*$1, $2, *$3); } 
+    { $$ = new BinaryOperator($1, $2, $3); } 
   | expr PLUS expr 
-    { $$ = new BinaryOperator(*$1, $2, *$3); } 
+    { $$ = new BinaryOperator($1, $2, $3); } 
   | expr MINUS expr
-    { $$ = new BinaryOperator(*$1, $2, *$3); } 
+    { $$ = new BinaryOperator($1, $2, $3); } 
   | expr GREATER expr
-    { $$ = new BinaryOperator(*$1, $2, *$3); } 
+    { $$ = new BinaryOperator($1, $2, $3); } 
   | expr GREATEREQUALS expr
-    { $$ = new BinaryOperator(*$1, $2, *$3); } 
+    { $$ = new BinaryOperator($1, $2, $3); } 
   | expr LESS expr
-    { $$ = new BinaryOperator(*$1, $2, *$3); } 
+    { $$ = new BinaryOperator($1, $2, $3); } 
   | expr LESSEQUALS expr
-    { $$ = new BinaryOperator(*$1, $2, *$3); } 
+    { $$ = new BinaryOperator($1, $2, $3); } 
   | expr EQUALS expr
-    { $$ = new BinaryOperator(*$1, $2, *$3); } 
+    { $$ = new BinaryOperator($1, $2, $3); } 
   | expr NOTEQUALS expr
-    { $$ = new BinaryOperator(*$1, $2, *$3); } 
+    { $$ = new BinaryOperator($1, $2, $3); } 
   | expr LOGAND expr
-    { $$ = new BinaryOperator(*$1, $2, *$3); } 
+    { $$ = new BinaryOperator($1, $2, $3); } 
   | expr LOGOR expr
-    { $$ = new BinaryOperator(*$1, $2, *$3); } 
+    { $$ = new BinaryOperator($1, $2, $3); } 
     ;
 ident:
     IDENTIFIER
-		{ Identifier tmp($1);
-      $$ = tmp; } 
+		{ //std::cout << " IDENT " << std::endl;
+      $$ = new Identifier($1); }
     ;
 array_elem_exp:
     ident array_index
@@ -303,14 +306,14 @@ array_elem_exp:
     ;
 array_elem_lhs:
     ident array_index
-		{ ArrayElem tmp($1, $2);
-      $$ = tmp; }
+		{ $$ = new ArrayElem($1, $2); }
     ;
 array_index:
 		LSQUARE expr RSQUARE
-    { $$.push_back($2); }
+    { $$ = new ExpressionList(); 
+      $$->push_back($2); }
 	| array_index LSQUARE expr RSQUARE
-		{ $1.push_back($3); }
+		{ $1->push_back($3); }
     ;
 int_liter:
 		int_sign INTEGER
@@ -338,15 +341,15 @@ str_liter:
     ;
 array_liter:
 	LSQUARE expr_list RSQUARE
-	{ ArrayLiter tmp($2);
-    $$ = tmp; }
+	{ $$ = new ArrayLiter($2); }
     ;
 expr_list:
     /* Empty rule for empty list */
   | expr
-		{ $$.push_back($1); }
+		{ $$ = new ExpressionList();
+      $$->push_back($1); }
 	| expr_list COMMA expr
-		{ $1.push_back($3); }
+		{ $1->push_back($3); }
     ;
 pair_liter:
 		NULLTOKEN 
@@ -359,3 +362,24 @@ void yy::parser::error (const location_type& l, const std::string& m) {
   driver.error(l, m);
   exit(100);
 }
+
+bool containsRet(StatSeq *seq) {
+    //std::cout << " HERE " << std::endl;
+    //std::cout << seq->statements.size() << std::endl;
+    Statement *stat= seq->statements.back();
+    ReturnStatement *retstat;
+    IfStatement *ifstat;
+    
+    retstat = dynamic_cast<ReturnStatement*>(stat);
+    ifstat  = dynamic_cast<IfStatement*>(stat);
+
+    if(retstat != NULL) {
+      //std::cout << " YH " << std::endl;
+      return true;
+    } else if(ifstat != NULL) {
+      //std::cout << " OK " << std::endl;
+      return (containsRet(ifstat->thenS) && containsRet(ifstat->elseS));
+    }
+    return false;
+}
+

@@ -111,7 +111,6 @@ false 		    return (token::make_FALSE(loc));
 {number}      { 
                 errno = 0;
                 long val = strtol(yytext, NULL, 10);
-                std::cout << val << std::endl;
                 if(!minus && (val > INT_MAX || errno == ERANGE)) {
                   driver.error(loc, "syntax error: integer overflow");
                   exit(100);
