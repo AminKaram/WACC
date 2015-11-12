@@ -18,7 +18,6 @@
 
   // The location of the current token.
   static yy::location loc;
-  bool minus = false;
 
   /* Typedef to make return types for the tokens shorter */
   typedef yy::parser token;
@@ -95,7 +94,7 @@ false 		    return (token::make_FALSE(loc));
 "="           return (token::make_ASSIGN(1, loc));
 "!"           return (token::make_BANG(2, loc));
 "+"           return (token::make_PLUS(16, loc)); 
-"-"           minus = true; return (token::make_MINUS(12, loc)); 
+"-"           return (token::make_MINUS(12, loc)); 
 "*"           return (token::make_STAR(18, loc)); 
 "/"           return (token::make_SLASH(17, loc)); 
 "%"           return (token::make_MODULO(13, loc));
@@ -111,19 +110,10 @@ false 		    return (token::make_FALSE(loc));
 {number}      { 
                 errno = 0;
                 int n = strtol(yytext, NULL, 10);
-                if(!minus) {
-                  if(!(0 <= n && n+1 <= INT_MAX && errno != ERANGE)) {
-                    driver.error(loc, "syntax error: integer is out of range");
-                    exit(100);
-                  }
-                } else {
-                  if(!(0 <= n && n <= INT_MAX && errno != ERANGE)) {
-                    driver.error(loc, "syntax error: integer is out of range");
-                    exit(100);
-                  }
+                if(!(LONG_MIN <= n && n <= LONG_MAX && errno != ERANGE)) {
+                  driver.error(loc, "syntax error: integer is out of range");
+                  exit(100);
                 }
-
-                minus = false;
                 return (token::make_INTEGER(n, loc));
               }
 
