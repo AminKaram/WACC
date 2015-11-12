@@ -18,6 +18,7 @@
 
   // The location of the current token.
   static yy::location loc;
+  bool minus = false;
 
   /* Typedef to make return types for the tokens shorter */
   typedef yy::parser token;
@@ -94,7 +95,7 @@ false 		    return (token::make_FALSE(loc));
 "="           return (token::make_ASSIGN(1, loc));
 "!"           return (token::make_BANG(2, loc));
 "+"           return (token::make_PLUS(16, loc)); 
-"-"           return (token::make_MINUS(12, loc)); 
+"-"           minus = true; return (token::make_MINUS(12, loc)); 
 "*"           return (token::make_STAR(18, loc)); 
 "/"           return (token::make_SLASH(17, loc)); 
 "%"           return (token::make_MODULO(13, loc));
@@ -110,7 +111,11 @@ false 		    return (token::make_FALSE(loc));
 {number}      { 
                 errno = 0;
                 long val = strtol(yytext, NULL, 10);
-                if(val < INT_MIN || val > INT_MAX || errno == ERANGE) {
+                std::cout << val << std::endl;
+                if(!minus && (val > INT_MAX || errno == ERANGE)) {
+                  driver.error(loc, "syntax error: integer overflow");
+                  exit(100);
+                } else if(minus && (val - 1 > INT_MAX || errno == ERANGE)) {
                   driver.error(loc, "syntax error: integer overflow");
                   exit(100);
                 }
