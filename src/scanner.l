@@ -108,9 +108,10 @@ false 		    return (token::make_FALSE(loc));
 "]"           return (token::make_RSQUARE(loc));
 
 {number}      { 
-                errno = 0;
-                int n = strtol(yytext, NULL, 10);
-                if(!(LONG_MIN <= n && n <= LONG_MAX && errno != ERANGE)) {
+                char *tmp;
+                long n = strtol(yytext, &tmp, 10);
+                if(!(LONG_MIN <= n && n <= LONG_MAX && *tmp != '\0')) {
+                  std::cout << n << std::endl;
                   driver.error(loc, "syntax error: integer is out of range");
                   exit(100);
                 }
