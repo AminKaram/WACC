@@ -58,8 +58,8 @@
 
 %type <Type>                  type base_type array_type pair_type pair_elem_type
 %type <Identifier>            ident
-%type <StatSeq>  		          statement_seq statement_seq_ret 
-%type <Statement *>  		      statement return_stat func_if_stat 
+%type <StatSeq>  		          statement_seq	
+%type <Statement *>  		      statement 
 %type <AssignLhs>             assign_lhs array_elem_lhs pair_elem_lhs
 %type <AssignRhs>             assign_rhs array_liter pair_elem_rhs 
 %type <Expression *> 			    expr int_liter bool_liter char_liter str_liter
@@ -85,14 +85,14 @@ program:
 		{ driver.ast = new Program($2, $3); }
   ;
 func_list:
-    /* Empty production as base case */
+    /* Empty production as base case*/
   | func_list function_declaration
     { $1.funcs.push_back($2); }
   ;
 function_declaration:
-		type ident LPAREN RPAREN IS statement_seq_ret END
+		type ident LPAREN RPAREN IS statement_seq END
 		{ $$ = new FunctionDeclaration($1, $2, $6); }
-	| type ident LPAREN param_list RPAREN IS statement_seq_ret END
+	| type ident LPAREN param_list RPAREN IS statement_seq END
 		{ $$ = new FunctionDeclaration($1, $2, &$4, $7); }
     ;
 param_list:
@@ -105,29 +105,19 @@ param:
 		type ident
 		{ $$ = new VariableDeclaration($1, $2); }
     ;
-statement_seq:  
+statement_seq:
 		statement
 		{ $$.statements.push_back($1); }
 	| statement_seq SEMICOLON statement
 		{ $1.statements.push_back($3); }
     ;
-
-statement_seq_ret:
-	  return_stat
-		{ $$.statements.push_back($1); }
-	| statement_seq SEMICOLON statement
-		{ $1.statements.push_back($3); }
-  | func_if_stat
-    { $$.statements.push_back($1); }
-    ;
-
 statement:
     SKIP
 		{ $$ = new SkipStatement(); }
+  | RETURN expr
+    { $$ = new ReturnStatement(*$2); }
   | type ident ASSIGN assign_rhs
 		{ $$ = new VariableDeclaration($1, $2, &$4); }
-  | return_stat
-    { $$ = $1; }
   | assign_lhs ASSIGN assign_rhs
 		{ $$ = new Assignment($1, $3); }
   | READ assign_lhs
@@ -144,22 +134,9 @@ statement:
 		{ $$ = new BeginStatement($2); }
   | IF expr THEN statement_seq ELSE statement_seq FI
 		{ $$ = new IfStatement(*$2, $4, &$6);  }
-  | func_if_stat
-    { $$ = $1; }
   | WHILE expr DO statement_seq DONE
 		{ $$ = new WhileStatement(*$2, $4); }
   ;
-
-func_if_stat:  
-    IF expr THEN statement_seq_ret ELSE statement_seq_ret FI
-		{ $$ = new IfStatement(*$2, $4, &$6);  }
-  ;
-
-return_stat:
-    RETURN expr
-    { $$ = new ReturnStatement(*$2); }
-  ;
-
 assign_lhs:
 		ident
 		{ AssignLhs tmp = $1;
@@ -365,8 +342,8 @@ array_liter:
     $$ = tmp; }
     ;
 expr_list:
-    /* Empty rule for empty list */  
-  |	expr
+    /* Empty rule for empty list */
+  | expr
 		{ $$.push_back($1); }
 	| expr_list COMMA expr
 		{ $1.push_back($3); }
