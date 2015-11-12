@@ -108,13 +108,13 @@ false 		    return (token::make_FALSE(loc));
 "]"           return (token::make_RSQUARE(loc));
 
 {number}      { 
-                char *tmp;
-                long n = strtol(yytext, &tmp, 10);
-                if(!(LONG_MIN <= n && n <= LONG_MAX && *tmp == '\0')) {
-                  driver.error(loc, "syntax error: integer is out of range");
+                errno = 0;
+                long val = strtol(yytext, NULL, 10);
+                if(val < INT_MIN || val > INT_MAX || errno == ERANGE) {
+                  driver.error(loc, "syntax error: integer overflow");
                   exit(100);
                 }
-                return (token::make_INTEGER(n, loc));
+                return token::make_INTEGER(val, loc);
               }
 
 {identifier}  return (token::make_IDENTIFIER(yytext, loc));
