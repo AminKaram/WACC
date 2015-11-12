@@ -15,9 +15,9 @@ int ParsingDriver::parse(const std::string &f) {
   yy::parser parser(*this);
   parser.set_debug_level(trace_parsing);
   int res = parser.parse();
-  std::cout << "end of generated code" << std::endl;
+  //std::cout << "end of generated code" << std::endl;
   scan_end();
-  std::cout << " CLOSED FILE " << std::endl;
+  //std::cout << " CLOSED FILE " << std::endl;
   return res;
 }
 
