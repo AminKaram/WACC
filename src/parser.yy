@@ -14,8 +14,7 @@
   #include <vector>
   #include "astnode.hh"
   class ParsingDriver;
-  bool containsRet(StatSeq*);
-	//bool containsExit(StatSeq*);
+  bool containsRetOrExit(StatSeq*);
 }
 
 %param { ParsingDriver& driver }
@@ -109,13 +108,13 @@ func_list:
 function_declaration:
 		type ident LPAREN RPAREN IS statement_seq END
 		{// //std::cout << " FUNCTION DEC " << std::endl;
-      if(!(containsRet($6))) { 
+      if(!(containsRetOrExit($6))) { 
        yy::parser::error(@6, "syntax error: function path missing RETURN or EXIT"); 
       }
       $$ = new FunctionDeclaration($1, $2, $6); }
 	| type ident LPAREN param_list RPAREN IS statement_seq END
     {// //std::cout << " FUNC DEC " << std::endl; 
-      if(!(containsRet($7))) {
+      if(!(containsRetOrExit($7))) {
        yy::parser::error(@7, "syntax error: function path missing RETURN or EXIT"); 
       }
       $$ = new FunctionDeclaration($1, $2, $4, $7); }
@@ -464,7 +463,7 @@ void yy::parser::error (const location_type& l, const std::string& m) {
   exit(100);
 }
 
-bool containsRet(StatSeq *seq) {
+bool containsRetOrExit(StatSeq *seq) {
     ////std::cout << " HERE " << std::endl;
     ////std::cout << seq->statements.size() << std::endl;
     Statement *stat= seq->statements.back();
@@ -481,28 +480,8 @@ bool containsRet(StatSeq *seq) {
       return true;
     } else if(ifstat != NULL) {
       ////std::cout << " OK " << std::endl;
-      return (containsRet(ifstat->thenS) && containsRet(ifstat->elseS));
+      return (containsRetOrExit(ifstat->thenS)
+																				 && containsRetOrExit(ifstat->elseS));
     }
     return false;
 }
-/*
-bool containsExit(StatSeq *seq) {
-    ////std::cout << " HERE " << std::endl;
-    ////std::cout << seq->statements.size() << std::endl;
-    Statement *stat= seq->statements.back();
-    ExitStatement *exitstat;
-    IfStatement *ifstat;
-    
-    exitstat = dynamic_cast<ExitStatement*>(stat);
-    ifstat  = dynamic_cast<IfStatement*>(stat);
-
-    if(exitstat != NULL) {
-      std::cout << " YH " << std::endl;
-      return true;
-    } else if(ifstat != NULL) {
-      std::cout << " OK " << std::endl;
-      return (containsExit(ifstat->thenS) && containsExit(ifstat->elseS));
-    }
-		std::cout << " GOD" << std::endl;
-    return false;
-}*/
