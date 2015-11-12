@@ -85,22 +85,26 @@
 %%
 program: 
     BEGIN func_list statement_seq END
-		{ driver.ast = new Program($2, $3); }
+		{ std::cout << " PROGRAM " << std::endl;
+      driver.ast = new Program($2, $3); }
   ;
 func_list:
     /* Empty production as base case*/
-    { $$ = new FunctionDecList(); } 
+    { std::cout << " FUNCTION DEC SEQ BASE" << std::endl;
+      $$ = new FunctionDecList(); } 
   | func_list function_declaration
-    { $1->funcs.push_back($2); }
+    { std::cout << " FUNCTION DEC SEQ " << std::endl;
+      $1->funcs.push_back($2); }
   ;
 function_declaration:
 		type ident LPAREN RPAREN IS statement_seq END
-		{ if(!containsRet($6)) { 
+		{ std::cout << " FUNCTION DEC " << std::endl;
+      if(!containsRet($6)) { 
        yy::parser::error(@6, "syntax error: function path missing RETURN"); 
       }
       $$ = new FunctionDeclaration($1, $2, $6); }
 	| type ident LPAREN param_list RPAREN IS statement_seq END
-    { //std::cout << " FUNC DEC " << std::endl; 
+    { std::cout << " FUNC DEC " << std::endl; 
       if(!containsRet($7)) {
        yy::parser::error(@6, "syntax error: function path missing RETURN"); 
       }
@@ -108,216 +112,288 @@ function_declaration:
     ;
 param_list:
     param
-		{ $$ = new VariableList();
+		{ std::cout << "PARAM LIST SEQ BASE " << std::endl;
+      $$ = new VariableList();
       $$->push_back($1); }
   | param_list COMMA param
-		{ $1->push_back($3); }
+		{ std::cout << " PARAM LIST SEQ " << std::endl;
+      $1->push_back($3); }
     ;
 param:
 		type ident
-		{ $$ = new VariableDeclaration($1, $2); }
+		{ std::cout << " PARAM " << std::endl;
+      $$ = new VariableDeclaration($1, $2); }
     ;
 statement_seq:
 		statement
-   	{ //std::cout << " BROKEN " << std::endl;
+   	{ std::cout << " STAT SEQ BASE " << std::endl;
       $$ = new StatSeq();
       $$->statements.push_back($1); } 
 	| statement_seq SEMICOLON statement
-		 { //std::cout << " STAT SEQ " << std::endl;
+		 { std::cout << " STAT SEQ " << std::endl;
        $1->statements.push_back($3); }
     ;
 statement:
     SKIP
-		{ $$ = new SkipStatement(); }
+		{ std::cout << " SKIP " << std::endl;
+      $$ = new SkipStatement(); }
   | RETURN expr
-    { //std::cout << " HAHA " << std::endl;
+    { std::cout << " RETURN " << std::endl;
       $$ = new ReturnStatement($2); }
   | type ident ASSIGN assign_rhs
-		{ $$ = new VariableDeclaration($1, $2, $4); }
+		{ std::cout << " ASSIGN " << std::endl;
+      $$ = new VariableDeclaration($1, $2, $4); }
   | assign_lhs ASSIGN assign_rhs
-		{ $$ = new Assignment($1, $3); }
+		{ std::cout << " ASSIGN POST DECLARATION " << std::endl; 
+      $$ = new Assignment($1, $3); }
   | READ assign_lhs
-		{ $$ = new ReadStatement($2); }
+		{ std::cout << " READ " << std::endl;
+      $$ = new ReadStatement($2); }
   | FREE expr
-		{ $$ = new FreeStatement($2); }
+		{ std::cout << " FREE " << std::endl;
+      $$ = new FreeStatement($2); }
   | EXIT expr
-		{ $$ = new ExitStatement($2); }
+		{ std::cout << " EXIT " << std::endl;
+      $$ = new ExitStatement($2); }
   | PRINT expr
-		{ $$ = new PrintStatement($2); }
+		{ std::cout << " PRINT " << std::endl;
+      $$ = new PrintStatement($2); }
   | PRINTLN expr
-		{ //std::cout << " PRINTLN " << std::endl;
+		{ std::cout << " PRINTLN " << std::endl;
       $$ = new PrintlnStatement($2); }
 	| BEGIN statement_seq END
-		{ $$ = new BeginStatement($2); }
+		{ std::cout << " BEGIN " << std::endl;
+      $$ = new BeginStatement($2); }
   | IF expr THEN statement_seq ELSE statement_seq FI
-		{ //std::cout << " IF STAT " << std::endl;
+		{ std::cout << " IF " << std::endl;
       $$ = new IfStatement($2, $4, $6);  }
   | WHILE expr DO statement_seq DONE
-		{ $$ = new WhileStatement($2, $4); }
+		{ std::cout << " WHILE " << std::endl;
+      $$ = new WhileStatement($2, $4); }
   ;
 assign_lhs:
 		ident
-		{ $$ = dynamic_cast<AssignLhs*>($1); } 
+		{ std::cout << " ASSIGN LHS " << std::endl;
+      $$ = dynamic_cast<AssignLhs*>($1); } 
   | array_elem_lhs
-		{ $$ = $1; } 
+		{ std::cout << " ASSIGN LHS " << std::endl;
+      $$ = $1; } 
 	| pair_elem_lhs
-		{ $$ = $1; } 
+		{ std::cout << " ASSIGN LHS " << std::endl;
+      $$ = $1; } 
     ;
 assign_rhs:
     expr
-		{ $$ = dynamic_cast<AssignRhs*>($1); } 
+		{ std::cout << " ASSIGN RHS " << std::endl; 
+      $$ = dynamic_cast<AssignRhs*>($1); } 
   | array_liter
-		{ $$ = $1; } 
+		{ std::cout << " ASSIGN RHS " << std::endl; 
+      $$ = $1; } 
   | NEWPAIR LPAREN expr COMMA expr RPAREN
-		{ $$ = new NewPair($3, $5); } 
+		{ std::cout << " ASSIGN RHS " << std::endl; 
+      $$ = new NewPair($3, $5); } 
   | pair_elem_rhs
-		{ $$ = $1; } 
+		{ std::cout << " ASSIGN RHS " << std::endl; 
+      $$ = $1; } 
 	| CALL ident LPAREN RPAREN
-		{ $$ = new FunctionCall($2); }
+		{ std::cout << " ASSIGN RHS " << std::endl; 
+      $$ = new FunctionCall($2); }
   | CALL ident LPAREN arg_list RPAREN
-		{ $$ = new FunctionCall($2, $4); }
+		{ std::cout << " ASSIGN RHS " << std::endl; 
+      $$ = new FunctionCall($2, $4); }
     ;
 arg_list:
     expr
-		{ $$ = new ExpressionList();
+		{ std::cout << " ARG LIST SEQ BASE " << std::cout;
+      $$ = new ExpressionList();
       $$->push_back($1);} 
   | arg_list COMMA expr 
-		{ $1->push_back($3); }
+		{ std::cout << " ARG LIST SEQ " << std::endl;
+      $1->push_back($3); }
     ;
 pair_elem_rhs:
     FST expr
-		{ $$ = new PairElem(true, $2); }
+		{ std::cout << " PAIR ELEM " << std::endl; 
+      $$ = new PairElem(true, $2); }
   | SND expr
-		{ $$ = new PairElem(false, $2); }
+		{ std::cout << " PAIR ELEM " << std::endl; 
+      $$ = new PairElem(false, $2); }
     ;
 pair_elem_lhs:
     FST expr
-		{ $$ = new PairElem(true, $2); }
+		{ std::cout << " PAIR ELEM " << std::endl; 
+      $$ = new PairElem(true, $2); }
   | SND expr
-		{ $$ = new PairElem(false, $2); }
+		{ std::cout << " PAIR ELEM " << std::endl; 
+      $$ = new PairElem(false, $2); }
     ;
 type:
     base_type
-		{ $$ = $1; }
+		{ std::cout << " TYPE " << std::endl; 
+      $$ = $1; }
   | array_type
-		{ $$ = $1; }
+		{ std::cout << " TYPE " << std::endl; 
+      $$ = $1; }
   | pair_type
-		{ $$ = $1; }
+		{ std::cout << " TYPE " << std::endl; 
+      $$ = $1; }
     ;
 base_type:
     INT
-		{ $$ = new IntegerType(); }
+		{ std::cout << " INTEGER TYPE " << std::endl;
+      $$ = new IntegerType(); }
   | BOOL
-		{ $$ = new BoolType(); }
+		{ std::cout << " BOOL TYPE " << std::endl;
+      $$ = new BoolType(); }
   | CHAR
-		{ $$ = new CharType(); }
+		{ std::cout << " CHAR TYPE " << std::endl;
+      $$ = new CharType(); }
   | STRING
-		{ $$ = new StringType(); }
+		{ std::cout << " STRING TYPE " << std::endl;
+      $$ = new StringType(); }
     ;
 array_type:
   type LSQUARE RSQUARE
-	{ $$ = new ArrayType($1); }
+	{ std::cout << " ARRAY TYPE " << std::endl;
+    $$ = new ArrayType($1); }
     ;
 pair_type:
   PAIR LPAREN pair_elem_type COMMA pair_elem_type RPAREN
-	{ $$ = new PairType($3, $5); }
+	{ std::cout << " PAIR TYPE " << std::endl;
+    $$ = new PairType($3, $5); }
     ;
 pair_elem_type:
     base_type
-		{ $$ = $1; }
+		{ std::cout << " PAIR ELEM TYPE " << std::endl; 
+      $$ = $1; }
   | array_type
-		{ $$ = $1; }
+		{ std::cout << " PAIR ELEM TYPE " << std::endl; 
+      $$ = $1; }
   | PAIR
-     { $$ = new PairKeyword(); }
+		{ std::cout << " PAIR ELEM TYPE " << std::endl; 
+       $$ = new PairKeyword(); }
     ;
 /* shift/reduce conflict at the ident and array_elem_exp, but handled by default
 shifting */
 expr:
     int_liter
-		{ $$ = $1; }
+		{ std::cout << " EXPR " << std::endl; 
+      $$ = $1; }
   | bool_liter
-		{ $$ = $1; }
+		{ std::cout << " EXPR " << std::endl; 
+      $$ = $1; }
   | char_liter 
-		{ $$ = $1; }
+		{ std::cout << " EXPR " << std::endl; 
+      $$ = $1; }
   | str_liter
-		{ $$ = $1; }
+		{ std::cout << " EXPR " << std::endl; 
+      $$ = $1; }
   | pair_liter
-		{ $$ = $1; }
+		{ std::cout << " EXPR " << std::endl; 
+      $$ = $1; }
   | ident
-		{ $$ = $1; }
+		{ std::cout << " EXPR " << std::endl; 
+      $$ = $1; }
   | array_elem_exp
-		{ $$ = $1; }
+		{ std::cout << " EXPR " << std::endl; 
+      $$ = $1; }
   | unary_op
-		{ $$ = $1; }
+		{ std::cout << " EXPR " << std::endl; 
+      $$ = $1; }
   | binary_op
-		{ $$ = $1; }
+		{ std::cout << " EXPR " << std::endl; 
+      $$ = $1; }
   | LPAREN expr RPAREN
-	 	{ $$ = $2; }
+		{ std::cout << " EXPR " << std::endl; 
+      $$ = $2; }
   ;
 
 unary_op:
     BANG expr
-		{ $$ = new UnaryOperator($1, $2); }
+		{ std::cout << " BANG UNARY " << std::endl;
+      $$ = new UnaryOperator($1, $2); }
   | LEN expr
-		{ $$ = new UnaryOperator($1, $2); }
+		{ std::cout << " LEN UNARY " << std::endl;
+      $$ = new UnaryOperator($1, $2); }
   | ORD expr
-		{ $$ = new UnaryOperator($1, $2); }
+		{ std::cout << " ORD UNARY " << std::endl;
+      $$ = new UnaryOperator($1, $2); }
   | CHR expr
-		{ $$ = new UnaryOperator($1, $2); }
+		{ std::cout << " CHR ORD " << std::endl;
+      $$ = new UnaryOperator($1, $2); }
   | MINUS expr %prec UMINUS
-    { $$ = new UnaryOperator($1, $2); }
+    { std::cout << " MINUS UNARY " << std::endl;
+      $$ = new UnaryOperator($1, $2); }
     ;
 binary_op:
     expr STAR expr
-    { $$ = new BinaryOperator($1, $2, $3); } 
+    { std::cout << " STAR BIN " << std::endl;
+      $$ = new BinaryOperator($1, $2, $3); } 
   | expr SLASH expr
-    { $$ = new BinaryOperator($1, $2, $3); } 
+    { std::cout << " SLASH BIN " << std::endl;
+      $$ = new BinaryOperator($1, $2, $3); } 
   | expr MODULO expr
-    { $$ = new BinaryOperator($1, $2, $3); } 
+    { std::cout << " MODULO BIN " << std::endl;
+      $$ = new BinaryOperator($1, $2, $3); } 
   | expr PLUS expr 
-    { $$ = new BinaryOperator($1, $2, $3); } 
+    { std::cout << " PLUS BIN " << std::endl;
+      $$ = new BinaryOperator($1, $2, $3); } 
   | expr MINUS expr
-    { $$ = new BinaryOperator($1, $2, $3); } 
+    { std::cout << " MINUS BIN " << std::endl;
+      $$ = new BinaryOperator($1, $2, $3); } 
   | expr GREATER expr
-    { $$ = new BinaryOperator($1, $2, $3); } 
+    { std::cout << " GREATER BIN " << std::endl;
+      $$ = new BinaryOperator($1, $2, $3); } 
   | expr GREATEREQUALS expr
-    { $$ = new BinaryOperator($1, $2, $3); } 
+    { std::cout << " GREATEREQUALS BIN " << std::endl;
+      $$ = new BinaryOperator($1, $2, $3); } 
   | expr LESS expr
-    { $$ = new BinaryOperator($1, $2, $3); } 
+    { std::cout << " LESS BIN " << std::endl; 
+      $$ = new BinaryOperator($1, $2, $3); } 
   | expr LESSEQUALS expr
-    { $$ = new BinaryOperator($1, $2, $3); } 
+    { std::cout << " LESSEQUALS BIN " << std::endl;
+      $$ = new BinaryOperator($1, $2, $3); } 
   | expr EQUALS expr
-    { $$ = new BinaryOperator($1, $2, $3); } 
+    { std::cout << " EQUAL BIN " << std::endl;
+      $$ = new BinaryOperator($1, $2, $3); } 
   | expr NOTEQUALS expr
-    { $$ = new BinaryOperator($1, $2, $3); } 
+    { std::cout << " NOTEQUALS BIN " << std::endl;
+      $$ = new BinaryOperator($1, $2, $3); } 
   | expr LOGAND expr
-    { $$ = new BinaryOperator($1, $2, $3); } 
+    { std::cout << " LOGAND " << std::endl;
+      $$ = new BinaryOperator($1, $2, $3); } 
   | expr LOGOR expr
-    { $$ = new BinaryOperator($1, $2, $3); } 
+    { std::cout << " LOGOR " << std::endl;
+      $$ = new BinaryOperator($1, $2, $3); } 
     ;
 ident:
     IDENTIFIER
-		{ //std::cout << " IDENT " << std::endl;
+		{ std::cout << " IDENT " << std::endl;
       $$ = new Identifier($1); }
     ;
 array_elem_exp:
     ident array_index
-		{ $$ = new ArrayElem($1, $2); }
+		{ std::cout << " ARRAY ELEM " << std::endl;
+      $$ = new ArrayElem($1, $2); }
     ;
 array_elem_lhs:
     ident array_index
-		{ $$ = new ArrayElem($1, $2); }
+		{ std::cout << " ARRAY ELEM " << std::endl;
+      $$ = new ArrayElem($1, $2); }
     ;
 array_index:
 		LSQUARE expr RSQUARE
-    { $$ = new ExpressionList(); 
+    { std::cout << " ARRAY INDEX iSEQ BASE " << std::endl;
+      $$ = new ExpressionList(); 
       $$->push_back($2); }
 	| array_index LSQUARE expr RSQUARE
-		{ $1->push_back($3); }
+		{ std::cout << " ARRAY INDEX SEQ " << std::endl;
+      $1->push_back($3); }
     ;
 int_liter:
 		int_sign INTEGER
-		 { $$ = new Number($1 * $2); }
+		 { std::cout << " INT LITER " << std::endl;
+       $$ = new Number($1 * $2); }
     ;
 int_sign:
 		/* empty */
@@ -327,33 +403,42 @@ int_sign:
     ;
 bool_liter:
 		TRUE		
-		{ $$ = new Boolean(true); }
+		{ std::cout << " BOOL LITER " << std::endl;
+      $$ = new Boolean(true); }
 	| FALSE
-		{ $$ = new Boolean(false); }
+		{ std::cout << " BOOL LITER " << std::endl;
+      $$ = new Boolean(false); }
     ;
 char_liter:
 		CHARLIT
-		{ $$ = new Char($1);}
+		{ std::cout << " CHER LITER " << std::endl;
+      $$ = new Char($1);}
     ;
 str_liter:
 		STRINGLIT
-		{ $$ = new String($1); }
+		{ std::cout << " STRING LITER " << std::endl;
+      $$ = new String($1); }
     ;
 array_liter:
 	LSQUARE expr_list RSQUARE
-	{ $$ = new ArrayLiter($2); }
+	{ std::cout << " ARRAY LITER " << std::endl;
+    $$ = new ArrayLiter($2); }
     ;
 expr_list:
     /* Empty rule for empty list */
+    { std::cout << " EXPR LIST SEQ BASE " << std::endl; }
   | expr
-		{ $$ = new ExpressionList();
+		{ std::cout << " EXPR LIST SEQ BASE " << std::endl;
+      $$ = new ExpressionList();
       $$->push_back($1); }
 	| expr_list COMMA expr
-		{ $1->push_back($3); }
+		{ std::cout << " EXPR LIST SEQ " << std::endl;
+      $1->push_back($3); }
     ;
 pair_liter:
 		NULLTOKEN 
-		{ $$ = new Null(); }
+		{ std::cout << " NULL PAIR LITER " << std::endl;
+      $$ = new Null(); }
     ;
 
 %%
