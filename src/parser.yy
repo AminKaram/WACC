@@ -86,7 +86,14 @@
 program: 
     BEGIN func_list statement_seq END
 		{ std::cout << " PROGRAM " << std::endl;
-      driver.ast = new Program($2, $3); }
+      std::cout << " HA " << std::endl;
+      StatSeq tmp2 = *$3;
+      std::cout << " HAHA " << std::endl;
+      FunctionDecList tmp1 = *$2;
+      std::cout << " HAHA " << std::endl;
+
+      driver.ast = new Program(&tmp1, &tmp2 ); 
+      std::cout << " HAHA " << std::endl; }
   ;
 func_list:
     /* Empty production as base case*/
@@ -94,7 +101,8 @@ func_list:
       $$ = new FunctionDecList(); } 
   | func_list function_declaration
     { std::cout << " FUNCTION DEC SEQ " << std::endl;
-      $1->funcs.push_back($2); }
+      std::swap($$, $1);
+      $$->funcs.push_back($2); }
   ;
 function_declaration:
 		type ident LPAREN RPAREN IS statement_seq END
@@ -117,7 +125,8 @@ param_list:
       $$->push_back($1); }
   | param_list COMMA param
 		{ std::cout << " PARAM LIST SEQ " << std::endl;
-      $1->push_back($3); }
+      std::swap($$, $1);
+      $$->push_back($3); }
     ;
 param:
 		type ident
@@ -131,7 +140,8 @@ statement_seq:
       $$->statements.push_back($1); } 
 	| statement_seq SEMICOLON statement
 		 { std::cout << " STAT SEQ " << std::endl;
-       $1->statements.push_back($3); }
+       std::swap($$, $1);
+       $$->statements.push_back($3); }
     ;
 statement:
     SKIP
@@ -209,7 +219,8 @@ arg_list:
       $$->push_back($1);} 
   | arg_list COMMA expr 
 		{ std::cout << " ARG LIST SEQ " << std::endl;
-      $1->push_back($3); }
+      std::swap($$, $1);
+      $$->push_back($3); }
     ;
 pair_elem_rhs:
     FST expr
@@ -383,12 +394,13 @@ array_elem_lhs:
     ;
 array_index:
 		LSQUARE expr RSQUARE
-    { std::cout << " ARRAY INDEX iSEQ BASE " << std::endl;
+    { std::cout << " ARRAY INDEX SEQ BASE " << std::endl;
       $$ = new ExpressionList(); 
       $$->push_back($2); }
 	| array_index LSQUARE expr RSQUARE
 		{ std::cout << " ARRAY INDEX SEQ " << std::endl;
-      $1->push_back($3); }
+      std::swap($$, $1);
+      $$->push_back($3); }
     ;
 int_liter:
 		int_sign INTEGER
@@ -433,7 +445,8 @@ expr_list:
       $$->push_back($1); }
 	| expr_list COMMA expr
 		{ std::cout << " EXPR LIST SEQ " << std::endl;
-      $1->push_back($3); }
+      std::swap($$, $1);
+      $$->push_back($3); }
     ;
 pair_liter:
 		NULLTOKEN 

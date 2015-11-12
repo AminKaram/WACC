@@ -60,7 +60,7 @@ public:
 	Type *snd;
 
 	PairType(Type *fst, Type *snd) : fst(fst), snd(snd) {}
-  ~PairType() { delete fst; delete snd; }
+//  ~PairType() { delete fst; delete snd; }
 };
 
 class Identifier : public Expression, public AssignLhs {
@@ -83,7 +83,13 @@ public:
   VariableDeclaration(Type *type, Identifier *id, AssignRhs *rhs) 
     : type(type), id(id), rhs(rhs) {}
 
-  ~VariableDeclaration() { delete type; delete id; delete rhs; }
+//  ~VariableDeclaration() { 
+//    delete type; 
+//    delete id; 
+//    if (rhs != NULL) {
+//      delete rhs;
+//    }
+//  }
 };
 typedef std::vector<VariableDeclaration*> VariableList;
 
@@ -101,15 +107,17 @@ public:
       VariableList *parameters, StatSeq *block) 
     : type(type), id(id), parameters(parameters), block(block) {}
 
-  ~FunctionDeclaration() { 
-    delete type;
-    delete id;
-    for(int i=0; i < parameters->size(); i++) {
-      delete (*parameters)[i];
-    }
-    delete parameters;
-    delete block;
-  }
+//  ~FunctionDeclaration() { 
+//    delete type;
+//    delete id;
+//    if (parameters != NULL) {
+//      for(int i=0; i < parameters->size(); i++) {
+//        delete (*parameters)[i];
+//      }
+//      delete parameters;
+//    }
+//    delete block;
+//  }
 
 };
 typedef std::vector<FunctionDeclaration*> FunctionList;
@@ -130,13 +138,15 @@ public:
   FunctionCall(Identifier *id) 
     : id(id) {}
 
-  ~FunctionCall() {
-    delete id;
-    for(int i = 0; i < parameters->size(); ++i) {
-      delete (*parameters)[i];
-    }
-    delete parameters;
-  }
+//  ~FunctionCall() {
+//    delete id;
+//    if (parameters != NULL) {
+//      for(int i = 0; i < parameters->size(); ++i) {
+//        delete (*parameters)[i];
+//      }
+//      delete parameters;
+//    }
+//  }
 };
 
 class Program : public ASTnode{
@@ -147,7 +157,7 @@ public:
   Program(FunctionDecList* fs, StatSeq* stats)
 		 : functions(fs), statements(stats) {}
 
-  ~Program() { delete functions; delete statements; }
+//  ~Program() { delete functions; delete statements; }
 };
 
 class Assignment : public Statement {
@@ -158,7 +168,7 @@ public:
   Assignment(AssignLhs *lhs, AssignRhs *rhs) 
     : lhs(lhs), rhs(rhs) {}
 
-  ~Assignment() { delete lhs; delete rhs; }
+//  ~Assignment() { delete lhs; delete rhs; }
 };
 
 class SkipStatement : public Statement {
@@ -169,7 +179,7 @@ public:
 	Expression *expr;
 
   FreeStatement(Expression *expr) : expr(expr) {}
-  ~FreeStatement() { delete expr;}
+//  ~FreeStatement() { delete expr;}
 };
 
 class ReturnStatement : public Statement {
@@ -177,7 +187,7 @@ public:
   Expression *expr;
 
   ReturnStatement(Expression *expr) : expr(expr) {}
-  ~ReturnStatement() { delete expr; }
+//  ~ReturnStatement() { delete expr; }
 };
 
 class ExitStatement : public Statement {
@@ -185,7 +195,7 @@ public:
   Expression *expr;
 
   ExitStatement(Expression *expr) : expr(expr) {}
-  ~ExitStatement() { delete expr; }
+//  ~ExitStatement() { delete expr; }
 };
 
 class BeginStatement : public Statement {
@@ -193,7 +203,7 @@ public:
 	StatSeq *scope;
 
 	BeginStatement(StatSeq *scope) : scope(scope) {}
-  ~BeginStatement() { delete scope; }
+//  ~BeginStatement() { delete scope; }
 };
 
 class IfStatement : public Statement {
@@ -208,7 +218,13 @@ public:
   IfStatement(Expression *expr, StatSeq *thenS, StatSeq *elseS)
     : expr(expr), thenS(thenS), elseS(elseS) {}
 
-  ~IfStatement() { delete expr; delete thenS; delete elseS; }
+//  ~IfStatement() {
+//    delete expr; 
+//    delete thenS;
+//    if (elseS != NULL) {
+//       delete elseS;
+//    }
+//  }
 };
 
 class WhileStatement : public Statement {
@@ -218,7 +234,7 @@ public:
 
   WhileStatement(Expression *expr, StatSeq *doS) 
     : expr(expr), doS(doS) {}
-  ~WhileStatement() { delete expr; delete doS; }
+//  ~WhileStatement() { delete expr; delete doS; }
 };
 
 class RepeatStatement : public Statement {
@@ -228,7 +244,7 @@ public:
 
   RepeatStatement(StatSeq *block, Expression *expr) 
     : block(block), expr(expr) {}
-  ~RepeatStatement() {delete block; delete expr;}
+//  ~RepeatStatement() {delete block; delete expr;}
 };
 
 class ReadStatement : public Statement {
@@ -236,7 +252,7 @@ public:
   AssignLhs *id;
   
   ReadStatement(AssignLhs *id) : id(id) {}
-  ~ReadStatement() {delete id;}
+//  ~ReadStatement() {delete id;}
 };
 
 class PrintStatement : public Statement {
@@ -244,7 +260,7 @@ public:
   Expression *expr;
 
   PrintStatement(Expression *expr) : expr(expr) {}
-  ~PrintStatement() {delete expr;}
+//  ~PrintStatement() {delete expr;}
 };
 
 class PrintlnStatement : public Statement {
@@ -252,7 +268,7 @@ public:
   Expression *expr;
 
   PrintlnStatement(Expression *expr) : expr(expr) {}
-  ~PrintlnStatement() {delete expr;}
+//  ~PrintlnStatement() {delete expr;}
 };
 
 class Number : public Expression {
@@ -294,7 +310,7 @@ public:
 	
   BinaryOperator(Expression *left, int op, Expression *right) 
     : left(left), right(right), op(op) {}
-  ~BinaryOperator() {delete left; delete right;}
+//  ~BinaryOperator() {delete left; delete right;}
 };
 
 class ArrayElem : public AssignLhs, public Expression {
@@ -303,13 +319,13 @@ public:
 	ExpressionList *idxs;
 
 	ArrayElem(Identifier *id, ExpressionList *idxs) : id(id), idxs(idxs) {}
-  ~ArrayElem() {
-    delete id;
-    for (int i = 0; i < idxs->size(); ++i){
-      delete (*idxs)[i];
-    }
-    delete idxs;
-  }
+//  ~ArrayElem() {
+//    delete id;
+//    for (int i = 0; i < idxs->size(); ++i){
+//      delete (*idxs)[i];
+//    }
+//    delete idxs;
+//  }
 };
 
 class PairElem : public AssignLhs, public AssignRhs {
@@ -318,7 +334,7 @@ public:
 	Expression *expr;
 	
 	PairElem(bool fst, Expression *expr) : fst(fst), expr(expr) {} 
-  ~PairElem() {delete expr;}
+//  ~PairElem() {delete expr;}
 };
 
 class ArrayLiter : public AssignRhs {
@@ -326,12 +342,12 @@ public:
 	ExpressionList *elems;
 
 	ArrayLiter(ExpressionList *elems) : elems(elems) {}
-  ~ArrayLiter() {
-    for (int i = 0; i < elems->size(); ++i) {
-      delete (*elems)[i];
-    }
-    delete elems;
-  }
+//  ~ArrayLiter() {
+//    for (int i = 0; i < elems->size(); ++i) {
+//      delete (*elems)[i];
+//    }
+//    delete elems;
+//  }
 };
 
 class NewPair : public AssignRhs {
@@ -340,7 +356,7 @@ public:
 	Expression *snd;
 
 	NewPair(Expression *fst, Expression *snd) : fst(fst), snd(snd) {}
-  ~NewPair() {delete fst; delete snd;}
+//  ~NewPair() {delete fst; delete snd;}
 };
 
 class UnaryOperator : public Expression	{
@@ -349,7 +365,7 @@ public:
 	Expression *expr;
 
 	UnaryOperator(int op, Expression *expr) : op(op), expr(expr) {}
-  ~UnaryOperator() {delete expr;}
+//  ~UnaryOperator() {delete expr;}
 };
 
 #endif // ! ASTNODE_HH
