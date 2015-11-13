@@ -228,7 +228,7 @@ public:
     freePtr(expr); 
     freePtr(thenS);
     freePtr(elseS);
-//  }
+  }
 };
 
 class WhileStatement : public Statement {
@@ -338,7 +338,7 @@ public:
 	Expression *expr;
 	
 	PairElem(bool fst, Expression *expr) : fst(fst), expr(expr) {} 
-    ~PairElem() {freePtr(expr)}
+    ~PairElem() {freePtr(expr);}
 };
 
 class ArrayLiter : public AssignRhs {
