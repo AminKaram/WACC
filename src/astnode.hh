@@ -4,6 +4,14 @@
 #include <vector>
 #include <iostream>
 
+template<class T>
+void freePtr(T *ptr) {
+     if(ptr) { 
+        delete ptr;
+     }
+}
+
+
 class ASTnode {
 public:
   virtual ~ASTnode() {}
@@ -48,7 +56,7 @@ public:
 	Type *type;
 	
 	ArrayType(Type *type) : type(type) {}
-  ~ArrayType() { delete type; }
+  ~ArrayType() { freePtr(type); }
 };
 
 class PairKeyword : public Type {
@@ -60,7 +68,7 @@ public:
 	Type *snd;
 
 	PairType(Type *fst, Type *snd) : fst(fst), snd(snd) {}
-//  ~PairType() { delete fst; delete snd; }
+    ~PairType() {  freePtr(fst); freePtr(snd); }
 };
 
 class Identifier : public Expression, public AssignLhs {
@@ -83,13 +91,11 @@ public:
   VariableDeclaration(Type *type, Identifier *id, AssignRhs *rhs) 
     : type(type), id(id), rhs(rhs) {}
 
-//  ~VariableDeclaration() { 
-//    delete type; 
-//    delete id; 
-//    if (rhs != NULL) {
-//      delete rhs;
-//    }
-//  }
+  ~VariableDeclaration() { 
+    freePtr(type); 
+    freePtr(id)
+	freePtr(rhs)
+	}
 };
 typedef std::vector<VariableDeclaration*> VariableList;
 
@@ -107,19 +113,19 @@ public:
       VariableList *parameters, StatSeq *block) 
     : type(type), id(id), parameters(parameters), block(block) {}
 
-//  ~FunctionDeclaration() { 
-//    delete type;
-//    delete id;
-//    if (parameters != NULL) {
-//      for(int i=0; i < parameters->size(); i++) {
-//        delete (*parameters)[i];
-//      }
-//      delete parameters;
-//    }
-//    delete block;
-//  }
-
+  ~FunctionDeclaration() { 
+    freePtr(type)
+    freePtr(id)
+    if (parameters != NULL) {
+      for(int i=0; i < parameters->size(); i++) {
+        freePtr((*parameters)[i]);
+      }
+      freePtr(parameters)
+    }
+    freePtr(block);
+  }
 };
+
 typedef std::vector<FunctionDeclaration*> FunctionList;
 
 class FunctionDecList : public ASTnode {
@@ -138,15 +144,15 @@ public:
   FunctionCall(Identifier *id) 
     : id(id) {}
 
-//  ~FunctionCall() {
-//    delete id;
-//    if (parameters != NULL) {
-//      for(int i = 0; i < parameters->size(); ++i) {
-//        delete (*parameters)[i];
-//      }
-//      delete parameters;
-//    }
-//  }
+  ~FunctionCall() {
+     freePtr(id);
+     if (parameters != NULL) {
+        for(int i=0; i < parameters->size(); i++) {
+          freePtr((*parameters)[i]);
+        }
+        freePtr(parameters)
+     }
+  }  
 };
 
 class Program : public ASTnode{
@@ -157,7 +163,7 @@ public:
   Program(FunctionDecList* fs, StatSeq* stats)
 		 : functions(fs), statements(stats) {}
 
-//  ~Program() { delete functions; delete statements; }
+  ~Program() { freePtr(functions); freePtr(statements); }
 };
 
 class Assignment : public Statement {
@@ -168,7 +174,7 @@ public:
   Assignment(AssignLhs *lhs, AssignRhs *rhs) 
     : lhs(lhs), rhs(rhs) {}
 
-//  ~Assignment() { delete lhs; delete rhs; }
+  ~Assignment() { freePtr(lhs); freePtr(rhs); }
 };
 
 class SkipStatement : public Statement {
@@ -179,7 +185,7 @@ public:
 	Expression *expr;
 
   FreeStatement(Expression *expr) : expr(expr) {}
-//  ~FreeStatement() { delete expr;}
+  ~FreeStatement() { freePtr(expr); }
 };
 
 class ReturnStatement : public Statement {
@@ -187,7 +193,7 @@ public:
   Expression *expr;
 
   ReturnStatement(Expression *expr) : expr(expr) {}
-//  ~ReturnStatement() { delete expr; }
+  ~ReturnStatement() { freePtr(expr); }
 };
 
 class ExitStatement : public Statement {
@@ -195,15 +201,15 @@ public:
   Expression *expr;
 
   ExitStatement(Expression *expr) : expr(expr) {}
-//  ~ExitStatement() { delete expr; }
+  ~ExitStatement() { freePtr(expr);}
 };
 
 class BeginStatement : public Statement {
 public:
-	StatSeq *scope;
-
-	BeginStatement(StatSeq *scope) : scope(scope) {}
-//  ~BeginStatement() { delete scope; }
+  
+  StatSeq *scope;
+  BeginStatement(StatSeq *scope) : scope(scope) {}
+  ~BeginStatement() { freePtr(scope); }
 };
 
 class IfStatement : public Statement {
@@ -218,12 +224,10 @@ public:
   IfStatement(Expression *expr, StatSeq *thenS, StatSeq *elseS)
     : expr(expr), thenS(thenS), elseS(elseS) {}
 
-//  ~IfStatement() {
-//    delete expr; 
-//    delete thenS;
-//    if (elseS != NULL) {
-//       delete elseS;
-//    }
+  ~IfStatement() {
+    freePtr(expr); 
+    freePtr(thenS);
+    freePtr(elseS);
 //  }
 };
 
@@ -244,7 +248,7 @@ public:
 
   RepeatStatement(StatSeq *block, Expression *expr) 
     : block(block), expr(expr) {}
-//  ~RepeatStatement() {delete block; delete expr;}
+  ~RepeatStatement() {freePtr(block); freePtr(expr);}
 };
 
 class ReadStatement : public Statement {
@@ -252,7 +256,7 @@ public:
   AssignLhs *id;
   
   ReadStatement(AssignLhs *id) : id(id) {}
-//  ~ReadStatement() {delete id;}
+  ~ReadStatement() {freePtr(id);}
 };
 
 class PrintStatement : public Statement {
@@ -260,7 +264,7 @@ public:
   Expression *expr;
 
   PrintStatement(Expression *expr) : expr(expr) {}
-//  ~PrintStatement() {delete expr;}
+  ~PrintStatement() {freePtr(expr);}
 };
 
 class PrintlnStatement : public Statement {
@@ -268,7 +272,7 @@ public:
   Expression *expr;
 
   PrintlnStatement(Expression *expr) : expr(expr) {}
-//  ~PrintlnStatement() {delete expr;}
+  ~PrintlnStatement() {freePtr(expr);}
 };
 
 class Number : public Expression {
@@ -310,7 +314,7 @@ public:
 	
   BinaryOperator(Expression *left, int op, Expression *right) 
     : left(left), right(right), op(op) {}
-//  ~BinaryOperator() {delete left; delete right;}
+  ~BinaryOperator() {freePtr(left); freePtr(right);}
 };
 
 class ArrayElem : public AssignLhs, public Expression {
@@ -319,13 +323,13 @@ public:
 	ExpressionList *idxs;
 
 	ArrayElem(Identifier *id, ExpressionList *idxs) : id(id), idxs(idxs) {}
-//  ~ArrayElem() {
-//    delete id;
-//    for (int i = 0; i < idxs->size(); ++i){
-//      delete (*idxs)[i];
-//    }
-//    delete idxs;
-//  }
+  ~ArrayElem() {
+    freePtr(id);
+    for (int i = 0; i < idxs->size(); ++i){
+      freePtr((*idxs)[i]);
+    }
+    freePtr(idxs);
+  }
 };
 
 class PairElem : public AssignLhs, public AssignRhs {
@@ -334,7 +338,7 @@ public:
 	Expression *expr;
 	
 	PairElem(bool fst, Expression *expr) : fst(fst), expr(expr) {} 
-//  ~PairElem() {delete expr;}
+    ~PairElem() {freePtr(expr)}
 };
 
 class ArrayLiter : public AssignRhs {
@@ -342,12 +346,12 @@ public:
 	ExpressionList *elems;
 
 	ArrayLiter(ExpressionList *elems) : elems(elems) {}
-//  ~ArrayLiter() {
-//    for (int i = 0; i < elems->size(); ++i) {
-//      delete (*elems)[i];
-//    }
-//    delete elems;
-//  }
+    ~ArrayLiter() {
+      for (int i = 0; i < elems->size(); ++i) {
+        delete (*elems)[i];
+      }
+      freePtr(elems);
+    }
 };
 
 class NewPair : public AssignRhs {
@@ -356,7 +360,7 @@ public:
 	Expression *snd;
 
 	NewPair(Expression *fst, Expression *snd) : fst(fst), snd(snd) {}
-//  ~NewPair() {delete fst; delete snd;}
+  ~NewPair() {freePtr(fst); freePtr(snd);}
 };
 
 class UnaryOperator : public Expression	{
@@ -365,7 +369,7 @@ public:
 	Expression *expr;
 
 	UnaryOperator(int op, Expression *expr) : op(op), expr(expr) {}
-//  ~UnaryOperator() {delete expr;}
+    ~UnaryOperator() {freePtr(expr);}
 };
 
 #endif // ! ASTNODE_HH
