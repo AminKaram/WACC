@@ -164,7 +164,7 @@ public:
 class Program : public ASTnode{
 public:  
   FunctionDecList* functions;
-  StatSeq* statements = NULL;
+  StatSeq* statements;
   
   Program(FunctionDecList* fs, StatSeq* stats)
 		 : functions(fs), statements(stats) {std::cout <<functions<<std::endl;}

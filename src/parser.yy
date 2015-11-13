@@ -87,12 +87,9 @@ program:
     BEGIN func_list statement_seq END
 		{// //std::cout << " PROGRAM " << std::endl;
      // //std::cout << " HA " << std::endl;
-      StatSeq tmp2 = *$3;
      // //std::cout << " HAHA " << std::endl;
-      FunctionDecList tmp1 = *$2;
      // //std::cout << " HAHA " << std::endl;
-
-      driver.ast = new Program(&tmp1, &tmp2 ); 
+      driver.ast = new Program($2, $3); 
      // //std::cout << " HAHA " << std::endl; 
 		 }
   ;
