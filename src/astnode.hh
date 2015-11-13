@@ -32,6 +32,11 @@ class StatSeq : public Statement {
 public:
   StatementList statements;
   StatSeq() { }  
+  ~StatSeq() {
+    for(int i = 0; i < statements.size(); i++ ) {
+      freePtr(statements[i]);
+    }
+  }
 };
 
 class Type : public ASTnode {

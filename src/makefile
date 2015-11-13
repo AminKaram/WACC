@@ -2,7 +2,7 @@ all: main
 
 OBJS = scanner.o parser.o main.o parsing-driver.o 
 
-CPPFLAGS = -fmax-errors=20 -std=c++11 
+CPPFLAGS = -fmax-errors=20 -std=c++11 -Wno-deprecated-register
 
 %.o: %.cc %.hh
 	g++ -c $(CPPFLAGS) -o $@ $<
