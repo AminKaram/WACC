@@ -93,8 +93,8 @@ public:
 
   ~VariableDeclaration() { 
     freePtr(type); 
-    freePtr(id)
-	freePtr(rhs)
+    freePtr(id);
+	freePtr(rhs);
 	}
 };
 typedef std::vector<VariableDeclaration*> VariableList;
@@ -114,13 +114,13 @@ public:
     : type(type), id(id), parameters(parameters), block(block) {}
 
   ~FunctionDeclaration() { 
-    freePtr(type)
-    freePtr(id)
+    freePtr(type);
+    freePtr(id);
     if (parameters != NULL) {
       for(int i=0; i < parameters->size(); i++) {
         freePtr((*parameters)[i]);
       }
-      freePtr(parameters)
+      freePtr(parameters);
     }
     freePtr(block);
   }
@@ -150,7 +150,7 @@ public:
         for(int i=0; i < parameters->size(); i++) {
           freePtr((*parameters)[i]);
         }
-        freePtr(parameters)
+        freePtr(parameters);
      }
   }  
 };
