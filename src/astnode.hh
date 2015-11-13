@@ -6,9 +6,7 @@
 
 template<class T>
 void freePtr(T *ptr) {
-     if(ptr) { 
-        delete ptr;
-     }
+        if (ptr) {delete ptr; ptr = NULL;}
 }
 
 
@@ -53,10 +51,10 @@ class StringType : public Type {
 
 class ArrayType : public Type {
 public:
-	Type *type;
+	Type *type = NULL;
 	
 	ArrayType(Type *type) : type(type) {}
-  ~ArrayType() { freePtr(type); }
+    ~ArrayType() {std::cout <<"ArrayTypefree"; freePtr(type); }
 };
 
 class PairKeyword : public Type {
@@ -64,11 +62,11 @@ class PairKeyword : public Type {
 
 class PairType : public Type {
 public:
-  Type *fst;
-	Type *snd;
+  Type *fst = NULL;
+	Type *snd = NULL;
 
 	PairType(Type *fst, Type *snd) : fst(fst), snd(snd) {}
-    ~PairType() {  freePtr(fst); freePtr(snd); }
+    ~PairType() {std::cout <<"PairTypefree";  freePtr(fst); freePtr(snd); }
 };
 
 class Identifier : public Expression, public AssignLhs {
@@ -81,9 +79,9 @@ public:
 
 class VariableDeclaration : public Statement { 
 public:
-  Type *type;
-  Identifier *id;
-  AssignRhs *rhs;
+  Type *type = NULL;
+  Identifier *id = NULL;
+  AssignRhs *rhs = NULL;
 
   VariableDeclaration(Type *type, Identifier *id) 
     : type(type), id(id) {}
@@ -92,6 +90,7 @@ public:
     : type(type), id(id), rhs(rhs) {}
 
   ~VariableDeclaration() { 
+  	std::cout <<"VariableDeclarationfree";
     freePtr(type); 
     freePtr(id);
 	freePtr(rhs);
@@ -101,10 +100,10 @@ typedef std::vector<VariableDeclaration*> VariableList;
 
 class FunctionDeclaration : public Statement {
 public:
-  Type *type;
-  Identifier *id;
-  VariableList *parameters;
-  StatSeq *block;
+  Type *type = NULL;
+  Identifier *id = NULL;
+  VariableList *parameters = NULL;
+  StatSeq *block = NULL;
   
   FunctionDeclaration(Type *type, Identifier *id, StatSeq *block) 
     : type(type), id(id), parameters(0), block(block) {}
@@ -114,6 +113,7 @@ public:
     : type(type), id(id), parameters(parameters), block(block) {}
 
   ~FunctionDeclaration() { 
+  	std::cout <<"FunctionDeclarationfree";
     freePtr(type);
     freePtr(id);
     if (parameters != NULL) {
@@ -132,12 +132,17 @@ class FunctionDecList : public ASTnode {
 public:
   FunctionList funcs;
   FunctionDecList() { }
+  ~FunctionDecList() {
+    for(int i=0; i < funcs.size(); i++) {
+      freePtr(funcs[i]);
+    }
+  }
 };
 
 class FunctionCall : public Expression {
 public:
-  Identifier *id;
-  ExpressionList *parameters;
+  Identifier *id = NULL;
+  ExpressionList *parameters = NULL;
   
   FunctionCall(Identifier *id, ExpressionList *parameters) 
     : id(id), parameters(parameters) {}
@@ -145,6 +150,7 @@ public:
     : id(id) {}
 
   ~FunctionCall() {
+  	std::cout <<"FunctionCallfree";
      freePtr(id);
      if (parameters != NULL) {
         for(int i=0; i < parameters->size(); i++) {
@@ -157,24 +163,24 @@ public:
 
 class Program : public ASTnode{
 public:  
-	FunctionDecList* functions;
-  StatSeq* statements;
+  FunctionDecList* functions;
+  StatSeq* statements = NULL;
   
   Program(FunctionDecList* fs, StatSeq* stats)
-		 : functions(fs), statements(stats) {}
+		 : functions(fs), statements(stats) {std::cout <<functions<<std::endl;}
 
-  ~Program() { freePtr(functions); freePtr(statements); }
+  ~Program() {std::cout <<"Programfree"<<std::endl; freePtr(functions);std::cout<<"otherside"; freePtr(statements); }
 };
 
 class Assignment : public Statement {
 public:
-  AssignLhs *lhs;
-  AssignRhs *rhs;
+  AssignLhs *lhs = NULL;
+  AssignRhs *rhs = NULL;
 
   Assignment(AssignLhs *lhs, AssignRhs *rhs) 
     : lhs(lhs), rhs(rhs) {}
 
-  ~Assignment() { freePtr(lhs); freePtr(rhs); }
+  ~Assignment() {std::cout <<"Assignmentfree"; freePtr(lhs); freePtr(rhs); }
 };
 
 class SkipStatement : public Statement {
@@ -182,41 +188,41 @@ class SkipStatement : public Statement {
 
 class FreeStatement : public Statement {
 public:
-	Expression *expr;
+	Expression *expr = NULL;
 
   FreeStatement(Expression *expr) : expr(expr) {}
-  ~FreeStatement() { freePtr(expr); }
+  ~FreeStatement() {std::cout <<"FreeStatementfree"; freePtr(expr); }
 };
 
 class ReturnStatement : public Statement {
 public:
-  Expression *expr;
+  Expression *expr = NULL;
 
   ReturnStatement(Expression *expr) : expr(expr) {}
-  ~ReturnStatement() { freePtr(expr); }
+  ~ReturnStatement() {std::cout <<"ReturnStatementfree"; freePtr(expr); }
 };
 
 class ExitStatement : public Statement {
 public:
-  Expression *expr;
+  Expression *expr = NULL;
 
   ExitStatement(Expression *expr) : expr(expr) {}
-  ~ExitStatement() { freePtr(expr);}
+  ~ExitStatement() {std::cout <<"ExitStatementfree"; freePtr(expr);}
 };
 
 class BeginStatement : public Statement {
 public:
   
-  StatSeq *scope;
+  StatSeq *scope = NULL;
   BeginStatement(StatSeq *scope) : scope(scope) {}
-  ~BeginStatement() { freePtr(scope); }
+  ~BeginStatement() {std::cout <<"BeginStatementfree";freePtr(scope); }
 };
 
 class IfStatement : public Statement {
 public:
-  Expression *expr;
-  StatSeq *thenS;
-  StatSeq *elseS; 
+  Expression *expr = NULL;
+  StatSeq *thenS = NULL;
+  StatSeq *elseS = NULL; 
 
   IfStatement(Expression *expr, StatSeq *thenS) 
     : expr(expr), thenS(thenS) {}
@@ -225,6 +231,7 @@ public:
     : expr(expr), thenS(thenS), elseS(elseS) {}
 
   ~IfStatement() {
+  	std::cout <<"ifStatementfree";
     freePtr(expr); 
     freePtr(thenS);
     freePtr(elseS);
@@ -233,46 +240,46 @@ public:
 
 class WhileStatement : public Statement {
 public:
-  Expression *expr;
-  StatSeq *doS;
+  Expression *expr = NULL;
+  StatSeq *doS = NULL;
 
   WhileStatement(Expression *expr, StatSeq *doS) 
     : expr(expr), doS(doS) {}
-//  ~WhileStatement() { delete expr; delete doS; }
+  ~WhileStatement() {std::cout <<"WhileStatementfree"; freePtr(expr); freePtr(doS); }
 };
 
 class RepeatStatement : public Statement {
 public:
-  StatSeq *block;
-  Expression *expr;
+  StatSeq *block = NULL;
+  Expression *expr = NULL;
 
   RepeatStatement(StatSeq *block, Expression *expr) 
     : block(block), expr(expr) {}
-  ~RepeatStatement() {freePtr(block); freePtr(expr);}
+  ~RepeatStatement() {std::cout <<"RepeatStatementfree";freePtr(block); freePtr(expr);}
 };
 
 class ReadStatement : public Statement {
 public:
-  AssignLhs *id;
+  AssignLhs *id = NULL;
   
   ReadStatement(AssignLhs *id) : id(id) {}
-  ~ReadStatement() {freePtr(id);}
+  ~ReadStatement() {std::cout <<"ReadStatementfree";freePtr(id);}
 };
 
 class PrintStatement : public Statement {
 public:
-  Expression *expr;
+  Expression *expr = NULL;
 
   PrintStatement(Expression *expr) : expr(expr) {}
-  ~PrintStatement() {freePtr(expr);}
+  ~PrintStatement() {std::cout <<"PrintStatementfree";freePtr(expr);}
 };
 
 class PrintlnStatement : public Statement {
 public:
-  Expression *expr;
+  Expression *expr = NULL;
 
   PrintlnStatement(Expression *expr) : expr(expr) {}
-  ~PrintlnStatement() {freePtr(expr);}
+  ~PrintlnStatement() {std::cout <<"PrintlnStatementfree";freePtr(expr);}
 };
 
 class Number : public Expression {
@@ -309,21 +316,22 @@ class Null : public Expression {
 class BinaryOperator : public Expression {
 public:
   int op;
-  Expression *left;
-  Expression *right;
+  Expression *left = NULL;
+  Expression *right = NULL;
 	
   BinaryOperator(Expression *left, int op, Expression *right) 
     : left(left), right(right), op(op) {}
-  ~BinaryOperator() {freePtr(left); freePtr(right);}
+  ~BinaryOperator() {std::cout <<"BinaryOperatorfree";freePtr(left); freePtr(right);}
 };
 
 class ArrayElem : public AssignLhs, public Expression {
 public:
-	Identifier *id;
-	ExpressionList *idxs;
+	Identifier *id = NULL;
+	ExpressionList *idxs = NULL;
 
 	ArrayElem(Identifier *id, ExpressionList *idxs) : id(id), idxs(idxs) {}
   ~ArrayElem() {
+  	std::cout <<"ArrayElemfree";
     freePtr(id);
     for (int i = 0; i < idxs->size(); ++i){
       freePtr((*idxs)[i]);
@@ -335,18 +343,19 @@ public:
 class PairElem : public AssignLhs, public AssignRhs {
 public:
 	bool fst;
-	Expression *expr;
+	Expression *expr = NULL;
 	
 	PairElem(bool fst, Expression *expr) : fst(fst), expr(expr) {} 
-    ~PairElem() {freePtr(expr);}
+    ~PairElem() {std::cout <<"PairElemfree";freePtr(expr);}
 };
 
 class ArrayLiter : public AssignRhs {
 public:
-	ExpressionList *elems;
+	ExpressionList *elems = NULL;
 
 	ArrayLiter(ExpressionList *elems) : elems(elems) {}
     ~ArrayLiter() {
+      std::cout <<"ArrayLiterfree";
       for (int i = 0; i < elems->size(); ++i) {
         delete (*elems)[i];
       }
@@ -356,11 +365,11 @@ public:
 
 class NewPair : public AssignRhs {
 public: 
-	Expression *fst;
-	Expression *snd;
+	Expression *fst = NULL;
+	Expression *snd = NULL;
 
 	NewPair(Expression *fst, Expression *snd) : fst(fst), snd(snd) {}
-  ~NewPair() {freePtr(fst); freePtr(snd);}
+  ~NewPair() {std::cout <<"NewPairfree";freePtr(fst); freePtr(snd);}
 };
 
 class UnaryOperator : public Expression	{
@@ -369,7 +378,7 @@ public:
 	Expression *expr;
 
 	UnaryOperator(int op, Expression *expr) : op(op), expr(expr) {}
-    ~UnaryOperator() {freePtr(expr);}
+    ~UnaryOperator() {std::cout <<"UnaryOperatorfree";freePtr(expr);}
 };
 
 #endif // ! ASTNODE_HH
