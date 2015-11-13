@@ -9,7 +9,7 @@ int main(int argc, char **argv) {
  // std::cout << " ! " << std::endl;
   if(driver->parse(argv[1])) {
    // std::cout << "Parse failed" << std::endl;
-	 res = 200;
+	 res = 100;
   }
   delete driver;
   return res;

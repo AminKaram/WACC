@@ -113,10 +113,8 @@ false 		    return (token::make_FALSE(loc));
                 long val = strtol(yytext, NULL, 10);
                 if(!minus && (val > INT_MAX || errno == ERANGE)) {
                   driver.error(loc, "syntax error: integer overflow");
-                  exit(100);
                 } else if(minus && (val - 1 > INT_MAX || errno == ERANGE)) {
                   driver.error(loc, "syntax error: integer overflow");
-                  exit(100);
                 }
                 return token::make_INTEGER(val, loc);
               }
@@ -129,7 +127,6 @@ false 		    return (token::make_FALSE(loc));
 
 .             {
                 driver.error(loc, "syntax error: invalid character");
-                exit(100);
               }
 
 <<EOF>>       return token::make_ENDF(loc);

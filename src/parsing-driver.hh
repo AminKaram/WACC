@@ -24,6 +24,7 @@ public:
   int parse(const std::string& f);
   std::string file;
   bool trace_parsing;
+  int errorTrace;
 
   //Error handling
   void error(const yy::location& l, const std::string& m);

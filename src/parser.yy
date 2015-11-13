@@ -49,8 +49,10 @@
 
 %token        PRINT PRINTLN READ NEWPAIR FST SND
 
-/* EOF token */
+/* EOF token and other relevant tokens */
 %token        ENDF 0
+
+%token        ERROR
 
 %token <std::string> IDENTIFIER STRINGLIT
 
@@ -452,12 +454,16 @@ pair_liter:
 		{ //std::cout << " NULL PAIR LITER " << std::endl;
       $$ = new Null(); }
     ;
+errortok:
+    ERROR
+    {
+      yy:parser::error(@1, "syntax error: invalid character detected.");
+    }
 
 %%
 
 void yy::parser::error (const location_type& l, const std::string& m) {
   driver.error(l, m);
-  exit(100);
 }
 
 bool containsRetOrExit(StatSeq *seq) {
