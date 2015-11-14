@@ -3,6 +3,8 @@
 
 #include <vector>
 #include <iostream>
+#include "semantic-id.hh"
+
 
 template<class T>
 void freePtr(T *ptr) {

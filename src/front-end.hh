@@ -3,15 +3,12 @@
 
 class FrontEnd{
 public:
-  int check(Program*) {
-    
-  }
+  int check(Program*);
   int run(char*);
 
 private:
   ParsingDriver *driver;
-  AstNodeVisitor *visitor;
-  std::forward_list<SymbolTable *> *scopes;
+  AstNodeVisitor *semanticAnalyzer;
 }
 
 #endif // ! FRONT_END_HH
