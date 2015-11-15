@@ -3,53 +3,74 @@
 #include "astnode.hh"
 
 
-class SemanticId { 
-  AstNode* astnode = NULL;
-  SemanticId(AstNode* astnode) : astnode(astnode) { } 
-}
+class SemanticId {
+public:
+  std::string name;
+  ASTnode* astnode;
+  SemanticId(ASTnode* astnode, std::string name) : astnode(astnode), name(name) { }
+};
 
-class Type : public SemanticId {
-  Type(AstNode* astnode) : SemanticId(astnode) { } 
-}
 
-class IntType : public Type {
-  IntType(AstNode* astnode) : Type(astnode) { }
-}
+class TypeId : public SemanticId {
+public:
+  TypeId(ASTnode* astnode, std::string type) : SemanticId(astnode, type) { }
+};
 
-class BoolType : public Type {
-  BoolType(AstNode* astnode) : Type(astnode) { }
-}
+class IntTypeId : public TypeId {
+public:
+  IntTypeId(ASTnode* astnode) : TypeId(astnode, "int") { }
+};
 
-class CharType : public Type {
-  CharType(AstNode* astnode) : Type(astnode) { }
-}
+class BoolTypeId : public TypeId {
+public:
+  BoolTypeId(ASTnode* astnode) : TypeId(astnode, "bool") { }
+};
 
-class StringType : public Type {
-  StringType(AstNode* astnode) : Type(astnode) { }
-}
+class CharTypeId : public TypeId {
+public:
+  CharTypeId(ASTnode* astnode) : TypeId(astnode, "char") { }
+};
 
-class Variable : public SemanticId {
-  Type type;
-  Variable(AstNode* astnode, Type type) : SemanticId(astnode), type(type) { }
-}
+class StringTypeId : public TypeId {
+public:
+  StringTypeId(ASTnode* astnode) : TypeId(astnode, "string") { }
+};
 
-class Param : public SemanticId {
-  Type type;
-  Param(AstNode* astnode, Type type) : SemanticId(astnode), type(type) { }
-}
+class VariableId : public SemanticId {
+public:
+  TypeId type;
+  VariableId(ASTnode* astnode, TypeId type) : SemanticId(astnode, type.name), type(type) { }
+};
 
-class Array : public Type {
-  Type elementType;
-  Array(AstNode* astnode) : SemanticId(astnode) { }
-  Array(AstNode* astnode, Type elementType) : SemanticId(astnode),
-                                              elementType(elementType) {}
-}
+class ParamId : public SemanticId {
+public:
+  TypeId type;
+  ParamId(ASTnode* astnode, TypeId type) : SemanticId(astnode, type.name), type(type) { }
+};
 
-class Function : public SemanticId {
-  Type returnType;
-  std::vector<Param> params;
-  Function(AstNode* astnode, Type ret, std::vector<Param> params)
-      : SemanticId(astnode), returnType(ret), params(params) { }
-}
+class ArrayId : public TypeId {
+public:
+  TypeId elementType;
+  ArrayId(ASTnode* astnode, TypeId elementType) : TypeId(astnode, "array"),
+                                    elementType(elementType) { }
+};
+
+class PairId : public TypeId {
+public:
+  TypeId fst;
+  TypeId snd;
+  PairId(ASTnode* astnode, TypeId fst, TypeId snd) : TypeId(astnode, "pair"),
+                                                     fst(fst),
+                                                     snd(snd) { }
+};
+
+class FunctionId : public SemanticId {
+public:
+  TypeId returnType;
+  std::vector<ParamId> params;
+  FunctionId(ASTnode* astnode, TypeId ret, std::vector<ParamId> params) 
+    : SemanticId(astnode, "function"), returnType(ret), params(params) { }
+};
 
 #endif // ! SEMANTIC_ID_HH
+

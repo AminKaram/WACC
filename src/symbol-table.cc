@@ -1,28 +1,26 @@
 #include "symbol-table.hh"
 
-SymbolTable::SymbolTable(Symboltable *encScope) : encScope(encScope) {
+SymbolTable::SymbolTable(SymbolTable *encScope) : encScope(encScope) {
   dictionary = new std::map<std::string, SemanticId>();    
 }
 
 SymbolTable::~SymbolTable() {
   delete encScope;
   encScope = NULL;
-  dictionnary.clear();
+  dictionary->clear();
   delete dictionary;
-  dictionnary = NULL;
+  dictionary = NULL;
 }
 
-SemanticId*
-SymbolTable::lookUp(std::string id) {
-  auto it = dictionary.find(id);
-  if (it != dictionary.end()) {
-    return it->second;
+SemanticId* SymbolTable::lookUp(std::string id) {
+  auto it = dictionary->find(id);
+  if (it != dictionary->end()) {
+    return &(it->second);
   }
   return NULL;
 }
 
-SemanticId* 
-SymbolTable::lookUpAll(std::string id) {
+SemanticId* SymbolTable::lookUpAll(std::string id) {
   SymbolTable *s = this;
   while(s) {
     SemanticId *val = s->lookUp(id);
@@ -32,8 +30,7 @@ SymbolTable::lookUpAll(std::string id) {
   return NULL;
 }
 
-int
-SymbolTable::add(std::string id, SemanticId val) {
-  bool in = dicitonnary.insert(std::pair<std::string, SemanticId>(id, val))->second;
+int SymbolTable::add(std::string id, SemanticId val) {
+  bool in = dictionary->insert(std::pair<std::string, SemanticId>(id, val)).second;
   return (!in);
 }

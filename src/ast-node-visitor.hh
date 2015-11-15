@@ -2,46 +2,13 @@
 #define AST_NODE_VISITOR_HH
 #include "semantic-id.hh"
 #include "astnode.hh"
+#include "symbol-table.hh"
+
 class AstNodeVisitor {
 public:
-  AstNodeVisitor() { }
-  ~AstNodeVisitor() { }
-  
-<<<<<<< HEAD
-  void visit(Program node);
-  void visit(IntegerType node);
-  void visit(Booltype node);
-  void visit(CharType node);
-  void visit(StringType node);
-  void visit(ArrayType node);
-  void visit(PairType node);
-  void visit(VariableDeclaration node);
-  void visit(FunctionDeclaration node);
-  void visit(FunctionCall node);
-  void visit(StringType node);
-  void visit(Assignment node);
-  void visit(FreeStatement node);
-  void visit(ReturnStatement node);
-  void visit(ExitStatement node);
-  void visit(BeginStatement node);
-  void visit(IfStatement node);
-  void visit(WhileStatement node);
-  void visit(RepeatStatement node);
-  void visit(ReadStatement node);
-  void visit(PrintStatement node);
-  void visit(PrintlnStatement node);
-  void visit(Number node);
-  void visit(Boolean node);
-  void visit(Char node);
-  void visit(String node);
-  void visit(Null node);
-  void visit(BinaryOperator node);
-  void visit(ArrayElem node);
-  void visit(PairElem node);
-  void visit(ArrayLiter node);
-  void visit(NewPair node);
-  void visit(UnaryOperator node);
-=======
+  AstNodeVisitor();
+  ~AstNodeVisitor();
+
   void visit(Program *node);
   void visit(StatSeq *node);
   void visit(FunctionDecList *node);
@@ -54,7 +21,6 @@ public:
   void visit(VariableDeclaration *node);
   void visit(FunctionDeclaration *node);
   void visit(FunctionCall *node);
-  void visit(StringType *node);
   void visit(Assignment *node);
   void visit(FreeStatement *node);
   void visit(ReturnStatement *node);
@@ -62,29 +28,25 @@ public:
   void visit(BeginStatement *node);
   void visit(IfStatement *node);
   void visit(WhileStatement *node);
-  void visit(RepeatStatement *node);
   void visit(ReadStatement *node);
   void visit(PrintStatement *node);
   void visit(PrintlnStatement *node);
-  void visit(Number *node);
-  void visit(Boolean *node);
-  void visit(Char *node);
-  void visit(String *node);
-  void visit(Null *node);
+//  void visit(Number *node);
+//  void visit(Boolean *node);
+//  void visit(Char *node);
+//  void visit(String *node);
+//  void visit(Null *node);
   void visit(BinaryOperator *node);
+//  void visit(Identifier *node);
   void visit(ArrayElem *node);
   void visit(PairElem *node);
   void visit(ArrayLiter *node);
-  void visit(NewPair *node);
+//  void visit(NewPair *node);
   void visit(UnaryOperator *node);
->>>>>>> 7b91356fb247ab744889e191623b5c2535188f56
-  
-   
+
 
 private:
   SymbolTable& scope;
-  AstNode* lookUp(std::string&);
-  AstNode* lookUpAll(std::string&);
-}
+};
 
 #endif // ! AST_NODE_VISITOR_HH
