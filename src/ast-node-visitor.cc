@@ -1,18 +1,54 @@
 #include "ast-node-visitor.hh"
 
-SemanticId*
-AstNodeVisitor::lookUp(std::string& id) {
-  std::map<std::string, SemanticId>::iterator it = symbolTables.find(id);
-  if(it != symbolTables.end()) {
-     return &(symbolTable[id]);
-  } 
-  return NULL;
+void AstNodeVisitor::visit(BeginStatement *node) {
+	scope = SymbolTable(scope);
+	node->scope.accept(this);	
 }
 
-SemanticId*
-AstNodeVisitor::lookUpAll(std::string& id) {
-  for(auto it = symbolTables.begin(); it != symbolTables.end(); it++) {
-    SemanticId *obj =  
-  }
+void AstNodeVisitor::visit(IfStatement *node) {
+	scope = SymbolTable(scope);
+	node->expr.accept(this);	
+	if (node->expr != bool) {
+		std::cerr << "Type requiered: bool. Actual type: " 
+																									<< node->expr << std::endl;
+		exit(200); 
+	}
+	node->thenS.accept(this);	
+	node->elseS.accept(this);	
 }
+
+
+void AstNodeVisitor::visit(WhileStatement *node) {
+  scope = SymbolTable(scope);	
+	node->expr.accept(this);	
+	if (node->expr != bool) {
+		std::cerr << "Type of expression in while requiered: bool. Actual type: " 
+																									<< node->expr << std::endl;
+		exit(200); 
+	}
+	node->doS.accept(this);	
+}
+
+
+//void AstNodeVisitor::visit(RepeatStatement *node) {
+//	
+//}
+
+
+void AstNodeVisitor::visit(ExitStatement *node) {
+}
+
+
+void AstNodeVisitor::visit(ReadStatement *node) {
+}
+
+
+void AstNodeVisitor::visit(PrintStatement *node) {
+}
+
+
+void AstNodeVisitor::visit(PrintlnStatement *node) {
+}
+
+
 
