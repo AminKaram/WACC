@@ -1,6 +1,8 @@
 #ifndef SYMBOL_TABLE_HH
 #define SYMBOL_TABLE_HH
 #include "semantic-id.hh"
+#include <map>
+#include <string>
 
 class SymbolTable {
 public:
@@ -14,6 +16,6 @@ public:
 private:
   SymbolTable *encScope;
   std::map<std::string, SemanticId> *dictionary;
-}
+};
 
 #endif

@@ -3,20 +3,18 @@
 
 #include <vector>
 #include <iostream>
-#include "semantic-id.hh"
-
+class AstNodeVisitor;
 
 template<class T>
 void freePtr(T *ptr) {
         if (ptr) {delete ptr; ptr = NULL;}
 }
 
-
 class ASTnode {
 public:
-  virtual ASTnode() = 0;
+  ASTnode();
   virtual ~ASTnode();
-  virtual void accept(AstNodeVisitor visitor);
+  virtual void accept(AstNodeVisitor *visitor);
 };
 
 class AssignLhs : public ASTnode {
@@ -34,60 +32,59 @@ typedef std::vector<Statement*> StatementList;
 class StatSeq : public Statement {
 public:
   StatementList statements;
-  StatSeq() { }  
-  ~StatSeq() {
-    for(int i = 0; i < statements.size(); i++ ) {
-      freePtr(statements[i]);
-    }
-  }
-  void accept(AstNodeVisitor visitor) {visitor.visit(this)}
+  StatSeq();
+  ~StatSeq();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class Type : public ASTnode {
-  };
+public:
+  std::string name;
+  Type(std::string name);
+  ~Type();
+};
 
 class IntegerType : public Type {
-  static const std::string name = "int"; 
-  void accept(AstNodeVisitor visitor) {visitor.visit(this)}
+public:
+  IntegerType();
 };
 
 class BoolType : public Type {
-  static const std::string name = "bool"; 
-  void accept(AstNodeVisitor visitor) {visitor.visit(this)}
+public:
+  BoolType();
 };
 
 class CharType : public Type {
-  static const std::string name = "char"; 
-  void accept(AstNodeVisitor visitor) {visitor.visit(this)}
+public:
+  CharType();
 };
 
 class StringType : public Type {
-  static const std::string name = "string"; 
-  void accept(AstNodeVisitor visitor) {visitor.visit(this)}
+public:
+  StringType ();
 };
 
 class ArrayType : public Type {
 public:
-  static const std::string name = "array"; 
 	Type *type = NULL;
 	
-	ArrayType(Type *type) : type(type) {}
-  ~ArrayType() { freePtr(type); }
-  void accept(AstNodeVisitor visitor) {visitor.visit(this)}
+  ArrayType(Type *type); 
+  ~ArrayType();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class PairKeyword : public Type {
-  void accept(AstNodeVisitor visitor) {visitor.visit(this)}
+  void accept(AstNodeVisitor *visitor);
 };
 
 class PairType : public Type {
 public:
   Type *fst = NULL;
-	Type *snd = NULL;
+  Type *snd = NULL;
 
-	PairType(Type *fst, Type *snd) : fst(fst), snd(snd) {}
-  ~PairType() {freePtr(fst); freePtr(snd); }
-  void accept(AstNodeVisitor visitor) {visitor.visit(this)}
+  PairType(Type *fst, Type *snd);
+  ~PairType();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class Identifier : public Expression, public AssignLhs {
@@ -96,7 +93,7 @@ public:
 	
   Identifier() {}
   Identifier(std::string& id) : id(id) {}
-  void accept(AstNodeVisitor visitor) {visitor.visit(this)}
+  void accept(AstNodeVisitor *visitor);
 };
 
 class VariableDeclaration : public Statement { 
@@ -104,20 +101,13 @@ public:
   Type *type = NULL;
   Identifier *id = NULL;
   AssignRhs *rhs = NULL;
-  Variable *varObj = NULL;
 
-  VariableDeclaration(Type *type, Identifier *id) 
-    : type(type), id(id) {}
+  VariableDeclaration(Type *type, Identifier *id);
 
-  VariableDeclaration(Type *type, Identifier *id, AssignRhs *rhs) 
-    : type(type), id(id), rhs(rhs) {}
+  VariableDeclaration(Type *type, Identifier *id, AssignRhs *rhs);
 
-  ~VariableDeclaration() {
-    freePtr(type); 
-    freePtr(id);
-	freePtr(rhs);
-	}
-  void accept(AstNodeVisitor visitor) {visitor.visit(this)}
+  ~VariableDeclaration();
+  void accept(AstNodeVisitor *visitor);
 };
 typedef std::vector<VariableDeclaration*> VariableList;
 
@@ -128,25 +118,13 @@ public:
   VariableList *parameters = NULL;
   StatSeq *block = NULL;
   
-  FunctionDeclaration(Type *type, Identifier *id, StatSeq *block) 
-    : type(type), id(id), parameters(0), block(block) {}
+  FunctionDeclaration(Type *type, Identifier *id, StatSeq *block);
 
   FunctionDeclaration(Type *type, Identifier *id, 
-      VariableList *parameters, StatSeq *block) 
-    : type(type), id(id), parameters(parameters), block(block) {}
+      VariableList *parameters, StatSeq *block);
 
-  ~FunctionDeclaration() {
-    freePtr(type);
-    freePtr(id);
-    if (parameters != NULL) {
-      for(int i=0; i < parameters->size(); i++) {
-        freePtr((*parameters)[i]);
-      }
-      freePtr(parameters);
-    }
-    freePtr(block);
-  }
-  void accept(AstNodeVisitor visitor) {visitor.visit(this)}
+  ~FunctionDeclaration(); 
+  void accept(AstNodeVisitor *visitor);
 };
 
 typedef std::vector<FunctionDeclaration*> FunctionList;
@@ -154,13 +132,9 @@ typedef std::vector<FunctionDeclaration*> FunctionList;
 class FunctionDecList : public ASTnode {
 public:
   FunctionList funcs;
-  FunctionDecList() { }
-  ~FunctionDecList() {
-    for(int i=0; i < funcs.size(); i++) {
-      freePtr(funcs[i]);
-    }
-  }
-  void accept(AstNodeVisitor visitor) {visitor.visit(this)}
+  FunctionDecList();
+  ~FunctionDecList();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class FunctionCall : public Expression {
@@ -169,21 +143,11 @@ public:
   Identifier *id = NULL;
   ExpressionList *parameters = NULL;
   
-  FunctionCall(Identifier *id, ExpressionList *parameters) 
-    : id(id), parameters(parameters) {}
-  FunctionCall(Identifier *id) 
-    : id(id) {}
+  FunctionCall(Identifier *id, ExpressionList *parameters);
+  FunctionCall(Identifier *id);
 
-  ~FunctionCall() {
-     freePtr(id);
-     if (parameters != NULL) {
-        for(int i=0; i < parameters->size(); i++) {
-          freePtr((*parameters)[i]);
-        }
-        freePtr(parameters);
-     }
-  }  
-  void accept(AstNodeVisitor visitor) {visitor.visit(this)}
+  ~FunctionCall();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class Program : public ASTnode{
@@ -191,11 +155,9 @@ public:
   FunctionDecList* functions;
   StatSeq* statements;
   
-  Program(FunctionDecList* fs, StatSeq* stats)
-		 : functions(fs), statements(stats) {}
-
-  ~Program() { freePtr(functions); freePtr(statements); }
-  void accept(AstNodeVisitor visitor) {visitor.visit(this)}
+  Program(FunctionDecList* fs, StatSeq* stats);
+  ~Program();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class Assignment : public Statement {
@@ -203,51 +165,51 @@ public:
   AssignLhs *lhs = NULL;
   AssignRhs *rhs = NULL;
 
-  Assignment(AssignLhs *lhs, AssignRhs *rhs) 
-    : lhs(lhs), rhs(rhs) {}
+  Assignment(AssignLhs *lhs, AssignRhs *rhs);
 
-  ~Assignment() { freePtr(lhs); freePtr(rhs); }
-  void accept(AstNodeVisitor visitor) {visitor.visit(this)}
+  ~Assignment();
+
+  void accept(AstNodeVisitor *visitor);
 };
 
 class SkipStatement : public Statement {
-  void accept(AstNodeVisitor visitor) {visitor.visit(this)}
+  void accept(AstNodeVisitor *visitor);
 };
 
 class FreeStatement : public Statement {
 public:
 	Expression *expr = NULL;
 
-  FreeStatement(Expression *expr) : expr(expr) {}
-  ~FreeStatement() { freePtr(expr); }
-  void accept(AstNodeVisitor visitor) {visitor.visit(this)}
+  FreeStatement(Expression *expr);
+  ~FreeStatement();
+  void accept(AstNodeVisitor* visitor);
 };
 
 class ReturnStatement : public Statement {
 public:
   Expression *expr = NULL;
 
-  ReturnStatement(Expression *expr) : expr(expr) {}
-  ~ReturnStatement() { freePtr(expr); }
-  void accept(AstNodeVisitor visitor) {visitor.visit(this)}
+  ReturnStatement(Expression *expr);
+  ~ReturnStatement();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class ExitStatement : public Statement {
 public:
   Expression *expr = NULL;
 
-  ExitStatement(Expression *expr) : expr(expr) {}
-  ~ExitStatement() { freePtr(expr);}
-  void accept(AstNodeVisitor visitor) {visitor.visit(this)}
+  ExitStatement(Expression *expr);
+  ~ExitStatement();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class BeginStatement : public Statement {
 public:
   
   StatSeq *scope = NULL;
-  BeginStatement(StatSeq *scope) : scope(scope) {}
-  ~BeginStatement() {freePtr(scope); }
-  void accept(AstNodeVisitor visitor) {visitor.visit(this)}
+  BeginStatement(StatSeq *scope);
+  ~BeginStatement();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class IfStatement : public Statement {
@@ -256,18 +218,10 @@ public:
   StatSeq *thenS = NULL;
   StatSeq *elseS = NULL; 
 
-  IfStatement(Expression *expr, StatSeq *thenS) 
-    : expr(expr), thenS(thenS) {}
-
-  IfStatement(Expression *expr, StatSeq *thenS, StatSeq *elseS)
-    : expr(expr), thenS(thenS), elseS(elseS) {}
-
-  ~IfStatement() {
-    freePtr(expr); 
-    freePtr(thenS);
-    freePtr(elseS);
-  }
-  void accept(AstNodeVisitor visitor) {visitor.visit(this)}
+  IfStatement(Expression *expr, StatSeq *thenS);
+  IfStatement(Expression *expr, StatSeq *thenS, StatSeq *elseS);
+  ~IfStatement();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class WhileStatement : public Statement {
@@ -275,37 +229,36 @@ public:
   Expression *expr = NULL;
   StatSeq *doS = NULL;
 
-  WhileStatement(Expression *expr, StatSeq *doS) 
-    : expr(expr), doS(doS) {}
-  ~WhileStatement() {freePtr(expr); freePtr(doS); }
-  void accept(AstNodeVisitor visitor) {visitor.visit(this)}
+  WhileStatement(Expression *expr, StatSeq *doS);
+  ~WhileStatement();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class ReadStatement : public Statement {
 public:
   AssignLhs *id = NULL;
   
-  ReadStatement(AssignLhs *id) : id(id) {}
-  ~ReadStatement() {freePtr(id);}
-  void accept(AstNodeVisitor visitor) {visitor.visit(this)}
+  ReadStatement(AssignLhs *id);
+  ~ReadStatement();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class PrintStatement : public Statement {
 public:
   Expression *expr = NULL;
 
-  PrintStatement(Expression *expr) : expr(expr) {}
-  ~PrintStatement() {freePtr(expr);}
-  void accept(AstNodeVisitor visitor) {visitor.visit(this)}
+  PrintStatement(Expression *expr);
+  ~PrintStatement();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class PrintlnStatement : public Statement {
 public:
   Expression *expr = NULL;
 
-  PrintlnStatement(Expression *expr) : expr(expr) {}
-  ~PrintlnStatement() {freePtr(expr);}
-  void accept(AstNodeVisitor visitor) {visitor.visit(this)}
+  PrintlnStatement(Expression *expr);
+  ~PrintlnStatement();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class Number : public Expression {
@@ -313,8 +266,8 @@ public:
   std::string type = "number";
   int value;
   
-  Number(int value) : value(value) {}
-  void accept(AstNodeVisitor visitor) {visitor.visit(this)}
+  Number(int value);
+  void accept(AstNodeVisitor *visitor);
 };
 
 class Boolean : public Expression {
@@ -322,8 +275,8 @@ public:
   std::string type = "bool";
   bool value;
 
-  Boolean(bool value) : value(value) {}
-  void accept(AstNodeVisitor visitor) {visitor.visit(this)}
+  Boolean(bool value);
+  void accept(AstNodeVisitor *visitor);
 };
 
 class Char : public Expression {
@@ -331,51 +284,44 @@ public:
   std::string type = "char";
   char value;
 
-  Char(char value) : value(value) {}
-  void accept(AstNodeVisitor visitor) {visitor.visit(this)}
+  Char(char value);
+  void accept(AstNodeVisitor *visitor);
 };
 
 class String : public Expression {
 public:
   std::string value = "string";
 
-  String(std::string value) : value(value) {}
-  void accept(AstNodeVisitor visitor) {visitor.visit(this)}
+  String(std::string value);
+  void accept(AstNodeVisitor *visitor);
 };
 
 class Null : public Expression {
   std::string type = "null";
-  void accept(AstNodeVisitor visitor) {visitor.visit(this)}
+  void accept(AstNodeVisitor *visitor);
 };
 
 class BinaryOperator : public Expression {
 public:
   std::string type;
   int op;
-  Expression *left = NULL;
-  Expression *right = NULL;
+  Expression *left;
+  Expression *right;
 	
-  BinaryOperator(Expression *left, int op, Expression *right) 
-    : left(left), right(right), op(op) {}
-  ~BinaryOperator() {freePtr(left); freePtr(right);}
-  void accept(AstNodeVisitor visitor) {visitor.visit(this)}
+  BinaryOperator(Expression *left, int op, Expression *right);
+  ~BinaryOperator();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class ArrayElem : public AssignLhs, public Expression {
 public: 
-        std::string type;
+  std::string type;
 	Identifier *id = NULL;
 	ExpressionList *idxs = NULL;
 
-	ArrayElem(Identifier *id, ExpressionList *idxs) : id(id), idxs(idxs) {}
-  ~ArrayElem() {
-    freePtr(id);
-    for (int i = 0; i < idxs->size(); ++i){
-      freePtr((*idxs)[i]);
-    }
-    freePtr(idxs);
-  }
-  void accept(AstNodeVisitor visitor) {visitor.visit(this)}
+  ArrayElem(Identifier *id, ExpressionList *idxs);
+  ~ArrayElem();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class PairElem : public AssignLhs, public AssignRhs {
@@ -383,23 +329,18 @@ public:
 	bool fst;
 	Expression *expr = NULL;
 	
-	PairElem(bool fst, Expression *expr) : fst(fst), expr(expr) {} 
-  ~PairElem() {freePtr(expr);}
-  void accept(AstNodeVisitor visitor) {visitor.visit(this)}
+  PairElem(bool fst, Expression *expr);
+  ~PairElem();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class ArrayLiter : public AssignRhs {
 public:
 	ExpressionList *elems = NULL;
 
-	ArrayLiter(ExpressionList *elems) : elems(elems) {}
-    ~ArrayLiter() {
-      for (int i = 0; i < elems->size(); ++i) {
-        delete (*elems)[i];
-      }
-      freePtr(elems);
-    }
-  void accept(AstNodeVisitor visitor) {visitor.visit(this)}
+	ArrayLiter(ExpressionList *elems);
+  ~ArrayLiter();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class NewPair : public AssignRhs {
@@ -407,9 +348,9 @@ public:
 	Expression *fst = NULL;
 	Expression *snd = NULL;
 
-	NewPair(Expression *fst, Expression *snd) : fst(fst), snd(snd) {}
-  ~NewPair() {freePtr(fst); freePtr(snd);}
-  void accept(AstNodeVisitor visitor) {visitor.visit(this)}
+  NewPair(Expression *fst, Expression *snd);
+  ~NewPair();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class UnaryOperator : public Expression	{
@@ -418,9 +359,9 @@ public:
 	int op;
 	Expression *expr;
 
-	UnaryOperator(int op, Expression *expr) : op(op), expr(expr) {}
-    ~UnaryOperator() {freePtr(expr);}
-  void accept(AstNodeVisitor visitor) {visitor.visit(this)}
+	UnaryOperator(int op, Expression *expr);
+    ~UnaryOperator();
+    void accept(AstNodeVisitor *visitor);
 };
 
 #endif // ! ASTNODE_HH
