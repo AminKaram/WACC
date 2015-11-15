@@ -275,17 +275,6 @@ public:
   void accept(AstNodeVisitor visitor) {visitor.visit(this)}
 };
 
-class RepeatStatement : public Statement {
-public:
-  StatSeq *block = NULL;
-  Expression *expr = NULL;
-
-  RepeatStatement(StatSeq *block, Expression *expr) 
-    : block(block), expr(expr) {}
-  ~RepeatStatement() {freePtr(block); freePtr(expr);}
-  void accept(AstNodeVisitor visitor) {visitor.visit(this)}
-};
-
 class ReadStatement : public Statement {
 public:
   AssignLhs *id = NULL;
