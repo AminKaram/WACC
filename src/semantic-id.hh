@@ -8,6 +8,7 @@ public:
   std::string name;
   ASTnode* astnode;
   SemanticId(ASTnode* astnode, std::string name) : astnode(astnode), name(name) { }
+  virtual ~SemanticId() {}
 };
 
 
