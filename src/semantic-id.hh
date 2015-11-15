@@ -1,38 +1,55 @@
-v#ifndef SEMANTIC_ID_HH
+#ifndef SEMANTIC_ID_HH
 #define SEMANTIC_ID_HH
 #include "astnode.hh"
 
 
 class SemanticId { 
-  AstNode& astnode;
-  SemanticId(AstNode& astnode) : astnode(astnode) { } 
-}
+  ASTnode* astnode = NULL;
+  SemanticId(ASTnode* astnode) : astnode(astnode) { }
+};
 
-class Type : public SemanticId {
-  Type(AstNode& astnode) : SemanticId(astnode) { } 
-}
+class TypeId : public SemanticId {
+  TypeId(ASTnode* astnode) : SemanticId(astnode) { }
+};
 
-class Variable : public SemanticId {
-  Type type;
-  Variable(AstNode& astnode, Type type) : SemanticId(astnode), type(type) { }
-}
+class IntTypeId : public TypeId {
+  IntTypeId(ASTnode* astnode) : TypeId(astnode) { }
+};
 
-class Param : public SemanticId {
-  Type type;
-  Param(AstNode& astnode, Type type) : SemanticId(astnode), type(type) { }
-}
+class BoolTypeId : public TypeId {
+  BoolTypeId(ASTnode* astnode) : TypeId(astnode) { }
+};
 
-class Array : public Type {
-  Type elementType;
-  Array(AstNode& astnode, Type elementType) : SemanticId(astnode),
+class CharTypeId : public TypeId {
+  CharTypeId(ASTnode* astnode) : TypeId(astnode) { }
+};
+
+class StringTypeId : public TypeId {
+  StringTypeId(ASTnode* astnode) : TypeId(astnode) { }
+};
+
+class VariableId : public SemanticId {
+  TypeId type;
+  VariableId(ASTnode* astnode, TypeId type) : SemanticId(astnode), type(type) { }
+};
+
+class ParamId : public SemanticId {
+  TypeId type;
+  ParamId(ASTnode* astnode, TypeId type) : SemanticId(astnode), type(type) { }
+};
+
+class ArrayId : public TypeId {
+  TypeId elementType;
+  ArrayId(ASTnode* astnode) : SemanticId(astnode) { }
+  ArrayId(ASTnode* astnode, TypeId elementType) : SemanticId(astnode),
                                               elementType(elementType) {}
-}
+};
 
-class Function : public SemanticId {
-  Type returnType;
-  std::vector<Param> params;
-  Function(Astnode& astnode, Type ret, std::vector<Param> params)
+class FunctionId : public SemanticId {
+  TypeId returnType;
+  std::vector<ParamId> params;
+  FunctionId(ASTnode* astnode, TypeId ret, std::vector<ParamId> params)
       : SemanticId(astnode), returnType(ret), params(params) { }
-}
+};
 
 #endif // ! SEMANTIC_ID_HH
