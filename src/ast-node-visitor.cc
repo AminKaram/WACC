@@ -1,18 +1,14 @@
-#include "ast-node-visitor.hh"
+include "ast-node-visitor.hh"
+#include "symbol-table.hh"
 
-SemanticId*
-AstNodeVisitor::lookUp(std::string& id) {
-  std::map<std::string, SemanticId>::iterator it = symbolTables.find(id);
-  if(it != symbolTables.end()) {
-     return &(symbolTable[id]);
-  } 
-  return NULL;
-}
-
-SemanticId*
-AstNodeVisitor::lookUpAll(std::string& id) {
-  for(auto it = symbolTables.begin(); it != symbolTables.end(); it++) {
-    SemanticId *obj =  
+void AstNodeVisitor::visit(VariableDeclaration *node) {
+  semanticId *T = lookUpAll(node->type->name);
+  semanticId *V = lookUp(node->id->id);
+  
+  if (!T) {
+    std::cerr<< "Unknown type" << node->type->name << endl;
   }
-}
 
+  else if (
+    
+}

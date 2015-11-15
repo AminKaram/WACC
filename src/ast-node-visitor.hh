@@ -14,7 +14,7 @@ public:
   void visit(StringType node);
   void visit(ArrayType node);
   void visit(PairType node);
-  void visit(variableDeclaration node);
+  void visit(VariableDeclaration node);
   void visit(FunctionDeclaration node);
   void visit(FunctionCall node);
   void visit(StringType node);

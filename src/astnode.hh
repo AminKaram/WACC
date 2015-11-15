@@ -44,26 +44,31 @@ public:
 };
 
 class Type : public ASTnode {
-};
+  };
 
 class IntegerType : public Type {
+  static const std::string name = "int"; 
   void accept(AstNodeVisitor visitor) {visitor.visit(this)}
 };
 
 class BoolType : public Type {
+  static const std::string name = "bool"; 
   void accept(AstNodeVisitor visitor) {visitor.visit(this)}
 };
 
 class CharType : public Type {
+  static const std::string name = "char"; 
   void accept(AstNodeVisitor visitor) {visitor.visit(this)}
 };
 
 class StringType : public Type {
+  static const std::string name = "string"; 
   void accept(AstNodeVisitor visitor) {visitor.visit(this)}
 };
 
 class ArrayType : public Type {
 public:
+  static const std::string name = "array"; 
 	Type *type = NULL;
 	
 	ArrayType(Type *type) : type(type) {}
@@ -99,6 +104,7 @@ public:
   Type *type = NULL;
   Identifier *id = NULL;
   AssignRhs *rhs = NULL;
+  Variable *varObj = NULL;
 
   VariableDeclaration(Type *type, Identifier *id) 
     : type(type), id(id) {}
