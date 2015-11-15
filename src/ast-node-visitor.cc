@@ -14,5 +14,7 @@ AstNodeVisitor::lookUpAll(std::string& id) {
   for(auto it = symbolTables.begin(); it != symbolTables.end(); it++) {
     SemanticId *obj =  
   }
+
+
 }
 

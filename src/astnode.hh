@@ -159,6 +159,7 @@ public:
 
 class FunctionCall : public Expression {
 public:
+  std::string type;
   Identifier *id = NULL;
   ExpressionList *parameters = NULL;
   
@@ -314,6 +315,7 @@ public:
 
 class Number : public Expression {
 public:
+  std::string type = "number";
   int value;
   
   Number(int value) : value(value) {}
@@ -322,6 +324,7 @@ public:
 
 class Boolean : public Expression {
 public:
+  std::string type = "bool";
   bool value;
 
   Boolean(bool value) : value(value) {}
@@ -330,6 +333,7 @@ public:
 
 class Char : public Expression {
 public:
+  std::string type = "char";
   char value;
 
   Char(char value) : value(value) {}
@@ -338,18 +342,20 @@ public:
 
 class String : public Expression {
 public:
-  std::string value;
+  std::string value = "string";
 
   String(std::string value) : value(value) {}
   void accept(AstNodeVisitor visitor) {visitor.visit(this)}
 };
 
 class Null : public Expression {
+  std::string type = "null";
   void accept(AstNodeVisitor visitor) {visitor.visit(this)}
 };
 
 class BinaryOperator : public Expression {
 public:
+  std::string type;
   int op;
   Expression *left = NULL;
   Expression *right = NULL;
@@ -361,7 +367,8 @@ public:
 };
 
 class ArrayElem : public AssignLhs, public Expression {
-public:
+public: 
+        std::string type;
 	Identifier *id = NULL;
 	ExpressionList *idxs = NULL;
 
@@ -412,6 +419,7 @@ public:
 
 class UnaryOperator : public Expression	{
 public:	
+        std::string type;
 	int op;
 	Expression *expr;
 
