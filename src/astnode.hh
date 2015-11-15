@@ -74,13 +74,16 @@ public:
 };
 
 class PairKeyword : public Type {
+public:
+  PairKeyword();
+  ~PairKeyword();
   void accept(AstNodeVisitor *visitor);
 };
 
 class PairType : public Type {
 public:
-  Type *fst = NULL;
-  Type *snd = NULL;
+  Type *fst;
+  Type *snd;
 
   PairType(Type *fst, Type *snd);
   ~PairType();

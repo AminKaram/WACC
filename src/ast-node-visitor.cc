@@ -1,6 +1,6 @@
 #include "ast-node-visitor.hh"
 #include "astnode.hh"
-
+#include "semantic-id.hh"
 
 
 void AstNodeVisitor::visit(Program *node) {
@@ -27,23 +27,24 @@ void AstNodeVisitor::visit(VariableDeclaration *node) {
   SemanticId *V = scope.lookUp(node->id->id);
 
   if (!T) {
-    std::cerr<< "Unknown type" << node->type->name << endl;
+    std::cerr<< "Unknown type" << node->type->name << std::endl;
   }
 }
 
 void AstNodeVisitor::visit(FunctionDecList *node) {
-  for(int i = 0; i < node->statements.size(); i++) {
+  for(int i = 0; i < node->funcs.size(); i++) {
     (node->funcs)[i]->accept(this);
   }
 }
 
 void AstNodeVisitor::visit(FunctionDeclaration *node) {
-  std::vector<Param> params;
+  std::vector<ParamId> params;
   for(int i = 0; i < node->parameters->size(); i++) {
-    params.push_back(Param((*(node->parameters))[i],
-                              lookUpAll((*(node->parameters))[i]->type->name)));
+    VariableDeclaration *var = node->parameters->operator[](i);
+    ParamId tmp(var, scope.lookUpAll((*(node->parameters))[i]->type->name));
+    params.push_back(tmp);
   }
-  function tmp(*node, scope.lookUpAll(node->type->name), params);
+  Function tmp(*node, scope.lookUpAll(node->type->name), params);
   scope.add(node->id->id, tmp);
   scope = SymbolTable(scope);
 //Empty string represents the return type variable must have names  
