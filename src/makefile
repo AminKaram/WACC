@@ -2,7 +2,7 @@ all: main
 
 OBJS = scanner.o parser.o main.o parsing-driver.o astnode.o symbol-table.o ast-node-visitor.o front-end.o
 
-CPPFLAGS = -fmax-errors=20 -std=c++11 -Wno-deprecated-register
+CPPFLAGS = -fmax-errors=20 -std=c++11 -Wno-deprecated-register -g
 
 main.o: main.cc front-end.o
 	g++ -c $(CPPFLAGS) -o $@ $<
