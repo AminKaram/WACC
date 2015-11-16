@@ -17,14 +17,20 @@ void AstNodeVisitor::visit(ASTnode *node){
 
 void AstNodeVisitor::visit(Program *node) {
   std::cout << "ProgramVisitor" << std::endl;
-  scope->add("int", IntTypeId(NULL));
-  scope->add("char", CharTypeId(NULL));
-  scope->add("string", StringTypeId(NULL));
-  scope->add("bool", BoolTypeId(NULL));
-  scope->add("array", ArrayId(NULL, TypeId(NULL, "type")));
-  scope->add("pair", PairId(NULL, TypeId(NULL, "type"), TypeId(NULL, "type")));
+  IntTypeId intId(NULL);
+  scope->add("int", intId);
+  CharTypeId charId(NULL);
+  scope->add("char", charId);
+  StringTypeId stringId(NULL);
+  scope->add("string", stringId);
+  BoolTypeId boolId(NULL);
+  scope->add("bool", boolId);
+  ArrayId arrayId(NULL, TypeId(NULL, "type"));
+  scope->add("array", arrayId);
+  PairId pairId(PairId(NULL, TypeId(NULL, "type"), TypeId(NULL, "type")));
+  scope->add("pair", pairId);
   scope = new SymbolTable(scope);
-  scope->add("", IntTypeId(NULL)); 
+  scope->add("", intId); 
   node->functions->accept(this);
   node->statements->accept(this);
 }
@@ -39,14 +45,13 @@ void AstNodeVisitor::visit(StatSeq *node) {
 void AstNodeVisitor::visit(VariableDeclaration *node) {
   std::cout << "VariableDeclarationVisitor" << std::endl;
   SemanticId *type = scope->lookUpAll(node->type->name);
-  std::cout << "Here" << std::endl;
   SemanticId *var = scope->lookUp(node->id->id);
-  std::cout << "Here" << std::endl;
   if (!type) {
     std::cerr<< "Unknown type" << node->type->name << std::endl;
     exit(200);
   }
   TypeId * t = dynamic_cast<TypeId*> (type);
+  std::cout << "cast fails " << t->name << std::endl;
   if (!t) {
     std::cerr<< "Is not a type" << node->type->name << std::endl;
     exit(200);
@@ -67,14 +72,15 @@ void AstNodeVisitor::visit(FunctionDeclaration *node) {
   SemanticId *type;
   for(int i = 0; i < node->parameters->size(); i++) {
     VariableDeclaration *var = node->parameters->operator[](i);
-    type = scope->lookUpAll((*(node->parameters))[i]->type->name);
+    type = scope->lookUpAll(var->type->name);
          if (!type) {
-        std::cerr<< "Unknown type " << (*(node->parameters))[i]->type->name << std::endl;
+        std::cerr<< "Unknown type " << var->type->name << std::endl;
         exit(200);
       }
-      TypeId * t = dynamic_cast<TypeId* > (type);
+      std::cout << " Before cast " << type->name << std::endl;
+      TypeId * t = dynamic_cast<TypeId*> (type);
       if (!t) {
-        std::cerr<< "Is not a type" << (*(node->parameters))[i]->type->name << std::endl;
+        std::cerr<< "Is not a type" << var->type->name << std::endl;
         exit(200);
       }
     ParamId tmp(var, *t);

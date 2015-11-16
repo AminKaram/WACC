@@ -11,12 +11,12 @@ public:
 
   SemanticId* lookUp(std::string);
   SemanticId* lookUpAll(std::string);
-  int add(std::string, SemanticId);
+  int add(std::string, SemanticId&);
   SymbolTable* getEncScope();
 
 private:
   SymbolTable *encScope = NULL;
-  std::map<std::string, SemanticId> *dictionary = NULL;
+  std::map<std::string, SemanticId&> *dictionary = NULL;
 };
 
 #endif

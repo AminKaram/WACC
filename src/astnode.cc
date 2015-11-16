@@ -47,7 +47,9 @@ void VariableDeclaration:: accept(AstNodeVisitor *visitor) {
 }
 
 FunctionDeclaration::FunctionDeclaration(Type *type, Identifier *id, StatSeq *block) 
-    : type(type), id(id), parameters(0), block(block) {}
+    : type(type), id(id), block(block) {
+		parameters = new VariableList();
+		}
 
 FunctionDeclaration::FunctionDeclaration(Type *type, Identifier *id, 
       VariableList *parameters, StatSeq *block) 

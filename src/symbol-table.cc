@@ -1,7 +1,7 @@
 #include "symbol-table.hh"
 
 SymbolTable::SymbolTable(SymbolTable *encScope) : encScope(encScope) {
-  dictionary = new std::map<std::string, SemanticId>();    
+  dictionary = new std::map<std::string, SemanticId&>();    
 }
 
 SymbolTable::~SymbolTable() {
@@ -19,10 +19,8 @@ SemanticId* SymbolTable::lookUp(std::string id) {
 }
 
 SemanticId* SymbolTable::lookUpAll(std::string id) {
-  std::cout << "Here" << std::endl;
   SymbolTable *s = this;
   while(s) {
-    std::cout << "Here" << std::endl;
     SemanticId *val = s->lookUp(id);
     if(val) return val;
     s = s->encScope;
@@ -30,8 +28,8 @@ SemanticId* SymbolTable::lookUpAll(std::string id) {
   return NULL;
 }
 
-int SymbolTable::add(std::string id, SemanticId val) {
-  auto ret = dictionary->insert(std::pair<std::string, SemanticId>(id,val));
+int SymbolTable::add(std::string id, SemanticId& val) {
+  auto ret = dictionary->insert(std::pair<std::string, SemanticId&>(id, val));
   if(ret.second) {
     return 0;
   }
