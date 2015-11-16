@@ -1,8 +1,14 @@
 all: main 
 
-OBJS = scanner.o parser.o main.o parsing-driver.o astnode.o symbol-table.o ast-node-visitor.o 
+OBJS = scanner.o parser.o main.o parsing-driver.o astnode.o symbol-table.o ast-node-visitor.o front-end.o
 
 CPPFLAGS = -fmax-errors=20 -std=c++11 -Wno-deprecated-register
+
+main.o: main.cc front-end.o
+	g++ -c $(CPPFLAGS) -o $@ $<
+
+front-end.o: front-end.cc front-end.hh parser.o ast-node-visitor.o
+	g++ -c $(CPPFLAGS) -o $@ $<
 
 astnode.o: astnode.cc astnode.hh
 	g++ -c $(CPPFLAGS) -o $@ $<
@@ -24,10 +30,10 @@ parser.hh: parser.cc
 scanner.cc: scanner.l parser.hh
 	flex -o $@ $^
 
-main : $(OBJS)
+main: $(OBJS)
 	g++ -g $^ -o $@
 
 clean:
-	$(RM) -rf main location.hh position.hh stack.hh parser.output parser.cc parser.hh parser scanner.cc $(OBJS)
+	$(RM) -rf main location.hh position.hh stack.hh parser.output parser.cc parser.hh parser scanner.cc front-end.cc $(OBJS)
                
 .PHONY: all clean

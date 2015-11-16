@@ -1,6 +1,9 @@
 #include "astnode.hh"
 #include "ast-node-visitor.hh"
 
+void ASTnode::accept(AstNodeVisitor *visitor) { 
+  visitor->visit(this);
+}
 
 Program::Program(FunctionDecList* fs, StatSeq* stats) : functions(fs), statements(stats) { }
 Program::~Program() { freePtr(functions); freePtr(statements); }
@@ -66,7 +69,7 @@ void FunctionDeclaration:: accept(AstNodeVisitor *visitor) {
 }
 
 Type::Type(std::string name) : name(name) { }
-Type::~Type() { };
+Type::~Type() { }
 
 IntegerType::IntegerType() : Type("int") { }
 
@@ -74,18 +77,32 @@ BoolType::BoolType() : Type("bool") { }
 
 CharType::CharType() : Type("char") { }
 
-StringType :: StringType() : Type("string") { }
+SkipStatement::SkipStatement() {}
+SkipStatement::~SkipStatement() {}
+void SkipStatement::accept(AstNodeVisitor *visitor){
+  visitor->visit(this);
+}
+
+StringType::StringType() : Type("string") { }
 
 ArrayType::ArrayType(Type *type) : Type("array"), type(type) { }
 ArrayType::~ArrayType() { freePtr(type); }
-//void ArrayType::accept(AstNodeVisitor *visitor){ visitor->visit(this); }
+void ArrayType::accept(AstNodeVisitor *visitor){ 
+  visitor->visit(this); 
+}
+
 PairKeyword::PairKeyword() : Type("pair") { }
 PairKeyword::~PairKeyword() { }
+void PairKeyword::accept(AstNodeVisitor *visitor){
+  visitor->visit(this);
+}
 
 PairType::PairType(Type *fst, Type *snd) : Type("pair"), fst(fst), snd(snd) {}
 PairType::~PairType() {freePtr(fst); freePtr(snd); }
 
-//void PairType::accept(AstNodeVisitor *visitor);
+void PairType::accept(AstNodeVisitor *visitor){
+  visitor->visit(this);
+}
 
 FunctionCall::FunctionCall(Identifier *id, ExpressionList *parameters)
     : id(id), parameters(parameters) {}
@@ -178,28 +195,28 @@ void PrintlnStatement:: accept(AstNodeVisitor *visitor) {
 }
 
 Number::Number(int value) : value(value) {}
-/*void Number:: accept(AstNodeVisitor *visitor) {
+void Number:: accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
-}*/
+}
 
 Boolean::Boolean(bool value) : value(value) {}
-/*void Boolean:: accept(AstNodeVisitor *visitor) {
+void Boolean:: accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
-}*/
+}
 
 Char::Char(char value) : value(value) {}
-/*void Char:: accept(AstNodeVisitor *visitor) {
+void Char:: accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
-}*/
+}
 
 String::String(std::string value) : value(value) {}
-/*void String:: accept(AstNodeVisitor *visitor) {
+void String:: accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
-}*/
+}
 
-/*void Null:: accept(AstNodeVisitor *visitor) {
+void Null:: accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
-}*/
+}
 
 BinaryOperator::BinaryOperator(Expression *left, int op, Expression *right)
   : left(left), right(right), op(op) {}
@@ -250,9 +267,9 @@ void ArrayLiter::accept(AstNodeVisitor *visitor) {
 
 NewPair::NewPair(Expression *fst, Expression *snd) : fst(fst), snd(snd) {}
 NewPair::~NewPair() {freePtr(fst); freePtr(snd);}
-/*void NewPair:: accept(AstNodeVisitor *visitor) {
+void NewPair:: accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
-}*/
+}
 
 UnaryOperator::UnaryOperator(int op, Expression *expr) : op(op), expr(expr) {}
 UnaryOperator::~UnaryOperator() {freePtr(expr);}
@@ -262,4 +279,9 @@ void UnaryOperator::accept(AstNodeVisitor *visitor) {
 
 std::string Identifier::getId() {
   return id;
+}
+
+
+void Identifier::accept(AstNodeVisitor *visitor){
+  visitor->visit(this);
 }

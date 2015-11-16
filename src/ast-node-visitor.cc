@@ -2,6 +2,9 @@
 #include "astnode.hh"
 #include "semantic-id.hh"
 
+void AstNodeVisitor::visit(ASTnode *node){
+
+}
 
 void AstNodeVisitor::visit(Program *node) {
   scope.add("int", IntTypeId(NULL));
@@ -225,4 +228,58 @@ void AstNodeVisitor::visit(UnaryOperator *node) {
     exit(200);
   }
   node->type = "int";
+}
+
+void AstNodeVisitor::visit(FreeStatement *node) {
+  node->expr->accept(this);
+  if (node->expr->type != "pair") {
+    std::cerr << "semantic error freeing a non pair type expression" << std::endl;
+    exit(200);
+  }
+}
+
+void AstNodeVisitor::visit(ReturnStatement *node) {
+  node->expr->accept(this);
+  if(node->expr->type != scope.lookUpAll("")->name) {
+    std::cerr << "semantic error : wrong return type " << node->expr->type 
+              << " instead of " << scope.lookUpAll("")->name << std::endl;
+  }
+}
+
+void AstNodeVisitor::visit(ExitStatement *node) { 
+  node->expr->accept(this);
+  if(node->expr->type != "int") {
+    std::cerr << "semantic error : wrong exit type, expected int got: " << node->expr->type
+              << std::endl;
+  }
+}
+
+void AstNodeVisitor::visit(Number *node) {
+}
+
+void AstNodeVisitor::visit(Boolean *node) {
+}
+
+void AstNodeVisitor::visit(Char *node) {
+}
+
+void AstNodeVisitor::visit(String *node) {
+}
+
+void AstNodeVisitor::visit(NewPair *node) {
+}
+
+void AstNodeVisitor::visit(ArrayLiter *node) {
+}
+
+void AstNodeVisitor::visit(PairType *node) {
+}
+
+void AstNodeVisitor::visit(Null *node) {
+}
+
+void AstNodeVisitor::visit(ArrayType *node) {
+}
+
+void AstNodeVisitor::visit(Identifier *node) {
 }
