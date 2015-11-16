@@ -124,7 +124,7 @@ void AstNodeVisitor::visit(FunctionCall *node) {
     exit(200);
   }
   FunctionId* func = dynamic_cast<FunctionId*> (value);
-  if(!func) {
+  if(func) {
     std::cerr<< "is not a function" << node->id->id << std::endl;
     exit(200);
   }
