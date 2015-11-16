@@ -51,12 +51,18 @@ void AstNodeVisitor::visit(VariableDeclaration *node) {
     exit(200);
   }
   TypeId * t = dynamic_cast<TypeId*> (type);
-  std::cout << "cast fails " << t->name << std::endl;
+  std::cout << "cast to " << t->name << std::endl;
   if (!t) {
     std::cerr<< "Is not a type" << node->type->name << std::endl;
     exit(200);
   }
-  std::cout << "VariableDeclarationVisitor end" << std::endl;
+  if (var) {
+    std::cerr<< "Already declared" << node->id->id << std::endl;
+    exit(200);
+  }
+  VariableId variable(node, *t);
+  scope->add(node->id->id, variable);
+  std::cout << "VariableDeclarationVisitor end " << variable.name << std::endl;
 }
 
 void AstNodeVisitor::visit(FunctionDecList *node) {
@@ -87,6 +93,7 @@ void AstNodeVisitor::visit(FunctionDeclaration *node) {
     params.push_back(tmp);
   }
   type = scope->lookUpAll(node->type->name);
+
   SemanticId *func = scope->lookUp(node->id->id);
   if (!type) {
     std::cerr<< "Unknown type " << node->type->name << std::endl;

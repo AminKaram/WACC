@@ -22,13 +22,14 @@ SemanticId* SymbolTable::lookUpAll(std::string id) {
   SymbolTable *s = this;
   while(s) {
     SemanticId *val = s->lookUp(id);
-    if(val) return val;
+    if(val) {std::cerr << id << " val is" << val->name << std::endl; return val;}
     s = s->encScope;
   }
   return NULL;
 }
 
 int SymbolTable::add(std::string id, SemanticId& val) {
+  std::cerr<< "BITCH MOFO NAME IS" << val.name << std::endl;
   auto ret = dictionary->insert(std::pair<std::string, SemanticId&>(id, val));
   if(ret.second) {
     return 0;
