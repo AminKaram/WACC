@@ -19,11 +19,13 @@ SemanticId* SymbolTable::lookUp(std::string id) {
 }
 
 SemanticId* SymbolTable::lookUpAll(std::string id) {
+  std::cout << "Here" << std::endl;
   SymbolTable *s = this;
   while(s) {
+    std::cout << "Here" << std::endl;
     SemanticId *val = s->lookUp(id);
     if(val) return val;
-    s = this->encScope;
+    s = s->encScope;
   }
   return NULL;
 }

@@ -16,6 +16,7 @@ void AstNodeVisitor::visit(ASTnode *node){
 }
 
 void AstNodeVisitor::visit(Program *node) {
+  std::cout << "ProgramVisitor" << std::endl;
   scope->add("int", IntTypeId(NULL));
   scope->add("char", CharTypeId(NULL));
   scope->add("string", StringTypeId(NULL));
@@ -29,15 +30,18 @@ void AstNodeVisitor::visit(Program *node) {
 }
 
 void AstNodeVisitor::visit(StatSeq *node) {
+  std::cout << "StatSeqVisitor" << std::endl;
   for(int i = 0; i < node->statements.size(); i++) {
     (node->statements)[i]->accept(this);
   }
 }
 
 void AstNodeVisitor::visit(VariableDeclaration *node) {
+  std::cout << "VariableDeclarationVisitor" << std::endl;
   SemanticId *type = scope->lookUpAll(node->type->name);
+  std::cout << "Here" << std::endl;
   SemanticId *var = scope->lookUp(node->id->id);
-
+  std::cout << "Here" << std::endl;
   if (!type) {
     std::cerr<< "Unknown type" << node->type->name << std::endl;
     exit(200);
@@ -47,15 +51,18 @@ void AstNodeVisitor::visit(VariableDeclaration *node) {
     std::cerr<< "Is not a type" << node->type->name << std::endl;
     exit(200);
   }
+  std::cout << "VariableDeclarationVisitor end" << std::endl;
 }
 
 void AstNodeVisitor::visit(FunctionDecList *node) {
+  std::cout << "FunctionDecListVisitor" << std::endl;
   for(int i = 0; i < node->funcs.size(); i++) {
     (node->funcs)[i]->accept(this);
   }
 }
 
 void AstNodeVisitor::visit(FunctionDeclaration *node) {
+  std::cout << "FunctionDeclarationVisitor" << std::endl;
   std::vector<ParamId> params;
   SemanticId *type;
   for(int i = 0; i < node->parameters->size(); i++) {
@@ -103,6 +110,7 @@ void AstNodeVisitor::visit(FunctionDeclaration *node) {
 }
 
 void AstNodeVisitor::visit(FunctionCall *node) {
+  std::cout << "FunctionCallVisitor" << std::endl;
   SemanticId *value = scope->lookUpAll(node->id->id);
   
   if (!value) {
@@ -126,6 +134,7 @@ void AstNodeVisitor::visit(FunctionCall *node) {
 }
 
 void AstNodeVisitor::visit(Assignment *node) {
+  std::cout << "AssignmentVisitor" << std::endl;
   node->lhs->accept(this);
   node->rhs->accept(this);
   SemanticId *value = scope->lookUpAll(node->lhs->getId());
@@ -141,7 +150,8 @@ void AstNodeVisitor::visit(Assignment *node) {
 }
 
 void AstNodeVisitor::visit(BeginStatement *node) {
-	scope = new SymbolTable(scope);;
+  std::cout << "BeginStatementVisitor" << std::endl;
+  scope = new SymbolTable(scope);;
 	node->scope->accept(this);
   SymbolTable *tmp = scope->getEncScope();
   delete scope;
@@ -149,7 +159,8 @@ void AstNodeVisitor::visit(BeginStatement *node) {
 }
 
 void AstNodeVisitor::visit(IfStatement *node) {
-	node->expr->accept(this);
+  std::cout << "IfStatementVisitor" << std::endl;
+  node->expr->accept(this);
 	if (node->expr->type != "bool") {
 		std::cerr << "Type requiered: bool. Actual type: " 
 			 << node->expr->type << std::endl;
@@ -167,7 +178,8 @@ void AstNodeVisitor::visit(IfStatement *node) {
 
 
 void AstNodeVisitor::visit(WhileStatement *node) {
-	node->expr->accept(this);
+  std::cout << "WhileStatementVisitor" << std::endl;
+  node->expr->accept(this);
 	if (node->expr->type != "bool") {
 		std::cerr << "Type of expression in while requiered: bool. Actual type: " 
              << node->expr->type << std::endl;
@@ -181,6 +193,7 @@ void AstNodeVisitor::visit(WhileStatement *node) {
 }
 
 void AstNodeVisitor::visit(ReadStatement *node) {
+  std::cout << "ReadStatementVisitor" << std::endl;
   SemanticId *value = scope->lookUpAll(node->id->getId());
   if(!value) {
     std::cerr << "Cannot read undeclared variable: " << node->id->getId() 
@@ -190,6 +203,7 @@ void AstNodeVisitor::visit(ReadStatement *node) {
 }
 
 void AstNodeVisitor::visit(PrintStatement *node) {
+  std::cout << "PrintStatementVisitor" << std::endl;
   node->expr->accept(this);
 //  SemanticId *value = scope->lookUpAll(node->->getId());
 //  if(!value) {
@@ -200,6 +214,7 @@ void AstNodeVisitor::visit(PrintStatement *node) {
 }
 
 void AstNodeVisitor::visit(PrintlnStatement *node) {
+  std::cout << "PrintlnStatementVisitor" << std::endl;
   node->expr->accept(this);
 //  SemanticId *value = scope->lookUpAll(node->->getId());
 //  if(!value) {
@@ -210,6 +225,7 @@ void AstNodeVisitor::visit(PrintlnStatement *node) {
 }
 
 void AstNodeVisitor::visit(BinaryOperator *node) {
+  std::cout << "BinaryOperatorVisitor" << std::endl;
   node->left->accept(this);
   node->right->accept(this);
   if(node->left->type != node->right->type) {
@@ -220,7 +236,8 @@ void AstNodeVisitor::visit(BinaryOperator *node) {
 }
 
 void AstNodeVisitor::visit(ArrayElem *node) {
- SemanticId *value = scope->lookUpAll(node->id->id);
+  std::cout << "ArrayElemVisitor" << std::endl;
+  SemanticId *value = scope->lookUpAll(node->id->id);
   if(!value) {
     std::cerr << "Cannot access non declared array elem" << std::endl;
     exit(200);
@@ -234,6 +251,7 @@ void AstNodeVisitor::visit(ArrayElem *node) {
 }
 
 void AstNodeVisitor::visit(PairElem *node) {
+  std::cout << "PairElemVisitor" << std::endl;
   node->expr->accept(this);
   if(node->expr->type != "pair") {
     std::cerr << "Type mismatch cannot get pair element of non pair expression" 
@@ -244,6 +262,7 @@ void AstNodeVisitor::visit(PairElem *node) {
 }
 
 void AstNodeVisitor::visit(UnaryOperator *node) {
+  std::cout << "UnaryOperatorVisitor" << std::endl;
   node->expr->accept(this);
   if(node->expr->type != "int") {
     std::cerr << "Type mismatch, cannot apply unary operation to " <<
@@ -254,6 +273,7 @@ void AstNodeVisitor::visit(UnaryOperator *node) {
 }
 
 void AstNodeVisitor::visit(FreeStatement *node) {
+  std::cout << "FreeStatementVisitor" << std::endl;
   node->expr->accept(this);
   if (node->expr->type != "pair") {
     std::cerr << "semantic error freeing a non pair type expression" << std::endl;
@@ -262,6 +282,7 @@ void AstNodeVisitor::visit(FreeStatement *node) {
 }
 
 void AstNodeVisitor::visit(ReturnStatement *node) {
+  std::cout << "ReturnStatementVisitor" << std::endl;
   node->expr->accept(this);
   if(node->expr->type != scope->lookUpAll("")->name) {
     std::cerr << "semantic error : wrong return type " << node->expr->type 
@@ -270,6 +291,7 @@ void AstNodeVisitor::visit(ReturnStatement *node) {
 }
 
 void AstNodeVisitor::visit(ExitStatement *node) { 
+  std::cout << "ExitStatementVisitor" << std::endl;
   node->expr->accept(this);
   if(node->expr->type != "int") {
     std::cerr << "semantic error : wrong exit type, expected int got: " << node->expr->type
