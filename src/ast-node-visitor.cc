@@ -296,6 +296,7 @@ void AstNodeVisitor::visit(ExitStatement *node) {
   if(node->expr->type != "int") {
     std::cerr << "semantic error : wrong exit type, expected int got: " << node->expr->type
               << std::endl;
+    exit(200);
   }
 }
 
