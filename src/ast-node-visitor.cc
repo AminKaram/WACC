@@ -97,7 +97,7 @@ void AstNodeVisitor::visit(FunctionDeclaration *node) {
     std::cerr<< "Is not a type" << node->type->name << std::endl;
     exit(200);
   }
-  if (!func) {
+  if (func) {
     std::cerr<< "Already declared" << node->type->name << std::endl;
     exit(200);
   }
@@ -124,7 +124,7 @@ void AstNodeVisitor::visit(FunctionCall *node) {
     exit(200);
   }
   FunctionId* func = dynamic_cast<FunctionId*> (value);
-  if(func) {
+  if(!func) {
     std::cerr<< "is not a function" << node->id->id << std::endl;
     exit(200);
   }
