@@ -7,7 +7,9 @@ FrontEnd::FrontEnd() {
 
 FrontEnd::~FrontEnd() {
 	delete driver;
+  driver = NULL;
 	delete semanticAnalyzer;
+  semanticAnalyzer = NULL;
 }
 
 int FrontEnd::run(char *fileName) {
@@ -15,7 +17,7 @@ int FrontEnd::run(char *fileName) {
 	if(res) {
 		return 100;
 	}
-	//res = check(driver->ast);
+	res = check(driver->ast);
 	return res;
 }
 

@@ -7,6 +7,9 @@
 class AstNodeVisitor {
 public:
 
+  AstNodeVisitor();
+  ~AstNodeVisitor();
+
   void visit(ASTnode *node);
   void visit(Program *node);
   void visit(StatSeq *node);
@@ -45,7 +48,7 @@ public:
 
 
 private:
-  SymbolTable scope;
+  SymbolTable *scope = NULL;
 };
 
 #endif // ! AST_NODE_VISITOR_HH

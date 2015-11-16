@@ -7,9 +7,7 @@ SymbolTable::SymbolTable(SymbolTable *encScope) : encScope(encScope) {
 }
 
 SymbolTable::~SymbolTable() {
-  delete encScope;
   encScope = NULL;
-  dictionary->clear();
   delete dictionary;
   dictionary = NULL;
 }
@@ -35,4 +33,8 @@ SemanticId* SymbolTable::lookUpAll(std::string id) {
 int SymbolTable::add(std::string id, SemanticId val) {
   bool in = dictionary->insert(std::pair<std::string, SemanticId>(id, val)).second;
   return (!in);
+}
+
+SymbolTable* SymbolTable::getEncScope() {
+  return encScope;
 }

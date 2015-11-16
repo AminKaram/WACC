@@ -7,13 +7,14 @@ class AstNodeVisitor;
 
 template<class T>
 void freePtr(T *ptr) {
-        if (ptr) {delete ptr; ptr = NULL;}
+        if (ptr) delete ptr;
+        ptr = NULL;
 }
 
 class ASTnode {
 public:
   ASTnode() { }
-  virtual ~ASTnode() { }
+  virtual ~ASTnode() {  }
   virtual void accept(AstNodeVisitor *visitor);
 };
 

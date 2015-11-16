@@ -2,21 +2,30 @@
 #include "astnode.hh"
 #include "semantic-id.hh"
 
+AstNodeVisitor::AstNodeVisitor() {
+  scope = new SymbolTable();
+}
+
+AstNodeVisitor::~AstNodeVisitor() {
+  delete scope;
+  scope = NULL;
+}
+
 void AstNodeVisitor::visit(ASTnode *node){
 
 }
 
 void AstNodeVisitor::visit(Program *node) {
-  scope.add("int", IntTypeId(NULL));
-  scope.add("char", CharTypeId(NULL));
-   scope.add("string", StringTypeId(NULL));
-   scope.add("bool", BoolTypeId(NULL));
-   scope.add("array", ArrayId(NULL, TypeId(NULL, "type")));
-   scope.add("pair", PairId(NULL, TypeId(NULL, "type"), TypeId(NULL, "type")));
-   scope = SymbolTable(scope);
-   scope.add("", IntTypeId(NULL)); 
-   node->functions->accept(this);
-   node->statements->accept(this);
+  scope->add("int", IntTypeId(NULL));
+  scope->add("char", CharTypeId(NULL));
+  scope->add("string", StringTypeId(NULL));
+  scope->add("bool", BoolTypeId(NULL));
+  scope->add("array", ArrayId(NULL, TypeId(NULL, "type")));
+  scope->add("pair", PairId(NULL, TypeId(NULL, "type"), TypeId(NULL, "type")));
+  scope = new SymbolTable(scope);
+  scope->add("", IntTypeId(NULL)); 
+  node->functions->accept(this);
+  node->statements->accept(this);
 }
 
 void AstNodeVisitor::visit(StatSeq *node) {
@@ -26,8 +35,8 @@ void AstNodeVisitor::visit(StatSeq *node) {
 }
 
 void AstNodeVisitor::visit(VariableDeclaration *node) {
-  SemanticId *type = scope.lookUpAll(node->type->name);
-  SemanticId *var = scope.lookUp(node->id->id);
+  SemanticId *type = scope->lookUpAll(node->type->name);
+  SemanticId *var = scope->lookUp(node->id->id);
 
   if (!type) {
     std::cerr<< "Unknown type" << node->type->name << std::endl;
@@ -51,7 +60,7 @@ void AstNodeVisitor::visit(FunctionDeclaration *node) {
   SemanticId *type;
   for(int i = 0; i < node->parameters->size(); i++) {
     VariableDeclaration *var = node->parameters->operator[](i);
-    type = scope.lookUpAll((*(node->parameters))[i]->type->name);
+    type = scope->lookUpAll((*(node->parameters))[i]->type->name);
          if (!type) {
         std::cerr<< "Unknown type " << (*(node->parameters))[i]->type->name << std::endl;
         exit(200);
@@ -64,8 +73,8 @@ void AstNodeVisitor::visit(FunctionDeclaration *node) {
     ParamId tmp(var, *t);
     params.push_back(tmp);
   }
-  type = scope.lookUpAll(node->type->name);
-  SemanticId *func = scope.lookUp(node->id->id);
+  type = scope->lookUpAll(node->type->name);
+  SemanticId *func = scope->lookUp(node->id->id);
   if (!type) {
     std::cerr<< "Unknown type " << node->type->name << std::endl;
     exit(200);
@@ -80,18 +89,21 @@ void AstNodeVisitor::visit(FunctionDeclaration *node) {
     exit(200);
   }
   FunctionId tmp(node, *t, params);
-  scope.add(node->id->id, tmp);
-  scope = SymbolTable(scope);
+  scope->add(node->id->id, tmp);
+  scope =  new SymbolTable(scope);
 //Empty string represents the return type variable must have names  
-  scope.add("", tmp.returnType);
+  scope->add("", tmp.returnType);
   for (int i = 0; i < node->parameters->size(); i++) {
     (*(node->parameters))[i]->accept(this);
   }
   node->block->accept(this);
+  SymbolTable* oldScope = scope->getEncScope();
+  delete scope;
+  scope = oldScope;
 }
 
 void AstNodeVisitor::visit(FunctionCall *node) {
-  SemanticId *value = scope.lookUpAll(node->id->id);
+  SemanticId *value = scope->lookUpAll(node->id->id);
   
   if (!value) {
     std::cerr<< "unknown function" << node->id->id << std::endl;
@@ -116,7 +128,7 @@ void AstNodeVisitor::visit(FunctionCall *node) {
 void AstNodeVisitor::visit(Assignment *node) {
   node->lhs->accept(this);
   node->rhs->accept(this);
-  SemanticId *value = scope.lookUpAll(node->lhs->getId());
+  SemanticId *value = scope->lookUpAll(node->lhs->getId());
   if(!value) {
     std::cerr << "semantic error: assigning to undeclared identifier" << node->lhs->getId() << std::endl;
     exit(200);
@@ -129,36 +141,47 @@ void AstNodeVisitor::visit(Assignment *node) {
 }
 
 void AstNodeVisitor::visit(BeginStatement *node) {
-	scope = SymbolTable(scope);
+	scope = new SymbolTable(scope);;
 	node->scope->accept(this);
+  SymbolTable *tmp = scope->getEncScope();
+  delete scope;
+  scope = tmp;
 }
 
 void AstNodeVisitor::visit(IfStatement *node) {
-	scope = SymbolTable(scope);
 	node->expr->accept(this);
 	if (node->expr->type != "bool") {
 		std::cerr << "Type requiered: bool. Actual type: " 
 			 << node->expr->type << std::endl;
 		exit(200); 
 	}
+  scope = new SymbolTable(scope);
 	node->thenS->accept(this);
+  SymbolTable *tmp = scope->getEncScope();
+  delete scope;
+  scope = new SymbolTable(tmp);
 	node->elseS->accept(this);
+  delete scope;
+  scope = tmp;
 }
 
 
 void AstNodeVisitor::visit(WhileStatement *node) {
-  scope = SymbolTable(scope);	
 	node->expr->accept(this);
 	if (node->expr->type != "bool") {
 		std::cerr << "Type of expression in while requiered: bool. Actual type: " 
              << node->expr->type << std::endl;
 		exit(200); 
 	}
+  scope = new SymbolTable(scope);	
 	node->doS->accept(this);
+  SymbolTable *tmp = scope->getEncScope();
+  delete scope;
+  scope = tmp;
 }
 
 void AstNodeVisitor::visit(ReadStatement *node) {
-  SemanticId *value = scope.lookUpAll(node->id->getId());
+  SemanticId *value = scope->lookUpAll(node->id->getId());
   if(!value) {
     std::cerr << "Cannot read undeclared variable: " << node->id->getId() 
               << std::endl;
@@ -168,7 +191,7 @@ void AstNodeVisitor::visit(ReadStatement *node) {
 
 void AstNodeVisitor::visit(PrintStatement *node) {
   node->expr->accept(this);
-//  SemanticId *value = scope.lookUpAll(node->->getId());
+//  SemanticId *value = scope->lookUpAll(node->->getId());
 //  if(!value) {
 //    std::cerr << "Cannot print undeclared variable: " << node->id->getId() 
 //              << std::endl;
@@ -178,7 +201,7 @@ void AstNodeVisitor::visit(PrintStatement *node) {
 
 void AstNodeVisitor::visit(PrintlnStatement *node) {
   node->expr->accept(this);
-//  SemanticId *value = scope.lookUpAll(node->->getId());
+//  SemanticId *value = scope->lookUpAll(node->->getId());
 //  if(!value) {
 //    std::cerr << "Cannot println undeclared variable: " << node->id->getId() 
 //              << std::endl;
@@ -197,7 +220,7 @@ void AstNodeVisitor::visit(BinaryOperator *node) {
 }
 
 void AstNodeVisitor::visit(ArrayElem *node) {
- SemanticId *value = scope.lookUpAll(node->id->id);
+ SemanticId *value = scope->lookUpAll(node->id->id);
   if(!value) {
     std::cerr << "Cannot access non declared array elem" << std::endl;
     exit(200);
@@ -240,9 +263,9 @@ void AstNodeVisitor::visit(FreeStatement *node) {
 
 void AstNodeVisitor::visit(ReturnStatement *node) {
   node->expr->accept(this);
-  if(node->expr->type != scope.lookUpAll("")->name) {
+  if(node->expr->type != scope->lookUpAll("")->name) {
     std::cerr << "semantic error : wrong return type " << node->expr->type 
-              << " instead of " << scope.lookUpAll("")->name << std::endl;
+              << " instead of " << scope->lookUpAll("")->name << std::endl;
   }
 }
 
