@@ -287,6 +287,7 @@ void AstNodeVisitor::visit(ReturnStatement *node) {
   if(node->expr->type != scope->lookUpAll("")->name) {
     std::cerr << "semantic error : wrong return type " << node->expr->type 
               << " instead of " << scope->lookUpAll("")->name << std::endl;
+    exit(200);
   }
 }
 
