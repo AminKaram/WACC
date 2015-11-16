@@ -220,10 +220,21 @@ void ArrayElem:: accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
 }
 
+std::string ArrayElem::getId() {
+  return (id->id);
+}
+
 PairElem::PairElem(bool fst, Expression *expr) : fst(fst), expr(expr) {}
 PairElem::~PairElem() {freePtr(expr);}
 void PairElem:: accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
+}
+std::string PairElem::getId() {
+  ArrayElem *arrayElem = dynamic_cast<ArrayElem*>(expr);
+  Identifier *ident = dynamic_cast<Identifier*>(expr);
+  if(arrayElem) return arrayElem->getId();
+  if(ident) return ident->getId();
+  return "0";
 }
 
 ArrayLiter::ArrayLiter(ExpressionList *elems) : elems(elems) {}
@@ -249,3 +260,6 @@ void UnaryOperator::accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
 }
 
+std::string Identifier::getId() {
+  return id;
+}

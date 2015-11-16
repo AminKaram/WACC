@@ -18,9 +18,14 @@ public:
 };
 
 class AssignLhs : public ASTnode {
+public:
+  std::string type;
+  virtual std::string getId();
 };
 
-class AssignRhs : public ASTnode { 
+class AssignRhs : public ASTnode {
+public: 
+  std::string type;
 };
 
 class Expression : public AssignRhs { };
@@ -97,6 +102,7 @@ public:
   Identifier() {}
   Identifier(std::string& id) : id(id) {}
   void accept(AstNodeVisitor *visitor);
+  std::string getId();
 };
 
 class VariableDeclaration : public Statement { 
@@ -142,7 +148,6 @@ public:
 
 class FunctionCall : public Expression {
 public:
-  std::string type;
   Identifier *id = NULL;
   ExpressionList *parameters = NULL;
   
@@ -306,7 +311,6 @@ class Null : public Expression {
 
 class BinaryOperator : public Expression {
 public:
-  std::string type;
   int op;
   Expression *left;
   Expression *right;
@@ -318,13 +322,13 @@ public:
 
 class ArrayElem : public AssignLhs, public Expression {
 public: 
-  std::string type;
 	Identifier *id = NULL;
 	ExpressionList *idxs = NULL;
 
   ArrayElem(Identifier *id, ExpressionList *idxs);
   ~ArrayElem();
   void accept(AstNodeVisitor *visitor);
+  std::string getId();
 };
 
 class PairElem : public AssignLhs, public AssignRhs {
@@ -335,6 +339,7 @@ public:
   PairElem(bool fst, Expression *expr);
   ~PairElem();
   void accept(AstNodeVisitor *visitor);
+  std::string getId();
 };
 
 class ArrayLiter : public AssignRhs {
@@ -358,7 +363,6 @@ public:
 
 class UnaryOperator : public Expression	{
 public:	
-        std::string type;
 	int op;
 	Expression *expr;
 
