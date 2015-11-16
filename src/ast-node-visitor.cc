@@ -293,6 +293,7 @@ void AstNodeVisitor::visit(ReturnStatement *node) {
   if(node->expr->type != scope->lookUpAll("")->name) {
     std::cerr << "semantic error : wrong return type " << node->expr->type 
               << " instead of " << scope->lookUpAll("")->name << std::endl;
+    exit(200);
   }
 }
 
@@ -302,6 +303,7 @@ void AstNodeVisitor::visit(ExitStatement *node) {
   if(node->expr->type != "int") {
     std::cerr << "semantic error : wrong exit type, expected int got: " << node->expr->type
               << std::endl;
+    exit(200);
   }
 }
 
