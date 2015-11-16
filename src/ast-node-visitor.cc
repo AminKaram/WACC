@@ -1,6 +1,8 @@
 #include "ast-node-visitor.hh"
 #include "astnode.hh"
 #include "semantic-id.hh"
+#include "parser.hh"
+#define tok yy::parser::token::yytokentype
 
 AstNodeVisitor::AstNodeVisitor() {
   scope = new SymbolTable(NULL);
@@ -51,7 +53,6 @@ void AstNodeVisitor::visit(VariableDeclaration *node) {
     exit(200);
   }
   TypeId * t = dynamic_cast<TypeId*> (type);
-  std::cout << "cast to " << t->name << std::endl;
   if (!t) {
     std::cerr<< "Is not a type" << node->type->name << std::endl;
     exit(200);
@@ -105,7 +106,7 @@ void AstNodeVisitor::visit(FunctionDeclaration *node) {
     exit(200);
   }
   if (func) {
-    std::cerr<< "Already declared" << node->type->name << std::endl;
+    std::cerr<< "Already declared " << node->type->name << std::endl;
     exit(200);
   }
   FunctionId tmp(node, *t, params);
@@ -241,12 +242,36 @@ void AstNodeVisitor::visit(BinaryOperator *node) {
   std::cout << "BinaryOperatorVisitor" << std::endl;
   node->left->accept(this);
   node->right->accept(this);
-  if(node->left->type != node->right->type) {
-    std::cerr << "Types in binary op do not match" << std::endl;
-    exit(200);
+	int oper = node->op;
+	if((oper == tok::TOK_LOGOR) || (oper == tok::TOK_LOGAND)) {
+	  if((node->left->type != node->right->type) || (node->left->type != "bool")) {
+		  std::cerr << "Expected bool type for operands &&,||" 
+					<< std::endl;
+		  exit(200);
+	  }
+	  node->type = "bool";
+	} else if((oper >= tok::TOK_SLASH) && (oper <= tok::TOK_MINUS)) {
+	  if((node->left->type != node->right->type) || (node->left->type != "int")) {
+		  std::cerr << "Expected int type for operands /,*,%,+,-"
+					<< std::endl;
+		  exit(200);
+	  }
+	  node->type = "int";
+	} else if((oper >= tok::TOK_LESS) && (oper <= tok::TOK_GREATEREQUALS)) {
+	  if ((node->left->type != node->right->type) || (node->left->type != "int" || node->left->type != "char")) {
+			std::cerr << "Expected type int/char for operators <,<=,>,>=" 
+					  << std::endl;
+			exit(200);
+	  }
+	  node->type = "bool";
+	} else if((oper == tok::TOK_EQUALS) || (oper == tok::TOK_NOTEQUALS)) {
+	  if((node->left->type != node->right->type)) {
+		  std::cerr << "lhs and rhs types do not match for operators ==,!="
+					<< std::endl;
+	  }
+	  node->type = "bool";
+	}
   }
-  node->type = "int";
-}
 
 void AstNodeVisitor::visit(ArrayElem *node) {
   std::cout << "ArrayElemVisitor" << std::endl;
@@ -277,12 +302,32 @@ void AstNodeVisitor::visit(PairElem *node) {
 void AstNodeVisitor::visit(UnaryOperator *node) {
   std::cout << "UnaryOperatorVisitor" << std::endl;
   node->expr->accept(this);
-  if(node->expr->type != "int") {
-    std::cerr << "Type mismatch, cannot apply unary operation to " <<
-      node->expr->type << std::endl;
-    exit(200);
-  }
-  node->type = "int";
+  int oper = node->op;
+  if( oper == tok::TOK_BANG) {
+	if(node->expr->type != "bool") {
+		std::cerr << "Operand of ! is not a bool" << std::endl;
+		exit(200);
+	} 
+	node->type = "bool";
+  } else if(oper == tok::TOK_MINUS) {
+	if( node->expr->type != "int") {
+	  std::cerr << "Operand of - is not an int" << std::endl;
+	  exit(200);
+	}
+	node->type = "int";
+  } else if(oper == tok::TOK_ORD) {
+	if(node->expr->type == "char") {
+		std::cerr << "Operand of ord is not a char" << std::endl;
+		exit(200);
+	}
+	node->type = "int";
+  } else if(oper == tok::TOK_CHR) {
+	if(node->expr->type == "int") {
+		std::cerr << "Operand of chr is not an int" << std::endl;
+		exit(200);
+	}
+	node->type = "char";
+  } 
 }
 
 void AstNodeVisitor::visit(FreeStatement *node) {

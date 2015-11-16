@@ -16,7 +16,7 @@ astnode.o: astnode.cc astnode.hh
 parsing-driver.o: parsing-driver.cc parsing-driver.hh parser.o
 	g++ -c $(CPPFLAGS) -o $@ $<
 
-ast-node-visitor.o: ast-node-visitor.cc ast-node-visitor.hh astnode.o semantic-id.hh symbol-table.o
+ast-node-visitor.o: ast-node-visitor.cc ast-node-visitor.hh astnode.o semantic-id.hh symbol-table.o parser.hh
 	g++ -c $(CPPFLAGS) -o $@ $<
 
 symbol-table.o: symbol-table.cc symbol-table.hh
