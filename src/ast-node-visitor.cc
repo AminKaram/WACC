@@ -17,16 +17,16 @@ void AstNodeVisitor::visit(ASTnode *node){
 
 void AstNodeVisitor::visit(Program *node) {
   std::cout << "Program" << std::endl;
-  scope->add(&"int", &IntTypeId(NULL));
+  scope->add("int", IntTypeId(NULL));
   std::cout << " add" << std::endl;
-  scope->add(&"char", &CharTypeId(NULL));
-  scope->add(&"string", &StringTypeId(NULL));
-  scope->add(&"bool", &BoolTypeId(NULL));
-  scope->add(&"array", &ArrayId(NULL, TypeId(NULL, "type")));
-  scope->add(&"pair", &PairId(NULL, TypeId(NULL, "type"), TypeId(NULL, "type")));
+  scope->add("char", CharTypeId(NULL));
+  scope->add("string", StringTypeId(NULL));
+  scope->add("bool", BoolTypeId(NULL));
+  scope->add("array", ArrayId(NULL, TypeId(NULL, "type")));
+  scope->add("pair", PairId(NULL, TypeId(NULL, "type"), TypeId(NULL, "type")));
   std::cout << "CREATE SCOPE" << std::endl;
   scope = new SymbolTable(scope);
-  scope->add(&"", &IntTypeId(NULL)); 
+  scope->add("", IntTypeId(NULL)); 
   node->functions->accept(this);
   node->statements->accept(this);
 }
@@ -96,10 +96,10 @@ void AstNodeVisitor::visit(FunctionDeclaration *node) {
     exit(200);
   }
   FunctionId tmp(node, *t, params);
-  scope->add(node->id->id, &tmp);
+  scope->add(node->id->id, tmp);
   scope =  new SymbolTable(scope);
 //Empty string represents the return type variable must have names  
-  scope->add(&"", &tmp.returnType);
+  scope->add("", tmp.returnType);
   for (int i = 0; i < node->parameters->size(); i++) {
     (*(node->parameters))[i]->accept(this);
   }
