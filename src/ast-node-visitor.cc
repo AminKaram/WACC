@@ -2,6 +2,9 @@
 #include "astnode.hh"
 #include "semantic-id.hh"
 
+void AstNodeVisitor::visit(ASTnode *node){
+
+}
 
 void AstNodeVisitor::visit(Program *node) {
   scope.add("int", IntTypeId(NULL));
@@ -102,7 +105,7 @@ void AstNodeVisitor::visit(FunctionCall *node) {
   
   // add a clause to check for correct number of args
   for(int i = 0; i < node->parameters->size(); i++) {
-    if(!(*(node->parameters))[i]->type (func->params)[i].type.name)) {
+    if(((func->params)[i].type.name) != (node->parameters->operator[](i)->type)) {
       std::cerr << "Incorrect argument type in function call " << node->id->id << std::endl;
       exit(200);
     }  
@@ -113,9 +116,13 @@ void AstNodeVisitor::visit(FunctionCall *node) {
 void AstNodeVisitor::visit(Assignment *node) {
   node->lhs->accept(this);
   node->rhs->accept(this);
-  SemanticId *value = scope.lookUpAll(node->lhs->id);
+  SemanticId *value = scope.lookUpAll(node->lhs->getId());
+  if(!value) {
+    std::cerr << "semantic error: assigning to undeclared identifier" << node->lhs->getId() << std::endl;
+    exit(200);
+  }
   if(value->name != node->rhs->type) {
-    std::cerr << "Invalid type in assignment of " << node->lhs->id << " of type " 
+    std::cerr << "Invalid type in assignment of " << node->lhs->getId() << " of type " 
       << value->name << "as opposed to " << node->rhs->type << std::endl;
     exit(200);
   }
@@ -151,30 +158,32 @@ void AstNodeVisitor::visit(WhileStatement *node) {
 }
 
 void AstNodeVisitor::visit(ReadStatement *node) {
-  SemanticId *value = scope.lookUpAll(node->lhs->id);
+  SemanticId *value = scope.lookUpAll(node->id->getId());
   if(!value) {
-    std::cerr << "Cannot read undeclared variable: " << node->lhs->id 
+    std::cerr << "Cannot read undeclared variable: " << node->id->getId() 
               << std::endl;
     exit(200);
   }
 }
 
 void AstNodeVisitor::visit(PrintStatement *node) {
-  SemanticId *value = scope.lookUpAll(node->lhs->id);
-  if(!value) {
-    std::cerr << "Cannot print undeclared variable: " << node->lhs->id 
-              << std::endl;
-    exit(200);
-  }
+  node->expr->accept(this);
+//  SemanticId *value = scope.lookUpAll(node->->getId());
+//  if(!value) {
+//    std::cerr << "Cannot print undeclared variable: " << node->id->getId() 
+//              << std::endl;
+//    exit(200);
+//  }
 }
 
 void AstNodeVisitor::visit(PrintlnStatement *node) {
-  SemanticId *value = scope.lookUpAll(node->lhs->id);
-  if(!value) {
-    std::cerr << "Cannot println undeclared variable: " << node->lhs->id 
-              << std::endl;
-    exit(200);
-  }
+  node->expr->accept(this);
+//  SemanticId *value = scope.lookUpAll(node->->getId());
+//  if(!value) {
+//    std::cerr << "Cannot println undeclared variable: " << node->id->getId() 
+//              << std::endl;
+//    exit(200);
+//  }
 }
 
 void AstNodeVisitor::visit(BinaryOperator *node) {
@@ -198,7 +207,7 @@ void AstNodeVisitor::visit(ArrayElem *node) {
     exit(200);
   }
   ArrayId* arr = dynamic_cast<ArrayId*> (value);
-  node->type = arr->elementType->name;
+  node->AssignLhs::type = arr->elementType.name;
 }
 
 void AstNodeVisitor::visit(PairElem *node) {
@@ -219,4 +228,58 @@ void AstNodeVisitor::visit(UnaryOperator *node) {
     exit(200);
   }
   node->type = "int";
+}
+
+void AstNodeVisitor::visit(FreeStatement *node) {
+  node->expr->accept(this);
+  if (node->expr->type != "pair") {
+    std::cerr << "semantic error freeing a non pair type expression" << std::endl;
+    exit(200);
+  }
+}
+
+void AstNodeVisitor::visit(ReturnStatement *node) {
+  node->expr->accept(this);
+  if(node->expr->type != scope.lookUpAll("")->name) {
+    std::cerr << "semantic error : wrong return type " << node->expr->type 
+              << " instead of " << scope.lookUpAll("")->name << std::endl;
+  }
+}
+
+void AstNodeVisitor::visit(ExitStatement *node) { 
+  node->expr->accept(this);
+  if(node->expr->type != "int") {
+    std::cerr << "semantic error : wrong exit type, expected int got: " << node->expr->type
+              << std::endl;
+  }
+}
+
+void AstNodeVisitor::visit(Number *node) {
+}
+
+void AstNodeVisitor::visit(Boolean *node) {
+}
+
+void AstNodeVisitor::visit(Char *node) {
+}
+
+void AstNodeVisitor::visit(String *node) {
+}
+
+void AstNodeVisitor::visit(NewPair *node) {
+}
+
+void AstNodeVisitor::visit(ArrayLiter *node) {
+}
+
+void AstNodeVisitor::visit(PairType *node) {
+}
+
+void AstNodeVisitor::visit(Null *node) {
+}
+
+void AstNodeVisitor::visit(ArrayType *node) {
+}
+
+void AstNodeVisitor::visit(Identifier *node) {
 }

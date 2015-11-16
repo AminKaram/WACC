@@ -6,6 +6,7 @@
 
 class SymbolTable {
 public:
+  SymbolTable();
   SymbolTable(SymbolTable*);
   ~SymbolTable();
 

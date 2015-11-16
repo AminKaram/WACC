@@ -12,21 +12,32 @@ void freePtr(T *ptr) {
 
 class ASTnode {
 public:
-  ASTnode();
-  virtual ~ASTnode();
+  ASTnode() { }
+  virtual ~ASTnode() { }
   virtual void accept(AstNodeVisitor *visitor);
 };
 
 class AssignLhs : public ASTnode {
+public:
+  std::string type;
+  virtual std::string getId() { };
 };
 
-class AssignRhs : public ASTnode { 
+class AssignRhs : public ASTnode {
+public: 
+  std::string type;
 };
 
-class Expression : public AssignRhs { };
+class Expression : public AssignRhs { 
+public: 
+  virtual ~Expression() {} 
+};
 typedef std::vector<Expression*> ExpressionList;
 
-class Statement : public ASTnode { };
+class Statement : public ASTnode { 
+public: 
+  virtual ~Statement() {}
+};
 typedef std::vector<Statement*> StatementList;
 
 class StatSeq : public Statement {
@@ -94,9 +105,11 @@ class Identifier : public Expression, public AssignLhs {
 public:
   std::string id;
 	
-  Identifier() {}
-  Identifier(std::string& id) : id(id) {}
+  Identifier(){}
+  Identifier(std::string& id) : id(id){}
+  ~Identifier(){}
   void accept(AstNodeVisitor *visitor);
+  std::string getId();
 };
 
 class VariableDeclaration : public Statement { 
@@ -142,7 +155,6 @@ public:
 
 class FunctionCall : public Expression {
 public:
-  std::string type;
   Identifier *id = NULL;
   ExpressionList *parameters = NULL;
   
@@ -176,6 +188,10 @@ public:
 };
 
 class SkipStatement : public Statement {
+public:
+  SkipStatement();
+  ~SkipStatement();
+
   void accept(AstNodeVisitor *visitor);
 };
 
@@ -306,7 +322,6 @@ class Null : public Expression {
 
 class BinaryOperator : public Expression {
 public:
-  std::string type;
   int op;
   Expression *left;
   Expression *right;
@@ -318,13 +333,13 @@ public:
 
 class ArrayElem : public AssignLhs, public Expression {
 public: 
-  std::string type;
 	Identifier *id = NULL;
 	ExpressionList *idxs = NULL;
 
   ArrayElem(Identifier *id, ExpressionList *idxs);
   ~ArrayElem();
   void accept(AstNodeVisitor *visitor);
+  std::string getId();
 };
 
 class PairElem : public AssignLhs, public AssignRhs {
@@ -335,6 +350,7 @@ public:
   PairElem(bool fst, Expression *expr);
   ~PairElem();
   void accept(AstNodeVisitor *visitor);
+  std::string getId();
 };
 
 class ArrayLiter : public AssignRhs {
@@ -358,7 +374,6 @@ public:
 
 class UnaryOperator : public Expression	{
 public:	
-        std::string type;
 	int op;
 	Expression *expr;
 
