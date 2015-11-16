@@ -12,11 +12,11 @@ FrontEnd::~FrontEnd() {
 
 int FrontEnd::run(char *fileName) {
 	int res = driver->parse(fileName);
-	check(driver->ast);
 	if(res) {
 		return 100;
 	}
-	return 0;
+	//res = check(driver->ast);
+	return res;
 }
 
 int FrontEnd::check(Program *node) {
