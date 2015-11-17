@@ -13,6 +13,7 @@ void freePtr(T *ptr) {
 
 class ASTnode {
 public:
+  std::string type;
   ASTnode() { }
   virtual ~ASTnode() {  }
   virtual void accept(AstNodeVisitor *visitor);
@@ -20,18 +21,20 @@ public:
 
 class AssignLhs : public ASTnode {
 public:
-  std::string type;
   virtual std::string getId() { }
 };
 
 class AssignRhs : public ASTnode {
 public: 
-  std::string type;
+  AssignRhs() { }
+  AssignRhs(std::string type);
+  void accept(AstNodeVisitor *visitor);
 };
 
 class Expression : public AssignRhs { 
 public: 
   virtual ~Expression() {} 
+  void accept(AstNodeVisitor *visitor);
 };
 typedef std::vector<Expression*> ExpressionList;
 

@@ -256,7 +256,8 @@ std::string PairElem::getId() {
   return "0";
 }
 
-ArrayLiter::ArrayLiter(ExpressionList *elems) : elems(elems) {}
+ArrayLiter::ArrayLiter(ExpressionList *elems) : AssignRhs("array"),
+                                                elems(elems) {}
 ArrayLiter::~ArrayLiter() {
   for (int i = 0; i < elems->size(); ++i) {
     delete (*elems)[i];
@@ -267,7 +268,9 @@ void ArrayLiter::accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
 }
 
-NewPair::NewPair(Expression *fst, Expression *snd) : fst(fst), snd(snd) {}
+NewPair::NewPair(Expression *fst, Expression *snd) : AssignRhs("pair"), 
+                                                     fst(fst),
+                                                     snd(snd) {}
 NewPair::~NewPair() {freePtr(fst); freePtr(snd);}
 void NewPair:: accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
@@ -285,5 +288,15 @@ std::string Identifier::getId() {
 
 
 void Identifier::accept(AstNodeVisitor *visitor){
+  visitor->visit(this);
+}
+
+void AssignRhs::accept(AstNodeVisitor *visitor) {
+  visitor->visit(this);
+}
+
+AssignRhs::AssignRhs(std::string type) : type(type) { }
+
+void Expression::accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
 }

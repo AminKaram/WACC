@@ -6,6 +6,7 @@
 
 AstNodeVisitor::AstNodeVisitor() {
   scope = new SymbolTable(NULL);
+  exprTable = new std::map<ASTnode*, TypeId*>();
 }
 
 AstNodeVisitor::~AstNodeVisitor() {
@@ -13,28 +14,70 @@ AstNodeVisitor::~AstNodeVisitor() {
   scope = NULL;
 }
 
-void AstNodeVisitor::visit(ASTnode *node){
+void AstNodeVisitor::addExpression(ASTnode* node, TypeId* id) {
+  exprTable->operator[](node) = id;
+}
 
+TypeId* AstNodeVisitor::lookUpExpr(ASTnode* node) {
+  auto it = exprTable->find(node);
+  if ( it != exprTable->end()) return it->second;
+  return new NullId();
+}
+
+TypeId* AstNodeVisitor::typeBuilder(Type* type){
+  IntegerType *intType = dynamic_cast<IntegerType*>(type);
+  BoolType *boolType = dynamic_cast<BoolType*>(type);
+  CharType *charType = dynamic_cast<CharType*>(type);
+  StringType *stringType = dynamic_cast<StringType*>(type);
+  ArrayType *arrayType = dynamic_cast<ArrayType*>(type);
+  PairKeyword *pairKeyword = dynamic_cast<PairKeyword*>(type);
+  PairType *pairType = dynamic_cast<PairType*>(type);
+
+  if(intType) {
+    return new IntTypeId(NULL); 
+  }  else if(boolType) {
+    return new BoolTypeId(NULL);
+  } else if(charType) {
+    return new CharTypeId(NULL);
+  } else if(stringType) {
+    return new StringTypeId(NULL);
+  } else if(arrayType) {
+    return new ArrayTypeId(NULL, typeBuilder(type->type));
+  } else if(pairKeyword) {
+    return new PairKeyId(NULL);
+  } else if(PairType) {
+    return new PairId(NULL, typeBuilder(type->fst), typeBuilder(type->snd));
+  } else {
+    return NULL;
+  }
+}
+
+
+void AstNodeVisitor::visit(ASTnode *node){
 }
 
 void AstNodeVisitor::visit(Program *node) {
   std::cout << "ProgramVisitor" << std::endl;
   IntTypeId intId(NULL);
-  scope->add("int", intId);
-  CharTypeId charId(NULL);
-  scope->add("char", charId);
-  StringTypeId stringId(NULL);
-  scope->add("string", stringId);
-  BoolTypeId boolId(NULL);
-  scope->add("bool", boolId);
-  ArrayId arrayId(NULL, TypeId(NULL, "type"));
-  scope->add("array", arrayId);
-  PairId pairId(PairId(NULL, TypeId(NULL, "type"), TypeId(NULL, "type")));
-  scope->add("pair", pairId);
-  scope = new SymbolTable(scope);
+//  scope->add("int", intId);
+//  CharTypeId charId(NULL);
+//  scope->add("char", charId);
+//  StringTypeId stringId(NULL);
+//  scope->add("string", stringId);
+//  BoolTypeId boolId(NULL);
+//  scope->add("bool", boolId);
+//  ArrayId arrayId(NULL, TypeId(NULL, "type"));
+//  scope->add("array", arrayId);
+//  PairId pairId(PairId(NULL, TypeId(NULL, "type"), TypeId(NULL, "type")));
+//  scope->add("pair", pairId);
+//  scope = new SymbolTable(scope);
   scope->add("", intId); 
   node->functions->accept(this);
   node->statements->accept(this);
+}
+
+void AstNodeVisitor::visit(AssignRhs *node) { 
+
 }
 
 void AstNodeVisitor::visit(StatSeq *node) {
@@ -46,7 +89,7 @@ void AstNodeVisitor::visit(StatSeq *node) {
 
 void AstNodeVisitor::visit(VariableDeclaration *node) {
   std::cout << "VariableDeclarationVisitor" << std::endl;
-  SemanticId *type = scope->lookUpAll(node->type->name);
+  SemanticId *type = typeBuilder(node->type);
   SemanticId *var = scope->lookUp(node->id->id);
   if (!type) {
     std::cerr<< "Unknown type" << node->type->name << std::endl;
@@ -62,8 +105,7 @@ void AstNodeVisitor::visit(VariableDeclaration *node) {
     exit(200);
   }
   node->rhs->accept(this);
-  std::cout<< "rhs is of type" << node->rhs->type << std::endl;
-  if (node->rhs->type != t->name) {
+  if (!(*lookUpExpr(node->rhs)->equals(type))) {
     std::cerr<< "RHS has invalid type. expected" << node->id->id << std::endl;
     exit(200);
   }
@@ -81,52 +123,20 @@ void AstNodeVisitor::visit(FunctionDecList *node) {
 
 void AstNodeVisitor::visit(FunctionDeclaration *node) {
   std::cout << "FunctionDeclarationVisitor" << std::endl;
+  TypeId *returnType = typeBuilder(node->type);
   std::vector<ParamId> params;
-  SemanticId *type;
-  for(int i = 0; i < node->parameters->size(); i++) {
-    VariableDeclaration *var = node->parameters->operator[](i);
-    type = scope->lookUpAll(var->type->name);
-         if (!type) {
-        std::cerr<< "Unknown type " << var->type->name << std::endl;
-        exit(200);
-      }
-      std::cout << " Before cast " << type->name << std::endl;
-      TypeId * t = dynamic_cast<TypeId*> (type);
-      if (!t) {
-        std::cerr<< "Is not a type" << var->type->name << std::endl;
-        exit(200);
-      }
-    ParamId tmp(var, *t);
-    params.push_back(tmp);
+  for(int i=0; i < parameters->size(); i++) {
+    TypeId *paramType = typeBuilder(parameters->operator[](i)->type);
+    params.push_back(ParamId(NULL, paramType))
   }
-  type = scope->lookUpAll(node->type->name);
-
-  SemanticId *func = scope->lookUp(node->id->id);
-  if (!type) {
-    std::cerr<< "Unknown type " << node->type->name << std::endl;
-    exit(200);
-  }
-  TypeId * t = dynamic_cast<TypeId* > (type);
-  if (!t) {
-    std::cerr<< "Is not a type" << node->type->name << std::endl;
-    exit(200);
-  }
-  if (func) {
-    std::cerr<< "Already declared " << node->type->name << std::endl;
-    exit(200);
-  }
-  FunctionId tmp(node, *t, params);
+  FunctionId tmp(NULL, returnType, params);
   scope->add(node->id->id, tmp);
-  scope =  new SymbolTable(scope);
-//Empty string represents the return type variable must have names  
-  scope->add("", tmp.returnType);
-  for (int i = 0; i < node->parameters->size(); i++) {
-    (*(node->parameters))[i]->accept(this);
-  }
+  scope = new SymbolTable(scope);
+  scope->add("", returnType)
   node->block->accept(this);
-  SymbolTable* oldScope = scope->getEncScope();
+  SymbolTable *tmp = scope->getEncScope();
   delete scope;
-  scope = oldScope;
+  scope = tmp; 
 }
 
 void AstNodeVisitor::visit(FunctionCall *node) {
@@ -144,13 +154,21 @@ void AstNodeVisitor::visit(FunctionCall *node) {
   }
   
   // add a clause to check for correct number of args
+  if(node->parameters->size() != func->params.size()) {
+    std::cerr << "semantic error: wrong number of arguments in function call"
+      << std::end;
+    exit(200);
+  }
+
   for(int i = 0; i < node->parameters->size(); i++) {
-    if(((func->params)[i].type.name) != (node->parameters->operator[](i)->type)) {
+    node->parameters->operator[](i)->accept(this);
+    TypeId *paramId = lookUpExpr(node->parameters->operator[](i));
+    if(!paramId.equals(func->params.operator[](i))) {
       std::cerr << "Incorrect argument type in function call " << node->id->id << std::endl;
       exit(200);
     }  
   }
-  node->type = func->returnType.name;
+  addExpression(node,func->returnType);
 }
 
 void AstNodeVisitor::visit(Assignment *node) {
