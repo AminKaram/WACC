@@ -29,7 +29,6 @@ SemanticId* SymbolTable::lookUpAll(std::string id) {
 }
 
 int SymbolTable::add(std::string id, SemanticId& val) {
-  std::cerr<< "BITCH MOFO NAME IS" << val.name << std::endl;
   auto ret = dictionary->insert(std::pair<std::string, SemanticId&>(id, val));
   if(ret.second) {
     return 0;
