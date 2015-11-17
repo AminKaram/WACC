@@ -61,6 +61,8 @@ void AstNodeVisitor::visit(VariableDeclaration *node) {
     std::cerr<< "Already declared" << node->id->id << std::endl;
     exit(200);
   }
+  node->rhs->accept(this);
+  std::cout<< "rhs is of type" << node->rhs->type << std::endl;
   if (node->rhs->type != t->name) {
     std::cerr<< "RHS has invalid type. expected" << node->id->id << std::endl;
     exit(200);
