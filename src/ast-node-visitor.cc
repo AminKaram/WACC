@@ -16,14 +16,11 @@ AstNodeVisitor::~AstNodeVisitor() {
 
 void AstNodeVisitor::addExpression(ASTnode* node, TypeId* id) {
   exprTable->operator[](node) = id;
-  std::cout << node << "searchin in add " << exprTable->find(node)->second <<std::endl;
 }
 
 TypeId* AstNodeVisitor::lookUpExpr(ASTnode* node) {
-  std::cout<< "look u pfor " << node << std::endl;
   auto it = exprTable->find(node);
   if ( it != exprTable->end()) return it->second;
-  std::cout << "lol" <<std::endl;
   return NULL;
 }
 
@@ -154,7 +151,6 @@ void AstNodeVisitor::visit(VariableDeclaration *node) {
 // //   exit(200);
 // // }
   VariableId *variable = new VariableId(node, type);
-  std::cout << "adding: " << node->id->id << std::endl;
   scope->add(node->id->id, *variable);
 }
 
@@ -250,7 +246,6 @@ void AstNodeVisitor::visit(BeginStatement *node) {
 void AstNodeVisitor::visit(IfStatement *node) {
   std::cout << "IfStatementVisitor" << std::endl;
   node->expr->accept(this);
-  std::cout << "node expr " << node->expr << std::endl;
 	if (!(lookUpExpr(node->expr)->equals(new BoolTypeId(NULL)))) {
 		std::cerr << "Type requiered: bool. Actual type: " 
 			 << node->expr->type << std::endl;
@@ -317,7 +312,6 @@ void AstNodeVisitor::visit(PrintlnStatement *node) {
 void AstNodeVisitor::visit(BinaryOperator *node) {
   std::cout << "BinaryOperatorVisitor" << std::endl;
   node->left->accept(this);
-  std::cout <<  "node left is" << node->left << std::endl;
   node->right->accept(this);
 	int oper = node->op;
 	if((oper == tok::TOK_LOGOR) || (oper == tok::TOK_LOGAND)) {
@@ -355,7 +349,6 @@ void AstNodeVisitor::visit(BinaryOperator *node) {
 	  }
     addExpression(node, new BoolTypeId(NULL));
 	}
-    std::cout << "binop node: " << node <<std::endl;
 	//std::cout << "WUT" <<std::endl;
   }
 
@@ -385,7 +378,7 @@ void AstNodeVisitor::visit(PairElem *node) {
     TypeId *typeId = lookUpExpr(node->expr);
     PairId *pairType = dynamic_cast<PairId*>(typeId);
     if(!pairType) {
-      std::cout << "semantic error accessing elem of undefined pair" << std::endl;
+      std::cerr << "semantic error accessing elem of undefined pair" << std::endl;
       exit(200);
     }
     ASTnode *n = static_cast<ASTnode*>(static_cast<AssignLhs*>(node));
@@ -525,7 +518,6 @@ void AstNodeVisitor::visit(Identifier *node) {
               << std::endl;
     exit(200);
   }
-  std::cout << idType->type->name << std::endl;
   addExpression(static_cast<ASTnode*>(static_cast<AssignLhs*>(node)), idType->type);
   addExpression(static_cast<ASTnode*>(static_cast<AssignRhs*>(node)), idType->type);
 }
