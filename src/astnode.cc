@@ -304,3 +304,14 @@ AssignRhs::AssignRhs(std::string type) {this->type = type; }
 void Expression::accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
 }
+
+std::string AssignLhs::getId() {
+ ArrayElem *arr = dynamic_cast<ArrayElem*>(this);
+ Identifier *ident = dynamic_cast<Identifier*>(this);
+ PairElem *pair = dynamic_cast<PairElem*>(this);
+
+ if(arr) return arr->getId();
+ if(ident) return ident->getId();
+ if(pair) return pair->getId();
+}
+
