@@ -71,8 +71,9 @@ void AstNodeVisitor::visit(Program *node) {
 //  PairId pairId(PairId(NULL, TypeId(NULL, "type"), TypeId(NULL, "type")));
 //  scope->add("pair", pairId);
 //  scope = new SymbolTable(scope);
-  scope->add("", intId); 
   node->functions->accept(this);
+  scope = new SymbolTable(scope);
+  scope->add("", intId); 
   node->statements->accept(this);
 }
 
