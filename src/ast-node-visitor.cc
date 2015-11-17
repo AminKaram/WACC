@@ -150,8 +150,9 @@ void AstNodeVisitor::visit(VariableDeclaration *node) {
 // //   std::cerr<< "RHS has invalid type. expected" << node->id->id << std::endl;
 // //   exit(200);
 // // }
-  VariableId variable(node, *type);
-  scope->add(node->id->id, variable);
+  VariableId *variable = new VariableId(node, *type);
+  std::cout << "adding: " << node->id->id << std::endl;
+  scope->add(node->id->id, *variable);
 }
 
 void AstNodeVisitor::visit(FunctionDecList *node) {
@@ -164,16 +165,21 @@ void AstNodeVisitor::visit(FunctionDecList *node) {
 void AstNodeVisitor::visit(FunctionDeclaration *node) {
   std::cout << "FunctionDeclarationVisitor" << std::endl;
   TypeId *returnType = typeBuilder(node->type);
-  SemanticId retType  = *returnType;
+  SemanticId *retType  = returnType;
   std::vector<ParamId> params;
   for(int i=0; i < node->parameters->size(); i++) {
     TypeId *paramType = typeBuilder(node->parameters->operator[](i)->type);
     params.push_back(ParamId(NULL, *paramType));
   }
-  FunctionId func(NULL, *returnType, params);
-  scope->add(node->id->id, func);
+  FunctionId *func = new FunctionId(NULL, *returnType, params);
+  scope->add(node->id->id, *func);
   scope = new SymbolTable(scope);
-  scope->add("", retType);
+  scope->add("", *retType);
+  for(int i=0; i < node->parameters->size(); i++) {
+    std::string id = node->parameters->operator[](i)->id->id;
+    VariableId *var = new VariableId(NULL, params[i].type);
+    scope->add(id, *var);
+  }
   node->block->accept(this);
   SymbolTable *tmp = scope->getEncScope();
   delete scope;
@@ -241,7 +247,8 @@ void AstNodeVisitor::visit(BeginStatement *node) {
 void AstNodeVisitor::visit(IfStatement *node) {
   std::cout << "IfStatementVisitor" << std::endl;
   node->expr->accept(this);
-	  if (!(lookUpExpr(node->expr)->equals(new BoolTypeId(NULL)))) {
+  std::cout << "node expr " << node->expr << std::endl;
+	if (!(lookUpExpr(node->expr)->equals(new BoolTypeId(NULL)))) {
 		std::cerr << "Type requiered: bool. Actual type: " 
 			 << node->expr->type << std::endl;
 		exit(200); 
@@ -338,9 +345,12 @@ void AstNodeVisitor::visit(BinaryOperator *node) {
 	  if(!(lookUpExpr(node->left)->equals(lookUpExpr(node->right)))) {
 		  std::cerr << "lhs and rhs types do not match for operators ==,!="
 					<< std::endl;
+          exit(200);
 	  }
     addExpression(node, new BoolTypeId(NULL));
 	}
+    std::cout << "binop node: " << node <<std::endl;
+  std::cout << "WUT" <<std::endl;
   }
 
 void AstNodeVisitor::visit(ArrayElem *node) {
@@ -488,11 +498,11 @@ void AstNodeVisitor::visit(ArrayType *node) {
 
 void AstNodeVisitor::visit(Identifier *node) {
   SemanticId *type = scope->lookUpAll(node->id);
-  TypeId *idType = dynamic_cast<TypeId *>(type);
+  VariableId *idType = dynamic_cast<VariableId*>(type);
   if(!idType) {
     std::cerr << "semantic error: variable is not declared " << node->id
               << std::endl;
     exit(200);
   }
-  addExpression(static_cast<ASTnode*>(static_cast<AssignLhs*>(node)), idType);
+  addExpression(static_cast<ASTnode*>(static_cast<AssignLhs*>(node)), &(idType->type));
 }

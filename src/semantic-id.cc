@@ -6,7 +6,9 @@ bool TypeId::equals(TypeId* other) {
   if(intMe && intOther) return true;
   
   BoolTypeId *boolMe = dynamic_cast<BoolTypeId*>(this);
+  std::cout << boolMe << std::endl;
   BoolTypeId *boolOther = dynamic_cast<BoolTypeId*>(other);
+  std::cout << boolOther << std::endl;
   if(boolMe && boolOther) return true;
   
   CharTypeId *charMe = dynamic_cast<CharTypeId*>(this);
