@@ -25,6 +25,7 @@ SemanticId* SymbolTable::lookUpAll(std::string id) {
     if(val) {std::cerr << id << " val is" << val->name << std::endl; return val;}
     s = s->encScope;
   }
+  std::cerr << " hey in lookup" << std::endl;
   return NULL;
 }
 
