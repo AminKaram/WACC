@@ -151,8 +151,7 @@ void AstNodeVisitor::visit(VariableDeclaration *node) {
 // //   std::cerr<< "RHS has invalid type. expected" << node->id->id << std::endl;
 // //   exit(200);
 // // }
-  VariableId *variable = new VariableId(node, *type);
-  std::cout << "adding: " << node->id->id << std::endl;
+  VariableId *variable = new VariableId(node, type);
   scope->add(node->id->id, *variable);
 }
 
@@ -170,7 +169,7 @@ void AstNodeVisitor::visit(FunctionDeclaration *node) {
   std::vector<ParamId> params;
   for(int i=0; i < node->parameters->size(); i++) {
     TypeId *paramType = typeBuilder(node->parameters->operator[](i)->type);
-    params.push_back(ParamId(NULL, *paramType));
+    params.push_back(ParamId(NULL, paramType));
   }
   FunctionId *func = new FunctionId(NULL, *returnType, params);
   scope->add(node->id->id, *func);
@@ -211,7 +210,7 @@ void AstNodeVisitor::visit(FunctionCall *node) {
   for(int i = 0; i < node->parameters->size(); i++) {
     node->parameters->operator[](i)->accept(this);
     TypeId *paramId = lookUpExpr(node->parameters->operator[](i));
-    if(!paramId->equals(&func->params.operator[](i).type)) {
+    if(!paramId->equals(func->params.operator[](i).type)) {
       std::cerr << "Incorrect argument type in function call " << node->id->id << std::endl;
       exit(200);
     }  
@@ -248,7 +247,6 @@ void AstNodeVisitor::visit(BeginStatement *node) {
 void AstNodeVisitor::visit(IfStatement *node) {
   std::cout << "IfStatementVisitor" << std::endl;
   node->expr->accept(this);
-  std::cout << "node expr " << node->expr << std::endl;
 	if (!(lookUpExpr(node->expr)->equals(new BoolTypeId(NULL)))) {
 		std::cerr << "Type requiered: bool. Actual type: " 
 			 << node->expr->type << std::endl;
@@ -317,20 +315,21 @@ void AstNodeVisitor::visit(BinaryOperator *node) {
   node->left->accept(this);
   node->right->accept(this);
 	int oper = node->op;
-  std::cout << oper << std::endl;
 	if((oper == tok::TOK_LOGOR) || (oper == tok::TOK_LOGAND)) {
     if(!(lookUpExpr(node->left)->equals(lookUpExpr(node->right)))
        || (!(lookUpExpr(node->left)->equals(new BoolTypeId(NULL))))) {
 		  std::cerr << "Expected bool type for operands &&,||" 
-					<< std::endl;
+					<< lookUpExpr(node->left)->name  << std::endl;
 		  exit(200);
 	  }
     addExpression(node, new BoolTypeId(NULL));
 	} else if((oper >= tok::TOK_SLASH) && (oper <= tok::TOK_MINUS)) {
 	  if(!(lookUpExpr(node->left)->equals(lookUpExpr(node->right)))
        || (!(lookUpExpr(node->left)->equals(new IntTypeId(NULL))))) {
-		  std::cerr << "Expected int type for operands /,*,%,+,-"
-					<< std::endl;
+      std::cerr << "right " << lookUpExpr(node->right)->name << std::endl;  
+		  std::cerr <<  lookUpExpr(node->left) <<std::endl;
+      std::cerr << "Expected int type for operands /,*,%,+,- "
+					<< lookUpExpr(node->left)->name  << std::endl;
 		  exit(200);
 	  }
     addExpression(node, new IntTypeId(NULL));
@@ -339,20 +338,19 @@ void AstNodeVisitor::visit(BinaryOperator *node) {
        || (!(lookUpExpr(node->left)->equals(new IntTypeId(NULL)))
        || (!(lookUpExpr(node->left)->equals(new CharTypeId(NULL)))))) {
 			std::cerr << "Expected type int/char for operators <,<=,>,>=" 
-					  << std::endl;
+					<< lookUpExpr(node->left)->name  << std::endl;
 			exit(200);
 	  }
     addExpression(node, new BoolTypeId(NULL));
 	} else if((oper == tok::TOK_EQUALS) || (oper == tok::TOK_NOTEQUALS)) {
 	  if(!(lookUpExpr(node->left)->equals(lookUpExpr(node->right)))) {
 		  std::cerr << "lhs and rhs types do not match for operators ==,!="
-					<< std::endl;
+					<< lookUpExpr(node->left)->name  << std::endl;
           exit(200);
 	  }
     addExpression(node, new BoolTypeId(NULL));
 	}
-    std::cout << "binop node: " << node <<std::endl;
-  std::cout << "WUT" <<std::endl;
+	//std::cout << "WUT" <<std::endl;
   }
 
 void AstNodeVisitor::visit(ArrayElem *node) {
@@ -381,7 +379,7 @@ void AstNodeVisitor::visit(PairElem *node) {
     TypeId *typeId = lookUpExpr(node->expr);
     PairId *pairType = dynamic_cast<PairId*>(typeId);
     if(!pairType) {
-      std::cout << "semantic error accessing elem of undefined pair" << std::endl;
+      std::cerr << "semantic error accessing elem of undefined pair" << std::endl;
       exit(200);
     }
     ASTnode *n = static_cast<ASTnode*>(static_cast<AssignLhs*>(node));
@@ -435,9 +433,14 @@ void AstNodeVisitor::visit(FreeStatement *node) {
 void AstNodeVisitor::visit(ReturnStatement *node) {
   std::cout << "ReturnStatementVisitor" << std::endl;
   node->expr->accept(this);
-  TypeId *rettype = lookUpExpr(scope->lookUpAll("")->astnode);
-  if(!(lookUpExpr(node->expr)->equals(rettype))) {
-    std::cerr << "semantic error : wrong return type " << node->expr->type;
+  SemanticId *rettype = scope->lookUpAll("");
+  TypeId *ret = dynamic_cast<TypeId*>(rettype);
+  if(!ret) {
+    std::cerr << "WUThelper" << std::endl;
+    exit(200);
+  }
+  if(!(lookUpExpr(node->expr)->equals(ret))) {
+    std::cerr << "semantic error : wrong return type " << node->expr->type << std::endl;
     exit(200);
   }
 }
@@ -516,5 +519,6 @@ void AstNodeVisitor::visit(Identifier *node) {
               << std::endl;
     exit(200);
   }
-  addExpression(static_cast<ASTnode*>(static_cast<AssignLhs*>(node)), &(idType->type));
+  addExpression(static_cast<ASTnode*>(static_cast<AssignLhs*>(node)), idType->type);
+  addExpression(static_cast<ASTnode*>(static_cast<AssignRhs*>(node)), idType->type);
 }

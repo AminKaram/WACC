@@ -41,14 +41,14 @@ public:
 
 class VariableId : public SemanticId {
 public:
-  TypeId type;
-  VariableId(ASTnode* astnode, TypeId type) : SemanticId(astnode), type(type) {name = "VariableId"; }
+  TypeId *type;
+  VariableId(ASTnode* astnode, TypeId *type) : SemanticId(astnode), type(type) {name = "VariableId"; }
 };
 
 class ParamId : public SemanticId {
 public:
-  TypeId type;
-  ParamId(ASTnode* astnode, TypeId type) : SemanticId(astnode), type(type) {name = "ParamId"; }
+  TypeId *type;
+  ParamId(ASTnode* astnode, TypeId *type) : SemanticId(astnode), type(type) {name = "ParamId"; }
 };
 
 class ArrayId : public TypeId {

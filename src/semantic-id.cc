@@ -2,7 +2,9 @@
 
 bool TypeId::equals(TypeId* other) {
   IntTypeId *intMe = dynamic_cast<IntTypeId*>(this);
+  std::cout <<"int me" << intMe << std::endl;
   IntTypeId *intOther = dynamic_cast<IntTypeId*>(other);
+  std::cout <<"int other "<< intOther << std::endl;
   if(intMe && intOther) return true;
   
   BoolTypeId *boolMe = dynamic_cast<BoolTypeId*>(this);
