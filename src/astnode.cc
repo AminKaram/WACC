@@ -256,7 +256,9 @@ std::string PairElem::getId() {
 }
 
 ArrayLiter::ArrayLiter(ExpressionList *elems) : AssignRhs("array"),
-                                                elems(elems) {}
+												elems(elems) {
+}
+
 ArrayLiter::~ArrayLiter() {
   for (int i = 0; i < elems->size(); ++i) {
     delete (*elems)[i];
