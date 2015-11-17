@@ -293,6 +293,12 @@ void AstNodeVisitor::visit(ReadStatement *node) {
         << std::endl;
     exit(200);
   }
+    BoolTypeId *b = dynamic_cast<BoolTypeId*>(var->type);
+    if(b) {
+     std::cerr << "semantic error: reading into bool type is not allowed "
+         << std::endl;
+     exit(200);
+  }
 }
 
 void AstNodeVisitor::visit(PrintStatement *node) {
@@ -453,8 +459,8 @@ void AstNodeVisitor::visit(ReturnStatement *node) {
   node->expr->accept(this);
   SemanticId *rettype = scope->lookUpAll("");
   TypeId *ret = dynamic_cast<TypeId*>(rettype);
-  if(!ret) {
-    std::cerr << "WUThelper" << std::endl;
+  if(!scope->getEncScope()->getEncScope()) {
+    std::cerr << "Semantic Error: No return from program" << std::endl;
     exit(200);
   }
   if(!(lookUpExpr(node->expr)->equals(ret))) {
