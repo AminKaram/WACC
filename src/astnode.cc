@@ -109,7 +109,9 @@ void PairType::accept(AstNodeVisitor *visitor){
 FunctionCall::FunctionCall(Identifier *id, ExpressionList *parameters)
     : id(id), parameters(parameters) {}
 FunctionCall::FunctionCall(Identifier *id)
-    : id(id) {}
+    : id(id) {
+		parameters = new ExpressionList();
+		}
 
 FunctionCall::~FunctionCall() {
      freePtr(id);
