@@ -77,7 +77,43 @@ void AstNodeVisitor::visit(Program *node) {
 }
 
 void AstNodeVisitor::visit(AssignRhs *node) { 
+  ArrayLiter *arrayLiter = dynamic_cast<ArrayLiter*>(node);
+  NewPair *newPair = dynamic_cast<NewPair*>(node);
+  Expression *expr = dynamic_cast<Expression*>(node);
+  PairElem *pairElem = dynamic_cast<PairElem*>(node);
 
+  if(arrayLiter) arrayLiter->accept(this);
+  if(newPair) newPair->accept(this);
+  if(expr) expr->accept(this);
+  if(pairElem) pairElem->accept(this);
+}
+
+void AstNodeVisitor::visit(AssignLhs *node) {
+
+}
+
+void AstNodeVisitor::visit(Expression *node) {
+  Identifier *ident = dynamic_cast<Identifier*>(node);
+  FunctionCall *funcCall = dynamic_cast<FunctionCall*>(node);
+  Number *number = dynamic_cast<Number*>(node);
+  Boolean *boolean = dynamic_cast<Boolean*>(node);
+  Char *charId = dynamic_cast<Char*>(node);
+  String *stringId =dynamic_cast<String*>(node);
+  Null *null = dynamic_cast<Null*>(node);
+  BinaryOperator *binop = dynamic_cast<BinaryOperator*>(node);
+  ArrayElem *arrayElem = dynamic_cast<ArrayElem*>(node);
+  UnaryOperator *unop = dynamic_cast<UnaryOperator*>(node);
+
+  if(ident) ident->accept(this);
+  if(funcCall) funcCall->accept(this);
+  if(number) number->accept(this);
+  if(boolean) boolean->accept(this); 
+  if(charId) charId->accept(this);
+  if(stringId) stringId->accept(this);
+  if(null) null->accept(this);
+  if(binop) binop->accept(this);
+  if(arrayElem) arrayElem->accept(this);
+  if(unop) unop->accept(this);
 }
 
 void AstNodeVisitor::visit(StatSeq *node) {
@@ -314,14 +350,13 @@ void AstNodeVisitor::visit(ArrayElem *node) {
   if(!value) {
     std::cerr << "Cannot access non declared array elem" << std::endl;
     exit(200);
-  } else if(lookUpExpr(value->astnode)->equals(new ArrayId(NULL, NullId()))) {
-    std::cerr << "Type mismatch cannot access element of non array variable" 
-              << std::endl;
+  } 
+  ArrayId* arr = dynamic_cast<ArrayId*> (value);
+  if(!arr) {
+    std::cerr <<"semantic error: identifier is not an array" << std::endl;
     exit(200);
   }
-  ArrayId* arr = dynamic_cast<ArrayId*> (value);
-  //TODO: FIGURE OUT HOW TO WRITE addexpression
-  //addExpression(node, arr->elementType);
+  addExpression(static_cast<ASTnode*>(static_cast<AssignLhs*>(node)), &(arr->elementType));
 }
 
 void AstNodeVisitor::visit(PairElem *node) {
@@ -332,7 +367,18 @@ void AstNodeVisitor::visit(PairElem *node) {
               << std::endl;
     exit(200);
   } 
-  // Do something to set pair elem type
+    TypeId *typeId = lookUpExpr(node->expr);
+    PairId *pairType = dynamic_cast<PairId*>(typeId);
+    if(!pairType) {
+      std::cout << "semantic error accessing elem of undefined pair" << std::endl;
+      exit(200);
+    }
+    ASTnode *n = static_cast<ASTnode*>(static_cast<AssignLhs*>(node));
+  if (node->fst) {
+    addExpression(n, &(pairType->fst));
+  } else {
+    addExpression(n, &(pairType->snd));
+  }
 }
 
 void AstNodeVisitor::visit(UnaryOperator *node) {
@@ -396,31 +442,58 @@ void AstNodeVisitor::visit(ExitStatement *node) {
 }
 
 void AstNodeVisitor::visit(Number *node) {
+  addExpression(node, new IntTypeId(NULL));
 }
 
 void AstNodeVisitor::visit(Boolean *node) {
+  addExpression(node, new BoolTypeId(NULL));
 }
 
 void AstNodeVisitor::visit(Char *node) {
+  addExpression(node, new CharTypeId(NULL));
 }
 
 void AstNodeVisitor::visit(String *node) {
+  addExpression(node, new StringTypeId(NULL));
 }
 
 void AstNodeVisitor::visit(NewPair *node) {
+  node->fst->accept(this);
+  node->snd->accept(this);
+  addExpression(node, new PairId(NULL, *lookUpExpr(node->fst), *lookUpExpr(node->snd))); 
 }
 
 void AstNodeVisitor::visit(ArrayLiter *node) {
+  node->elems->operator[](0)->accept(this);
+  TypeId* elemType = lookUpExpr(node->elems->operator[](0));
+  for(int i=1; i < node->elems->size(); i++) {
+    node->elems->operator[](i)->accept(this);
+    TypeId* tmp = lookUpExpr(node->elems->operator[](i));
+    if(!tmp->equals(elemType)) {
+      std::cerr << "semantic error non matching types in array literal" << std::endl;
+      exit(200);
+    }
+  }
+  addExpression(node, new ArrayId(NULL, *elemType));
 }
 
 void AstNodeVisitor::visit(PairType *node) {
 }
 
 void AstNodeVisitor::visit(Null *node) {
+  addExpression(node, new NullId());
 }
 
 void AstNodeVisitor::visit(ArrayType *node) {
 }
 
 void AstNodeVisitor::visit(Identifier *node) {
+  SemanticId *type = scope->lookUpAll(node->id);
+  TypeId *idType = dynamic_cast<TypeId *>(type);
+  if(!idType) {
+    std::cerr << "semantic error: variable is not declared " << node->id
+              << std::endl;
+    exit(200);
+  }
+  addExpression(static_cast<ASTnode*>(static_cast<AssignLhs*>(node)), idType);
 }

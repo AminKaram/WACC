@@ -383,12 +383,12 @@ ident:
       $$ = new Identifier($1); }
     ;
 array_elem_exp:
-    ident array_index
+    ident expr
 		{ //std::cout << " ARRAY ELEM " << std::endl;
       $$ = new ArrayElem($1, $2); }
     ;
 array_elem_lhs:
-    ident array_index
+    ident expr
 		{ //std::cout << " ARRAY ELEM " << std::endl;
       $$ = new ArrayElem($1, $2); }
     ;

@@ -320,7 +320,7 @@ public:
 };
 
 class Null : public Expression {
-  std::string type = "null";
+public:
   void accept(AstNodeVisitor *visitor);
 };
 
@@ -338,9 +338,9 @@ public:
 class ArrayElem : public AssignLhs, public Expression {
 public: 
 	Identifier *id = NULL;
-	ExpressionList *idxs = NULL;
+	Expression *idx = NULL;
 
-  ArrayElem(Identifier *id, ExpressionList *idxs);
+  ArrayElem(Identifier *id, Expression *idxs);
   ~ArrayElem();
   void accept(AstNodeVisitor *visitor);
   std::string getId();

@@ -228,13 +228,10 @@ void BinaryOperator:: accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
 }
 
-ArrayElem::ArrayElem(Identifier *id, ExpressionList *idxs) : id(id), idxs(idxs) {}
+ArrayElem::ArrayElem(Identifier *id, Expression *idx) : id(id), idx(idx) {}
 ArrayElem::~ArrayElem() {
   freePtr(id);
-  for (int i = 0; i < idxs->size(); ++i){
-    freePtr((*idxs)[i]);
-  }
-  freePtr(idxs);
+  freePtr(idx);
 }
 void ArrayElem:: accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
