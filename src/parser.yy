@@ -78,8 +78,11 @@
 
 
 /* Precedence of operators */
+%left LOGOR LOGAND 
 %left LESS GREATER LESSEQUALS GREATEREQUALS NOTEQUALS EQUALS PLUS MINUS STAR 
-%left SLASH MODULO LOGOR LOGAND BANG LEN CHR ORD UMINUS UPLUS
+%left SLASH MODULO BANG LEN CHR ORD UMINUS UPLUS
+
+
 
 /* Start symbol. If omitted will default to first non_terminal symbol */
 %start program 
@@ -439,6 +442,7 @@ array_liter:
 expr_list:
     /* Empty rule for empty list */
     { //std::cout << " EXPR LIST SEQ BASE " << std::endl;
+		$$ = new ExpressionList();
 	  }
   | expr
 		{ //std::cout << " EXPR LIST SEQ BASE " << std::endl;

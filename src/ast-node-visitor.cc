@@ -71,8 +71,9 @@ void AstNodeVisitor::visit(Program *node) {
 //  PairId pairId(PairId(NULL, TypeId(NULL, "type"), TypeId(NULL, "type")));
 //  scope->add("pair", pairId);
 //  scope = new SymbolTable(scope);
-  scope->add("", intId); 
   node->functions->accept(this);
+  scope = new SymbolTable(scope);
+  scope->add("", intId); 
   node->statements->accept(this);
 }
 
@@ -314,11 +315,13 @@ void AstNodeVisitor::visit(BinaryOperator *node) {
   node->left->accept(this);
   node->right->accept(this);
 	int oper = node->op;
+  
 	if((oper == tok::TOK_LOGOR) || (oper == tok::TOK_LOGAND)) {
     if(!(lookUpExpr(node->left)->equals(lookUpExpr(node->right)))
        || (!(lookUpExpr(node->left)->equals(new BoolTypeId(NULL))))) {
+     
 		  std::cerr << "Expected bool type for operands &&,||" 
-					<< lookUpExpr(node->left)->name  << std::endl;
+					<< lookUpExpr(node->right)->name  << std::endl;
 		  exit(200);
 	  }
     addExpression(node, new BoolTypeId(NULL));
@@ -482,7 +485,11 @@ void AstNodeVisitor::visit(NewPair *node) {
 }
 
 void AstNodeVisitor::visit(ArrayLiter *node) {
-  std::cout << "ArrayLiterVisitor" << std::endl;
+  std::cout << "ArrayLiterVisitor1" << std::endl;
+  if(node->elems->size() == 0) {
+	addExpression(node, new NullId());
+	return;
+  }
   node->elems->operator[](0)->accept(this);
   TypeId* elemType = lookUpExpr(node->elems->operator[](0));
   for(int i=1; i < node->elems->size(); i++) {
@@ -520,4 +527,5 @@ void AstNodeVisitor::visit(Identifier *node) {
   }
   addExpression(static_cast<ASTnode*>(static_cast<AssignLhs*>(node)), idType->type);
   addExpression(static_cast<ASTnode*>(static_cast<AssignRhs*>(node)), idType->type);
+  std::cout<<"leave"<<std::endl;
 }
