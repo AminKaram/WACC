@@ -1659,8 +1659,8 @@ State 77
 
     $default  reduce using rule 64 (unary_op)
 
-    Conflict between rule 64 and token LOGOR resolved as reduce (%left LOGOR).
-    Conflict between rule 64 and token LOGAND resolved as reduce (%left LOGAND).
+    Conflict between rule 64 and token LOGOR resolved as reduce (LOGOR < UMINUS).
+    Conflict between rule 64 and token LOGAND resolved as reduce (LOGAND < UMINUS).
     Conflict between rule 64 and token STAR resolved as reduce (STAR < UMINUS).
     Conflict between rule 64 and token SLASH resolved as reduce (%left SLASH).
     Conflict between rule 64 and token MODULO resolved as reduce (%left MODULO).
@@ -1693,8 +1693,8 @@ State 78
 
     $default  reduce using rule 60 (unary_op)
 
-    Conflict between rule 60 and token LOGOR resolved as reduce (%left LOGOR).
-    Conflict between rule 60 and token LOGAND resolved as reduce (%left LOGAND).
+    Conflict between rule 60 and token LOGOR resolved as reduce (LOGOR < BANG).
+    Conflict between rule 60 and token LOGAND resolved as reduce (LOGAND < BANG).
     Conflict between rule 60 and token STAR resolved as reduce (STAR < BANG).
     Conflict between rule 60 and token SLASH resolved as reduce (%left SLASH).
     Conflict between rule 60 and token MODULO resolved as reduce (%left MODULO).
@@ -1727,8 +1727,8 @@ State 79
 
     $default  reduce using rule 61 (unary_op)
 
-    Conflict between rule 61 and token LOGOR resolved as reduce (%left LOGOR).
-    Conflict between rule 61 and token LOGAND resolved as reduce (%left LOGAND).
+    Conflict between rule 61 and token LOGOR resolved as reduce (LOGOR < LEN).
+    Conflict between rule 61 and token LOGAND resolved as reduce (LOGAND < LEN).
     Conflict between rule 61 and token STAR resolved as reduce (STAR < LEN).
     Conflict between rule 61 and token SLASH resolved as reduce (%left SLASH).
     Conflict between rule 61 and token MODULO resolved as reduce (%left MODULO).
@@ -1761,8 +1761,8 @@ State 80
 
     $default  reduce using rule 62 (unary_op)
 
-    Conflict between rule 62 and token LOGOR resolved as reduce (%left LOGOR).
-    Conflict between rule 62 and token LOGAND resolved as reduce (%left LOGAND).
+    Conflict between rule 62 and token LOGOR resolved as reduce (LOGOR < ORD).
+    Conflict between rule 62 and token LOGAND resolved as reduce (LOGAND < ORD).
     Conflict between rule 62 and token STAR resolved as reduce (STAR < ORD).
     Conflict between rule 62 and token SLASH resolved as reduce (%left SLASH).
     Conflict between rule 62 and token MODULO resolved as reduce (%left MODULO).
@@ -1795,8 +1795,8 @@ State 81
 
     $default  reduce using rule 63 (unary_op)
 
-    Conflict between rule 63 and token LOGOR resolved as reduce (%left LOGOR).
-    Conflict between rule 63 and token LOGAND resolved as reduce (%left LOGAND).
+    Conflict between rule 63 and token LOGOR resolved as reduce (LOGOR < CHR).
+    Conflict between rule 63 and token LOGAND resolved as reduce (LOGAND < CHR).
     Conflict between rule 63 and token STAR resolved as reduce (STAR < CHR).
     Conflict between rule 63 and token SLASH resolved as reduce (%left SLASH).
     Conflict between rule 63 and token MODULO resolved as reduce (%left MODULO).
@@ -2738,21 +2738,33 @@ State 121
    77          | expr . LOGOR expr
    77          | expr LOGOR expr .
 
+    STAR           shift, and go to state 86
+    SLASH          shift, and go to state 87
+    MODULO         shift, and go to state 88
+    PLUS           shift, and go to state 89
+    MINUS          shift, and go to state 90
+    LESS           shift, and go to state 91
+    LESSEQUALS     shift, and go to state 92
+    GREATER        shift, and go to state 93
+    GREATEREQUALS  shift, and go to state 94
+    EQUALS         shift, and go to state 95
+    NOTEQUALS      shift, and go to state 96
+
     $default  reduce using rule 77 (binary_op)
 
     Conflict between rule 77 and token LOGOR resolved as reduce (%left LOGOR).
     Conflict between rule 77 and token LOGAND resolved as reduce (%left LOGAND).
-    Conflict between rule 77 and token STAR resolved as reduce (STAR < LOGOR).
-    Conflict between rule 77 and token SLASH resolved as reduce (%left SLASH).
-    Conflict between rule 77 and token MODULO resolved as reduce (%left MODULO).
-    Conflict between rule 77 and token PLUS resolved as reduce (PLUS < LOGOR).
-    Conflict between rule 77 and token MINUS resolved as reduce (MINUS < LOGOR).
-    Conflict between rule 77 and token LESS resolved as reduce (LESS < LOGOR).
-    Conflict between rule 77 and token LESSEQUALS resolved as reduce (LESSEQUALS < LOGOR).
-    Conflict between rule 77 and token GREATER resolved as reduce (GREATER < LOGOR).
-    Conflict between rule 77 and token GREATEREQUALS resolved as reduce (GREATEREQUALS < LOGOR).
-    Conflict between rule 77 and token EQUALS resolved as reduce (EQUALS < LOGOR).
-    Conflict between rule 77 and token NOTEQUALS resolved as reduce (NOTEQUALS < LOGOR).
+    Conflict between rule 77 and token STAR resolved as shift (LOGOR < STAR).
+    Conflict between rule 77 and token SLASH resolved as shift (LOGOR < SLASH).
+    Conflict between rule 77 and token MODULO resolved as shift (LOGOR < MODULO).
+    Conflict between rule 77 and token PLUS resolved as shift (LOGOR < PLUS).
+    Conflict between rule 77 and token MINUS resolved as shift (LOGOR < MINUS).
+    Conflict between rule 77 and token LESS resolved as shift (LOGOR < LESS).
+    Conflict between rule 77 and token LESSEQUALS resolved as shift (LOGOR < LESSEQUALS).
+    Conflict between rule 77 and token GREATER resolved as shift (LOGOR < GREATER).
+    Conflict between rule 77 and token GREATEREQUALS resolved as shift (LOGOR < GREATEREQUALS).
+    Conflict between rule 77 and token EQUALS resolved as shift (LOGOR < EQUALS).
+    Conflict between rule 77 and token NOTEQUALS resolved as shift (LOGOR < NOTEQUALS).
 
 
 State 122
@@ -2772,21 +2784,33 @@ State 122
    76          | expr LOGAND expr .
    77          | expr . LOGOR expr
 
+    STAR           shift, and go to state 86
+    SLASH          shift, and go to state 87
+    MODULO         shift, and go to state 88
+    PLUS           shift, and go to state 89
+    MINUS          shift, and go to state 90
+    LESS           shift, and go to state 91
+    LESSEQUALS     shift, and go to state 92
+    GREATER        shift, and go to state 93
+    GREATEREQUALS  shift, and go to state 94
+    EQUALS         shift, and go to state 95
+    NOTEQUALS      shift, and go to state 96
+
     $default  reduce using rule 76 (binary_op)
 
     Conflict between rule 76 and token LOGOR resolved as reduce (%left LOGOR).
     Conflict between rule 76 and token LOGAND resolved as reduce (%left LOGAND).
-    Conflict between rule 76 and token STAR resolved as reduce (STAR < LOGAND).
-    Conflict between rule 76 and token SLASH resolved as reduce (%left SLASH).
-    Conflict between rule 76 and token MODULO resolved as reduce (%left MODULO).
-    Conflict between rule 76 and token PLUS resolved as reduce (PLUS < LOGAND).
-    Conflict between rule 76 and token MINUS resolved as reduce (MINUS < LOGAND).
-    Conflict between rule 76 and token LESS resolved as reduce (LESS < LOGAND).
-    Conflict between rule 76 and token LESSEQUALS resolved as reduce (LESSEQUALS < LOGAND).
-    Conflict between rule 76 and token GREATER resolved as reduce (GREATER < LOGAND).
-    Conflict between rule 76 and token GREATEREQUALS resolved as reduce (GREATEREQUALS < LOGAND).
-    Conflict between rule 76 and token EQUALS resolved as reduce (EQUALS < LOGAND).
-    Conflict between rule 76 and token NOTEQUALS resolved as reduce (NOTEQUALS < LOGAND).
+    Conflict between rule 76 and token STAR resolved as shift (LOGAND < STAR).
+    Conflict between rule 76 and token SLASH resolved as shift (LOGAND < SLASH).
+    Conflict between rule 76 and token MODULO resolved as shift (LOGAND < MODULO).
+    Conflict between rule 76 and token PLUS resolved as shift (LOGAND < PLUS).
+    Conflict between rule 76 and token MINUS resolved as shift (LOGAND < MINUS).
+    Conflict between rule 76 and token LESS resolved as shift (LOGAND < LESS).
+    Conflict between rule 76 and token LESSEQUALS resolved as shift (LOGAND < LESSEQUALS).
+    Conflict between rule 76 and token GREATER resolved as shift (LOGAND < GREATER).
+    Conflict between rule 76 and token GREATEREQUALS resolved as shift (LOGAND < GREATEREQUALS).
+    Conflict between rule 76 and token EQUALS resolved as shift (LOGAND < EQUALS).
+    Conflict between rule 76 and token NOTEQUALS resolved as shift (LOGAND < NOTEQUALS).
 
 
 State 123
@@ -2806,15 +2830,13 @@ State 123
    76          | expr . LOGAND expr
    77          | expr . LOGOR expr
 
-    LOGOR   shift, and go to state 84
-    LOGAND  shift, and go to state 85
     SLASH   shift, and go to state 87
     MODULO  shift, and go to state 88
 
     $default  reduce using rule 65 (binary_op)
 
-    Conflict between rule 65 and token LOGOR resolved as shift (STAR < LOGOR).
-    Conflict between rule 65 and token LOGAND resolved as shift (STAR < LOGAND).
+    Conflict between rule 65 and token LOGOR resolved as reduce (LOGOR < STAR).
+    Conflict between rule 65 and token LOGAND resolved as reduce (LOGAND < STAR).
     Conflict between rule 65 and token STAR resolved as reduce (%left STAR).
     Conflict between rule 65 and token SLASH resolved as shift (STAR < SLASH).
     Conflict between rule 65 and token MODULO resolved as shift (STAR < MODULO).
@@ -2847,8 +2869,8 @@ State 124
 
     $default  reduce using rule 66 (binary_op)
 
-    Conflict between rule 66 and token LOGOR resolved as reduce (%left LOGOR).
-    Conflict between rule 66 and token LOGAND resolved as reduce (%left LOGAND).
+    Conflict between rule 66 and token LOGOR resolved as reduce (LOGOR < SLASH).
+    Conflict between rule 66 and token LOGAND resolved as reduce (LOGAND < SLASH).
     Conflict between rule 66 and token STAR resolved as reduce (STAR < SLASH).
     Conflict between rule 66 and token SLASH resolved as reduce (%left SLASH).
     Conflict between rule 66 and token MODULO resolved as reduce (%left MODULO).
@@ -2881,8 +2903,8 @@ State 125
 
     $default  reduce using rule 67 (binary_op)
 
-    Conflict between rule 67 and token LOGOR resolved as reduce (%left LOGOR).
-    Conflict between rule 67 and token LOGAND resolved as reduce (%left LOGAND).
+    Conflict between rule 67 and token LOGOR resolved as reduce (LOGOR < MODULO).
+    Conflict between rule 67 and token LOGAND resolved as reduce (LOGAND < MODULO).
     Conflict between rule 67 and token STAR resolved as reduce (STAR < MODULO).
     Conflict between rule 67 and token SLASH resolved as reduce (%left SLASH).
     Conflict between rule 67 and token MODULO resolved as reduce (%left MODULO).
@@ -2913,15 +2935,13 @@ State 126
    76          | expr . LOGAND expr
    77          | expr . LOGOR expr
 
-    LOGOR   shift, and go to state 84
-    LOGAND  shift, and go to state 85
     SLASH   shift, and go to state 87
     MODULO  shift, and go to state 88
 
     $default  reduce using rule 68 (binary_op)
 
-    Conflict between rule 68 and token LOGOR resolved as shift (PLUS < LOGOR).
-    Conflict between rule 68 and token LOGAND resolved as shift (PLUS < LOGAND).
+    Conflict between rule 68 and token LOGOR resolved as reduce (LOGOR < PLUS).
+    Conflict between rule 68 and token LOGAND resolved as reduce (LOGAND < PLUS).
     Conflict between rule 68 and token STAR resolved as reduce (%left STAR).
     Conflict between rule 68 and token SLASH resolved as shift (PLUS < SLASH).
     Conflict between rule 68 and token MODULO resolved as shift (PLUS < MODULO).
@@ -2952,15 +2972,13 @@ State 127
    76          | expr . LOGAND expr
    77          | expr . LOGOR expr
 
-    LOGOR   shift, and go to state 84
-    LOGAND  shift, and go to state 85
     SLASH   shift, and go to state 87
     MODULO  shift, and go to state 88
 
     $default  reduce using rule 69 (binary_op)
 
-    Conflict between rule 69 and token LOGOR resolved as shift (MINUS < LOGOR).
-    Conflict between rule 69 and token LOGAND resolved as shift (MINUS < LOGAND).
+    Conflict between rule 69 and token LOGOR resolved as reduce (LOGOR < MINUS).
+    Conflict between rule 69 and token LOGAND resolved as reduce (LOGAND < MINUS).
     Conflict between rule 69 and token STAR resolved as reduce (%left STAR).
     Conflict between rule 69 and token SLASH resolved as shift (MINUS < SLASH).
     Conflict between rule 69 and token MODULO resolved as shift (MINUS < MODULO).
@@ -2991,15 +3009,13 @@ State 128
    76          | expr . LOGAND expr
    77          | expr . LOGOR expr
 
-    LOGOR   shift, and go to state 84
-    LOGAND  shift, and go to state 85
     SLASH   shift, and go to state 87
     MODULO  shift, and go to state 88
 
     $default  reduce using rule 72 (binary_op)
 
-    Conflict between rule 72 and token LOGOR resolved as shift (LESS < LOGOR).
-    Conflict between rule 72 and token LOGAND resolved as shift (LESS < LOGAND).
+    Conflict between rule 72 and token LOGOR resolved as reduce (LOGOR < LESS).
+    Conflict between rule 72 and token LOGAND resolved as reduce (LOGAND < LESS).
     Conflict between rule 72 and token STAR resolved as reduce (%left STAR).
     Conflict between rule 72 and token SLASH resolved as shift (LESS < SLASH).
     Conflict between rule 72 and token MODULO resolved as shift (LESS < MODULO).
@@ -3030,15 +3046,13 @@ State 129
    76          | expr . LOGAND expr
    77          | expr . LOGOR expr
 
-    LOGOR   shift, and go to state 84
-    LOGAND  shift, and go to state 85
     SLASH   shift, and go to state 87
     MODULO  shift, and go to state 88
 
     $default  reduce using rule 73 (binary_op)
 
-    Conflict between rule 73 and token LOGOR resolved as shift (LESSEQUALS < LOGOR).
-    Conflict between rule 73 and token LOGAND resolved as shift (LESSEQUALS < LOGAND).
+    Conflict between rule 73 and token LOGOR resolved as reduce (LOGOR < LESSEQUALS).
+    Conflict between rule 73 and token LOGAND resolved as reduce (LOGAND < LESSEQUALS).
     Conflict between rule 73 and token STAR resolved as reduce (%left STAR).
     Conflict between rule 73 and token SLASH resolved as shift (LESSEQUALS < SLASH).
     Conflict between rule 73 and token MODULO resolved as shift (LESSEQUALS < MODULO).
@@ -3069,15 +3083,13 @@ State 130
    76          | expr . LOGAND expr
    77          | expr . LOGOR expr
 
-    LOGOR   shift, and go to state 84
-    LOGAND  shift, and go to state 85
     SLASH   shift, and go to state 87
     MODULO  shift, and go to state 88
 
     $default  reduce using rule 70 (binary_op)
 
-    Conflict between rule 70 and token LOGOR resolved as shift (GREATER < LOGOR).
-    Conflict between rule 70 and token LOGAND resolved as shift (GREATER < LOGAND).
+    Conflict between rule 70 and token LOGOR resolved as reduce (LOGOR < GREATER).
+    Conflict between rule 70 and token LOGAND resolved as reduce (LOGAND < GREATER).
     Conflict between rule 70 and token STAR resolved as reduce (%left STAR).
     Conflict between rule 70 and token SLASH resolved as shift (GREATER < SLASH).
     Conflict between rule 70 and token MODULO resolved as shift (GREATER < MODULO).
@@ -3108,15 +3120,13 @@ State 131
    76          | expr . LOGAND expr
    77          | expr . LOGOR expr
 
-    LOGOR   shift, and go to state 84
-    LOGAND  shift, and go to state 85
     SLASH   shift, and go to state 87
     MODULO  shift, and go to state 88
 
     $default  reduce using rule 71 (binary_op)
 
-    Conflict between rule 71 and token LOGOR resolved as shift (GREATEREQUALS < LOGOR).
-    Conflict between rule 71 and token LOGAND resolved as shift (GREATEREQUALS < LOGAND).
+    Conflict between rule 71 and token LOGOR resolved as reduce (LOGOR < GREATEREQUALS).
+    Conflict between rule 71 and token LOGAND resolved as reduce (LOGAND < GREATEREQUALS).
     Conflict between rule 71 and token STAR resolved as reduce (%left STAR).
     Conflict between rule 71 and token SLASH resolved as shift (GREATEREQUALS < SLASH).
     Conflict between rule 71 and token MODULO resolved as shift (GREATEREQUALS < MODULO).
@@ -3147,15 +3157,13 @@ State 132
    76          | expr . LOGAND expr
    77          | expr . LOGOR expr
 
-    LOGOR   shift, and go to state 84
-    LOGAND  shift, and go to state 85
     SLASH   shift, and go to state 87
     MODULO  shift, and go to state 88
 
     $default  reduce using rule 74 (binary_op)
 
-    Conflict between rule 74 and token LOGOR resolved as shift (EQUALS < LOGOR).
-    Conflict between rule 74 and token LOGAND resolved as shift (EQUALS < LOGAND).
+    Conflict between rule 74 and token LOGOR resolved as reduce (LOGOR < EQUALS).
+    Conflict between rule 74 and token LOGAND resolved as reduce (LOGAND < EQUALS).
     Conflict between rule 74 and token STAR resolved as reduce (%left STAR).
     Conflict between rule 74 and token SLASH resolved as shift (EQUALS < SLASH).
     Conflict between rule 74 and token MODULO resolved as shift (EQUALS < MODULO).
@@ -3186,15 +3194,13 @@ State 133
    76          | expr . LOGAND expr
    77          | expr . LOGOR expr
 
-    LOGOR   shift, and go to state 84
-    LOGAND  shift, and go to state 85
     SLASH   shift, and go to state 87
     MODULO  shift, and go to state 88
 
     $default  reduce using rule 75 (binary_op)
 
-    Conflict between rule 75 and token LOGOR resolved as shift (NOTEQUALS < LOGOR).
-    Conflict between rule 75 and token LOGAND resolved as shift (NOTEQUALS < LOGAND).
+    Conflict between rule 75 and token LOGOR resolved as reduce (LOGOR < NOTEQUALS).
+    Conflict between rule 75 and token LOGAND resolved as reduce (LOGAND < NOTEQUALS).
     Conflict between rule 75 and token STAR resolved as reduce (%left STAR).
     Conflict between rule 75 and token SLASH resolved as shift (NOTEQUALS < SLASH).
     Conflict between rule 75 and token MODULO resolved as shift (NOTEQUALS < MODULO).

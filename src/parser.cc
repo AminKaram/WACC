@@ -806,7 +806,7 @@ namespace yy {
           switch (yyn)
             {
   case 2:
-#line 90 "parser.yy" // lalr1.cc:847
+#line 93 "parser.yy" // lalr1.cc:847
     {// //std::cout << " PROGRAM " << std::endl;
      // //std::cout << " HA " << std::endl;
      // //std::cout << " HAHA " << std::endl;
@@ -818,14 +818,14 @@ namespace yy {
     break;
 
   case 3:
-#line 100 "parser.yy" // lalr1.cc:847
+#line 103 "parser.yy" // lalr1.cc:847
     {// //std::cout << " FUNCTION DEC SEQ BASE" << std::endl;
       yylhs.value.as< FunctionDecList* > () = new FunctionDecList(); }
 #line 825 "parser.cc" // lalr1.cc:847
     break;
 
   case 4:
-#line 103 "parser.yy" // lalr1.cc:847
+#line 106 "parser.yy" // lalr1.cc:847
     { ////std::cout << " FUNCTION DEC SEQ " << std::endl;
       std::swap(yylhs.value.as< FunctionDecList* > (), yystack_[1].value.as< FunctionDecList* > ());
       yylhs.value.as< FunctionDecList* > ()->funcs.push_back(yystack_[0].value.as< FunctionDeclaration* > ()); }
@@ -833,7 +833,7 @@ namespace yy {
     break;
 
   case 5:
-#line 109 "parser.yy" // lalr1.cc:847
+#line 112 "parser.yy" // lalr1.cc:847
     {// //std::cout << " FUNCTION DEC " << std::endl;
       if(!(containsRetOrExit(yystack_[1].value.as< StatSeq* > ()))) { 
        yy::parser::error(yystack_[1].location, "syntax error: function path missing RETURN or EXIT"); 
@@ -843,7 +843,7 @@ namespace yy {
     break;
 
   case 6:
-#line 115 "parser.yy" // lalr1.cc:847
+#line 118 "parser.yy" // lalr1.cc:847
     {// //std::cout << " FUNC DEC " << std::endl; 
       if(!(containsRetOrExit(yystack_[1].value.as< StatSeq* > ()))) {
        yy::parser::error(yystack_[1].location, "syntax error: function path missing RETURN or EXIT"); 
@@ -853,7 +853,7 @@ namespace yy {
     break;
 
   case 7:
-#line 123 "parser.yy" // lalr1.cc:847
+#line 126 "parser.yy" // lalr1.cc:847
     {// //std::cout << "PARAM LIST SEQ BASE " << std::endl;
       yylhs.value.as< VariableList* > () = new VariableList();
       yylhs.value.as< VariableList* > ()->push_back(yystack_[0].value.as< VariableDeclaration* > ()); }
@@ -861,7 +861,7 @@ namespace yy {
     break;
 
   case 8:
-#line 127 "parser.yy" // lalr1.cc:847
+#line 130 "parser.yy" // lalr1.cc:847
     {// //std::cout << " PARAM LIST SEQ " << std::endl;
       std::swap(yylhs.value.as< VariableList* > (), yystack_[2].value.as< VariableList* > ());
       yylhs.value.as< VariableList* > ()->push_back(yystack_[0].value.as< VariableDeclaration* > ()); }
@@ -869,14 +869,14 @@ namespace yy {
     break;
 
   case 9:
-#line 133 "parser.yy" // lalr1.cc:847
+#line 136 "parser.yy" // lalr1.cc:847
     { ////std::cout << " PARAM " << std::endl;
       yylhs.value.as< VariableDeclaration* > () = new VariableDeclaration(yystack_[1].value.as< Type* > (), yystack_[0].value.as< Identifier* > ()); }
 #line 876 "parser.cc" // lalr1.cc:847
     break;
 
   case 10:
-#line 138 "parser.yy" // lalr1.cc:847
+#line 141 "parser.yy" // lalr1.cc:847
     { ////std::cout << " STAT SEQ BASE " << std::endl;
       yylhs.value.as< StatSeq* > () = new StatSeq();
       yylhs.value.as< StatSeq* > ()->statements.push_back(yystack_[0].value.as< Statement * > ()); }
@@ -884,7 +884,7 @@ namespace yy {
     break;
 
   case 11:
-#line 142 "parser.yy" // lalr1.cc:847
+#line 145 "parser.yy" // lalr1.cc:847
     {// //std::cout << " STAT SEQ " << std::endl;
        std::swap(yylhs.value.as< StatSeq* > (), yystack_[2].value.as< StatSeq* > ());
        yylhs.value.as< StatSeq* > ()->statements.push_back(yystack_[0].value.as< Statement * > ()); }
@@ -892,154 +892,154 @@ namespace yy {
     break;
 
   case 12:
-#line 148 "parser.yy" // lalr1.cc:847
+#line 151 "parser.yy" // lalr1.cc:847
     {// //std::cout << " SKIP " << std::endl;
       yylhs.value.as< Statement * > () = new SkipStatement(); }
 #line 899 "parser.cc" // lalr1.cc:847
     break;
 
   case 13:
-#line 151 "parser.yy" // lalr1.cc:847
+#line 154 "parser.yy" // lalr1.cc:847
     {// //std::cout << " RETURN " << std::endl;
       yylhs.value.as< Statement * > () = new ReturnStatement(yystack_[0].value.as< Expression * > ()); }
 #line 906 "parser.cc" // lalr1.cc:847
     break;
 
   case 14:
-#line 154 "parser.yy" // lalr1.cc:847
+#line 157 "parser.yy" // lalr1.cc:847
     {// //std::cout << " ASSIGN " << std::endl;
       yylhs.value.as< Statement * > () = new VariableDeclaration(yystack_[3].value.as< Type* > (), yystack_[2].value.as< Identifier* > (), yystack_[0].value.as< AssignRhs* > ()); }
 #line 913 "parser.cc" // lalr1.cc:847
     break;
 
   case 15:
-#line 157 "parser.yy" // lalr1.cc:847
+#line 160 "parser.yy" // lalr1.cc:847
     {// //std::cout << " ASSIGN POST DECLARATION " << std::endl; 
       yylhs.value.as< Statement * > () = new Assignment(yystack_[2].value.as< AssignLhs* > (), yystack_[0].value.as< AssignRhs* > ()); }
 #line 920 "parser.cc" // lalr1.cc:847
     break;
 
   case 16:
-#line 160 "parser.yy" // lalr1.cc:847
+#line 163 "parser.yy" // lalr1.cc:847
     {// //std::cout << " READ " << std::endl;
       yylhs.value.as< Statement * > () = new ReadStatement(yystack_[0].value.as< AssignLhs* > ()); }
 #line 927 "parser.cc" // lalr1.cc:847
     break;
 
   case 17:
-#line 163 "parser.yy" // lalr1.cc:847
+#line 166 "parser.yy" // lalr1.cc:847
     {// //std::cout << " FREE " << std::endl;
       yylhs.value.as< Statement * > () = new FreeStatement(yystack_[0].value.as< Expression * > ()); }
 #line 934 "parser.cc" // lalr1.cc:847
     break;
 
   case 18:
-#line 166 "parser.yy" // lalr1.cc:847
+#line 169 "parser.yy" // lalr1.cc:847
     {// //std::cout << " EXIT " << std::endl;
       yylhs.value.as< Statement * > () = new ExitStatement(yystack_[0].value.as< Expression * > ()); }
 #line 941 "parser.cc" // lalr1.cc:847
     break;
 
   case 19:
-#line 169 "parser.yy" // lalr1.cc:847
+#line 172 "parser.yy" // lalr1.cc:847
     {// //std::cout << " PRINT " << std::endl;
       yylhs.value.as< Statement * > () = new PrintStatement(yystack_[0].value.as< Expression * > ()); }
 #line 948 "parser.cc" // lalr1.cc:847
     break;
 
   case 20:
-#line 172 "parser.yy" // lalr1.cc:847
+#line 175 "parser.yy" // lalr1.cc:847
     {// //std::cout << " PRINTLN " << std::endl;
       yylhs.value.as< Statement * > () = new PrintlnStatement(yystack_[0].value.as< Expression * > ()); }
 #line 955 "parser.cc" // lalr1.cc:847
     break;
 
   case 21:
-#line 175 "parser.yy" // lalr1.cc:847
+#line 178 "parser.yy" // lalr1.cc:847
     {// //std::cout << " BEGIN " << std::endl;
       yylhs.value.as< Statement * > () = new BeginStatement(yystack_[1].value.as< StatSeq* > ()); }
 #line 962 "parser.cc" // lalr1.cc:847
     break;
 
   case 22:
-#line 178 "parser.yy" // lalr1.cc:847
+#line 181 "parser.yy" // lalr1.cc:847
     {// //std::cout << " IF " << std::endl;
       yylhs.value.as< Statement * > () = new IfStatement(yystack_[5].value.as< Expression * > (), yystack_[3].value.as< StatSeq* > (), yystack_[1].value.as< StatSeq* > ());  }
 #line 969 "parser.cc" // lalr1.cc:847
     break;
 
   case 23:
-#line 181 "parser.yy" // lalr1.cc:847
+#line 184 "parser.yy" // lalr1.cc:847
     { ////std::cout << " WHILE " << std::endl;
       yylhs.value.as< Statement * > () = new WhileStatement(yystack_[3].value.as< Expression * > (), yystack_[1].value.as< StatSeq* > ()); }
 #line 976 "parser.cc" // lalr1.cc:847
     break;
 
   case 24:
-#line 186 "parser.yy" // lalr1.cc:847
+#line 189 "parser.yy" // lalr1.cc:847
     { //std::cout << " ASSIGN LHS " << std::endl;
       yylhs.value.as< AssignLhs* > () = dynamic_cast<AssignLhs*>(yystack_[0].value.as< Identifier* > ()); }
 #line 983 "parser.cc" // lalr1.cc:847
     break;
 
   case 25:
-#line 189 "parser.yy" // lalr1.cc:847
+#line 192 "parser.yy" // lalr1.cc:847
     { //std::cout << " ASSIGN LHS " << std::endl;
       yylhs.value.as< AssignLhs* > () = yystack_[0].value.as< AssignLhs* > (); }
 #line 990 "parser.cc" // lalr1.cc:847
     break;
 
   case 26:
-#line 192 "parser.yy" // lalr1.cc:847
+#line 195 "parser.yy" // lalr1.cc:847
     { //std::cout << " ASSIGN LHS " << std::endl;
       yylhs.value.as< AssignLhs* > () = yystack_[0].value.as< AssignLhs* > (); }
 #line 997 "parser.cc" // lalr1.cc:847
     break;
 
   case 27:
-#line 197 "parser.yy" // lalr1.cc:847
+#line 200 "parser.yy" // lalr1.cc:847
     { //std::cout << " ASSIGN RHS " << std::endl; 
       yylhs.value.as< AssignRhs* > () = dynamic_cast<AssignRhs*>(yystack_[0].value.as< Expression * > ()); }
 #line 1004 "parser.cc" // lalr1.cc:847
     break;
 
   case 28:
-#line 200 "parser.yy" // lalr1.cc:847
+#line 203 "parser.yy" // lalr1.cc:847
     { //std::cout << " ASSIGN RHS " << std::endl; 
       yylhs.value.as< AssignRhs* > () = yystack_[0].value.as< AssignRhs* > (); }
 #line 1011 "parser.cc" // lalr1.cc:847
     break;
 
   case 29:
-#line 203 "parser.yy" // lalr1.cc:847
+#line 206 "parser.yy" // lalr1.cc:847
     { //std::cout << " ASSIGN RHS " << std::endl; 
       yylhs.value.as< AssignRhs* > () = new NewPair(yystack_[3].value.as< Expression * > (), yystack_[1].value.as< Expression * > ()); }
 #line 1018 "parser.cc" // lalr1.cc:847
     break;
 
   case 30:
-#line 206 "parser.yy" // lalr1.cc:847
+#line 209 "parser.yy" // lalr1.cc:847
     { //std::cout << " ASSIGN RHS " << std::endl; 
       yylhs.value.as< AssignRhs* > () = yystack_[0].value.as< AssignRhs* > (); }
 #line 1025 "parser.cc" // lalr1.cc:847
     break;
 
   case 31:
-#line 209 "parser.yy" // lalr1.cc:847
+#line 212 "parser.yy" // lalr1.cc:847
     { //std::cout << " ASSIGN RHS " << std::endl; 
       yylhs.value.as< AssignRhs* > () = new FunctionCall(yystack_[2].value.as< Identifier* > ()); }
 #line 1032 "parser.cc" // lalr1.cc:847
     break;
 
   case 32:
-#line 212 "parser.yy" // lalr1.cc:847
+#line 215 "parser.yy" // lalr1.cc:847
     { //std::cout << " ASSIGN RHS " << std::endl; 
       yylhs.value.as< AssignRhs* > () = new FunctionCall(yystack_[3].value.as< Identifier* > (), yystack_[1].value.as< ExpressionList* > ()); }
 #line 1039 "parser.cc" // lalr1.cc:847
     break;
 
   case 33:
-#line 217 "parser.yy" // lalr1.cc:847
+#line 220 "parser.yy" // lalr1.cc:847
     { //std::cout << " ARG LIST SEQ BASE " << //std::cout;
       yylhs.value.as< ExpressionList* > () = new ExpressionList();
       yylhs.value.as< ExpressionList* > ()->push_back(yystack_[0].value.as< Expression * > ());}
@@ -1047,7 +1047,7 @@ namespace yy {
     break;
 
   case 34:
-#line 221 "parser.yy" // lalr1.cc:847
+#line 224 "parser.yy" // lalr1.cc:847
     { //std::cout << " ARG LIST SEQ " << std::endl;
       std::swap(yylhs.value.as< ExpressionList* > (), yystack_[2].value.as< ExpressionList* > ());
       yylhs.value.as< ExpressionList* > ()->push_back(yystack_[0].value.as< Expression * > ()); }
@@ -1055,397 +1055,397 @@ namespace yy {
     break;
 
   case 35:
-#line 227 "parser.yy" // lalr1.cc:847
+#line 230 "parser.yy" // lalr1.cc:847
     { //std::cout << " PAIR ELEM " << std::endl; 
       yylhs.value.as< AssignRhs* > () = new PairElem(true, yystack_[0].value.as< Expression * > ()); }
 #line 1062 "parser.cc" // lalr1.cc:847
     break;
 
   case 36:
-#line 230 "parser.yy" // lalr1.cc:847
+#line 233 "parser.yy" // lalr1.cc:847
     { //std::cout << " PAIR ELEM " << std::endl; 
       yylhs.value.as< AssignRhs* > () = new PairElem(false, yystack_[0].value.as< Expression * > ()); }
 #line 1069 "parser.cc" // lalr1.cc:847
     break;
 
   case 37:
-#line 235 "parser.yy" // lalr1.cc:847
+#line 238 "parser.yy" // lalr1.cc:847
     { //std::cout << " PAIR ELEM " << std::endl; 
       yylhs.value.as< AssignLhs* > () = new PairElem(true, yystack_[0].value.as< Expression * > ()); }
 #line 1076 "parser.cc" // lalr1.cc:847
     break;
 
   case 38:
-#line 238 "parser.yy" // lalr1.cc:847
+#line 241 "parser.yy" // lalr1.cc:847
     { //std::cout << " PAIR ELEM " << std::endl; 
       yylhs.value.as< AssignLhs* > () = new PairElem(false, yystack_[0].value.as< Expression * > ()); }
 #line 1083 "parser.cc" // lalr1.cc:847
     break;
 
   case 39:
-#line 243 "parser.yy" // lalr1.cc:847
+#line 246 "parser.yy" // lalr1.cc:847
     { //std::cout << " TYPE " << std::endl; 
       yylhs.value.as< Type* > () = yystack_[0].value.as< Type* > (); }
 #line 1090 "parser.cc" // lalr1.cc:847
     break;
 
   case 40:
-#line 246 "parser.yy" // lalr1.cc:847
+#line 249 "parser.yy" // lalr1.cc:847
     { //std::cout << " TYPE " << std::endl; 
       yylhs.value.as< Type* > () = yystack_[0].value.as< Type* > (); }
 #line 1097 "parser.cc" // lalr1.cc:847
     break;
 
   case 41:
-#line 249 "parser.yy" // lalr1.cc:847
+#line 252 "parser.yy" // lalr1.cc:847
     { //std::cout << " TYPE " << std::endl; 
       yylhs.value.as< Type* > () = yystack_[0].value.as< Type* > (); }
 #line 1104 "parser.cc" // lalr1.cc:847
     break;
 
   case 42:
-#line 254 "parser.yy" // lalr1.cc:847
+#line 257 "parser.yy" // lalr1.cc:847
     { //std::cout << " INTEGER TYPE " << std::endl;
       yylhs.value.as< Type* > () = new IntegerType(); }
 #line 1111 "parser.cc" // lalr1.cc:847
     break;
 
   case 43:
-#line 257 "parser.yy" // lalr1.cc:847
+#line 260 "parser.yy" // lalr1.cc:847
     { //std::cout << " BOOL TYPE " << std::endl;
       yylhs.value.as< Type* > () = new BoolType(); }
 #line 1118 "parser.cc" // lalr1.cc:847
     break;
 
   case 44:
-#line 260 "parser.yy" // lalr1.cc:847
+#line 263 "parser.yy" // lalr1.cc:847
     { //std::cout << " CHAR TYPE " << std::endl;
       yylhs.value.as< Type* > () = new CharType(); }
 #line 1125 "parser.cc" // lalr1.cc:847
     break;
 
   case 45:
-#line 263 "parser.yy" // lalr1.cc:847
+#line 266 "parser.yy" // lalr1.cc:847
     { //std::cout << " STRING TYPE " << std::endl;
       yylhs.value.as< Type* > () = new StringType(); }
 #line 1132 "parser.cc" // lalr1.cc:847
     break;
 
   case 46:
-#line 268 "parser.yy" // lalr1.cc:847
+#line 271 "parser.yy" // lalr1.cc:847
     { //std::cout << " ARRAY TYPE " << std::endl;
     yylhs.value.as< Type* > () = new ArrayType(yystack_[2].value.as< Type* > ()); }
 #line 1139 "parser.cc" // lalr1.cc:847
     break;
 
   case 47:
-#line 273 "parser.yy" // lalr1.cc:847
+#line 276 "parser.yy" // lalr1.cc:847
     { //std::cout << " PAIR TYPE " << std::endl;
     yylhs.value.as< Type* > () = new PairType(yystack_[3].value.as< Type* > (), yystack_[1].value.as< Type* > ()); }
 #line 1146 "parser.cc" // lalr1.cc:847
     break;
 
   case 48:
-#line 278 "parser.yy" // lalr1.cc:847
+#line 281 "parser.yy" // lalr1.cc:847
     { //std::cout << " PAIR ELEM TYPE " << std::endl; 
       yylhs.value.as< Type* > () = yystack_[0].value.as< Type* > (); }
 #line 1153 "parser.cc" // lalr1.cc:847
     break;
 
   case 49:
-#line 281 "parser.yy" // lalr1.cc:847
+#line 284 "parser.yy" // lalr1.cc:847
     { //std::cout << " PAIR ELEM TYPE " << std::endl; 
       yylhs.value.as< Type* > () = yystack_[0].value.as< Type* > (); }
 #line 1160 "parser.cc" // lalr1.cc:847
     break;
 
   case 50:
-#line 284 "parser.yy" // lalr1.cc:847
+#line 287 "parser.yy" // lalr1.cc:847
     { //std::cout << " PAIR ELEM TYPE " << std::endl; 
        yylhs.value.as< Type* > () = new PairKeyword(); }
 #line 1167 "parser.cc" // lalr1.cc:847
     break;
 
   case 51:
-#line 291 "parser.yy" // lalr1.cc:847
+#line 294 "parser.yy" // lalr1.cc:847
     { //std::cout << " EXPR " << std::endl; 
       yylhs.value.as< Expression * > () = yystack_[0].value.as< Expression * > (); }
 #line 1174 "parser.cc" // lalr1.cc:847
     break;
 
   case 52:
-#line 294 "parser.yy" // lalr1.cc:847
+#line 297 "parser.yy" // lalr1.cc:847
     { //std::cout << " EXPR " << std::endl; 
       yylhs.value.as< Expression * > () = yystack_[0].value.as< Expression * > (); }
 #line 1181 "parser.cc" // lalr1.cc:847
     break;
 
   case 53:
-#line 297 "parser.yy" // lalr1.cc:847
+#line 300 "parser.yy" // lalr1.cc:847
     { //std::cout << " EXPR " << std::endl; 
       yylhs.value.as< Expression * > () = yystack_[0].value.as< Expression * > (); }
 #line 1188 "parser.cc" // lalr1.cc:847
     break;
 
   case 54:
-#line 300 "parser.yy" // lalr1.cc:847
+#line 303 "parser.yy" // lalr1.cc:847
     { //std::cout << " EXPR " << std::endl; 
       yylhs.value.as< Expression * > () = yystack_[0].value.as< Expression * > (); }
 #line 1195 "parser.cc" // lalr1.cc:847
     break;
 
   case 55:
-#line 303 "parser.yy" // lalr1.cc:847
+#line 306 "parser.yy" // lalr1.cc:847
     { //std::cout << " EXPR " << std::endl; 
       yylhs.value.as< Expression * > () = yystack_[0].value.as< Expression * > (); }
 #line 1202 "parser.cc" // lalr1.cc:847
     break;
 
   case 56:
-#line 306 "parser.yy" // lalr1.cc:847
+#line 309 "parser.yy" // lalr1.cc:847
     { //std::cout << " EXPR " << std::endl; 
       yylhs.value.as< Expression * > () = yystack_[0].value.as< Identifier* > (); }
 #line 1209 "parser.cc" // lalr1.cc:847
     break;
 
   case 57:
-#line 309 "parser.yy" // lalr1.cc:847
+#line 312 "parser.yy" // lalr1.cc:847
     { //std::cout << " EXPR " << std::endl; 
       yylhs.value.as< Expression * > () = yystack_[0].value.as< Expression * > (); }
 #line 1216 "parser.cc" // lalr1.cc:847
     break;
 
   case 58:
-#line 312 "parser.yy" // lalr1.cc:847
+#line 315 "parser.yy" // lalr1.cc:847
     { //std::cout << " EXPR " << std::endl; 
       yylhs.value.as< Expression * > () = yystack_[0].value.as< Expression * > (); }
 #line 1223 "parser.cc" // lalr1.cc:847
     break;
 
   case 59:
-#line 315 "parser.yy" // lalr1.cc:847
+#line 318 "parser.yy" // lalr1.cc:847
     { //std::cout << " EXPR " << std::endl; 
       yylhs.value.as< Expression * > () = yystack_[0].value.as< Expression * > (); }
 #line 1230 "parser.cc" // lalr1.cc:847
     break;
 
   case 60:
-#line 318 "parser.yy" // lalr1.cc:847
+#line 321 "parser.yy" // lalr1.cc:847
     { //std::cout << " EXPR " << std::endl; 
       yylhs.value.as< Expression * > () = yystack_[1].value.as< Expression * > (); }
 #line 1237 "parser.cc" // lalr1.cc:847
     break;
 
   case 61:
-#line 324 "parser.yy" // lalr1.cc:847
+#line 327 "parser.yy" // lalr1.cc:847
     { //std::cout << " BANG UNARY " << std::endl;
       yylhs.value.as< Expression * > () = new UnaryOperator(yystack_[1].value.as< int > (), yystack_[0].value.as< Expression * > ()); }
 #line 1244 "parser.cc" // lalr1.cc:847
     break;
 
   case 62:
-#line 327 "parser.yy" // lalr1.cc:847
+#line 330 "parser.yy" // lalr1.cc:847
     { //std::cout << " LEN UNARY " << std::endl;
       yylhs.value.as< Expression * > () = new UnaryOperator(yystack_[1].value.as< int > (), yystack_[0].value.as< Expression * > ()); }
 #line 1251 "parser.cc" // lalr1.cc:847
     break;
 
   case 63:
-#line 330 "parser.yy" // lalr1.cc:847
+#line 333 "parser.yy" // lalr1.cc:847
     { //std::cout << " ORD UNARY " << std::endl;
       yylhs.value.as< Expression * > () = new UnaryOperator(yystack_[1].value.as< int > (), yystack_[0].value.as< Expression * > ()); }
 #line 1258 "parser.cc" // lalr1.cc:847
     break;
 
   case 64:
-#line 333 "parser.yy" // lalr1.cc:847
+#line 336 "parser.yy" // lalr1.cc:847
     { //std::cout << " CHR ORD " << std::endl;
       yylhs.value.as< Expression * > () = new UnaryOperator(yystack_[1].value.as< int > (), yystack_[0].value.as< Expression * > ()); }
 #line 1265 "parser.cc" // lalr1.cc:847
     break;
 
   case 65:
-#line 336 "parser.yy" // lalr1.cc:847
+#line 339 "parser.yy" // lalr1.cc:847
     { //std::cout << " MINUS UNARY " << std::endl;
       yylhs.value.as< Expression * > () = new UnaryOperator(yystack_[1].value.as< int > (), yystack_[0].value.as< Expression * > ()); }
 #line 1272 "parser.cc" // lalr1.cc:847
     break;
 
   case 66:
-#line 341 "parser.yy" // lalr1.cc:847
+#line 344 "parser.yy" // lalr1.cc:847
     { //std::cout << " STAR BIN " << std::endl;
       yylhs.value.as< Expression * > () = new BinaryOperator(yystack_[2].value.as< Expression * > (), yystack_[1].value.as< int > (), yystack_[0].value.as< Expression * > ()); }
 #line 1279 "parser.cc" // lalr1.cc:847
     break;
 
   case 67:
-#line 344 "parser.yy" // lalr1.cc:847
+#line 347 "parser.yy" // lalr1.cc:847
     { //std::cout << " SLASH BIN " << std::endl;
       yylhs.value.as< Expression * > () = new BinaryOperator(yystack_[2].value.as< Expression * > (), yystack_[1].value.as< int > (), yystack_[0].value.as< Expression * > ()); }
 #line 1286 "parser.cc" // lalr1.cc:847
     break;
 
   case 68:
-#line 347 "parser.yy" // lalr1.cc:847
+#line 350 "parser.yy" // lalr1.cc:847
     { //std::cout << " MODULO BIN " << std::endl;
       yylhs.value.as< Expression * > () = new BinaryOperator(yystack_[2].value.as< Expression * > (), yystack_[1].value.as< int > (), yystack_[0].value.as< Expression * > ()); }
 #line 1293 "parser.cc" // lalr1.cc:847
     break;
 
   case 69:
-#line 350 "parser.yy" // lalr1.cc:847
+#line 353 "parser.yy" // lalr1.cc:847
     { //std::cout << " PLUS BIN " << std::endl;
       yylhs.value.as< Expression * > () = new BinaryOperator(yystack_[2].value.as< Expression * > (), yystack_[1].value.as< int > (), yystack_[0].value.as< Expression * > ()); }
 #line 1300 "parser.cc" // lalr1.cc:847
     break;
 
   case 70:
-#line 353 "parser.yy" // lalr1.cc:847
+#line 356 "parser.yy" // lalr1.cc:847
     { //std::cout << " MINUS BIN " << std::endl;
       yylhs.value.as< Expression * > () = new BinaryOperator(yystack_[2].value.as< Expression * > (), yystack_[1].value.as< int > (), yystack_[0].value.as< Expression * > ()); }
 #line 1307 "parser.cc" // lalr1.cc:847
     break;
 
   case 71:
-#line 356 "parser.yy" // lalr1.cc:847
+#line 359 "parser.yy" // lalr1.cc:847
     { //std::cout << " GREATER BIN " << std::endl;
       yylhs.value.as< Expression * > () = new BinaryOperator(yystack_[2].value.as< Expression * > (), yystack_[1].value.as< int > (), yystack_[0].value.as< Expression * > ()); }
 #line 1314 "parser.cc" // lalr1.cc:847
     break;
 
   case 72:
-#line 359 "parser.yy" // lalr1.cc:847
+#line 362 "parser.yy" // lalr1.cc:847
     { //std::cout << " GREATEREQUALS BIN " << std::endl;
       yylhs.value.as< Expression * > () = new BinaryOperator(yystack_[2].value.as< Expression * > (), yystack_[1].value.as< int > (), yystack_[0].value.as< Expression * > ()); }
 #line 1321 "parser.cc" // lalr1.cc:847
     break;
 
   case 73:
-#line 362 "parser.yy" // lalr1.cc:847
+#line 365 "parser.yy" // lalr1.cc:847
     { //std::cout << " LESS BIN " << std::endl; 
       yylhs.value.as< Expression * > () = new BinaryOperator(yystack_[2].value.as< Expression * > (), yystack_[1].value.as< int > (), yystack_[0].value.as< Expression * > ()); }
 #line 1328 "parser.cc" // lalr1.cc:847
     break;
 
   case 74:
-#line 365 "parser.yy" // lalr1.cc:847
+#line 368 "parser.yy" // lalr1.cc:847
     { //std::cout << " LESSEQUALS BIN " << std::endl;
       yylhs.value.as< Expression * > () = new BinaryOperator(yystack_[2].value.as< Expression * > (), yystack_[1].value.as< int > (), yystack_[0].value.as< Expression * > ()); }
 #line 1335 "parser.cc" // lalr1.cc:847
     break;
 
   case 75:
-#line 368 "parser.yy" // lalr1.cc:847
+#line 371 "parser.yy" // lalr1.cc:847
     { std::cout <<"token : " << yystack_[1].value.as< int > () << std::endl;
       yylhs.value.as< Expression * > () = new BinaryOperator(yystack_[2].value.as< Expression * > (), yystack_[1].value.as< int > (), yystack_[0].value.as< Expression * > ()); }
 #line 1342 "parser.cc" // lalr1.cc:847
     break;
 
   case 76:
-#line 371 "parser.yy" // lalr1.cc:847
+#line 374 "parser.yy" // lalr1.cc:847
     { //std::cout << " NOTEQUALS BIN " << std::endl;
       yylhs.value.as< Expression * > () = new BinaryOperator(yystack_[2].value.as< Expression * > (), yystack_[1].value.as< int > (), yystack_[0].value.as< Expression * > ()); }
 #line 1349 "parser.cc" // lalr1.cc:847
     break;
 
   case 77:
-#line 374 "parser.yy" // lalr1.cc:847
+#line 377 "parser.yy" // lalr1.cc:847
     { //std::cout << " LOGAND " << std::endl;
       yylhs.value.as< Expression * > () = new BinaryOperator(yystack_[2].value.as< Expression * > (), yystack_[1].value.as< int > (), yystack_[0].value.as< Expression * > ()); }
 #line 1356 "parser.cc" // lalr1.cc:847
     break;
 
   case 78:
-#line 377 "parser.yy" // lalr1.cc:847
+#line 380 "parser.yy" // lalr1.cc:847
     { //std::cout << " LOGOR " << std::endl;
       yylhs.value.as< Expression * > () = new BinaryOperator(yystack_[2].value.as< Expression * > (), yystack_[1].value.as< int > (), yystack_[0].value.as< Expression * > ()); }
 #line 1363 "parser.cc" // lalr1.cc:847
     break;
 
   case 79:
-#line 382 "parser.yy" // lalr1.cc:847
+#line 385 "parser.yy" // lalr1.cc:847
     { //std::cout << " IDENT " << std::endl;
       yylhs.value.as< Identifier* > () = new Identifier(yystack_[0].value.as< std::string > ()); }
 #line 1370 "parser.cc" // lalr1.cc:847
     break;
 
   case 80:
-#line 387 "parser.yy" // lalr1.cc:847
+#line 390 "parser.yy" // lalr1.cc:847
     { //std::cout << " ARRAY ELEM " << std::endl;
       yylhs.value.as< Expression * > () = new ArrayElem(yystack_[3].value.as< Identifier* > (), yystack_[1].value.as< Expression * > ()); }
 #line 1377 "parser.cc" // lalr1.cc:847
     break;
 
   case 81:
-#line 392 "parser.yy" // lalr1.cc:847
+#line 395 "parser.yy" // lalr1.cc:847
     { //std::cout << " ARRAY ELEM " << std::endl;
       yylhs.value.as< AssignLhs* > () = new ArrayElem(yystack_[3].value.as< Identifier* > (), yystack_[1].value.as< Expression * > ()); }
 #line 1384 "parser.cc" // lalr1.cc:847
     break;
 
   case 82:
-#line 407 "parser.yy" // lalr1.cc:847
+#line 410 "parser.yy" // lalr1.cc:847
     { //std::cout << " INT LITER " << std::endl;
        yylhs.value.as< Expression * > () = new Number(yystack_[1].value.as< int > () * yystack_[0].value.as< int > ()); }
 #line 1391 "parser.cc" // lalr1.cc:847
     break;
 
   case 83:
-#line 412 "parser.yy" // lalr1.cc:847
+#line 415 "parser.yy" // lalr1.cc:847
     { yylhs.value.as< int > () = 1; }
 #line 1397 "parser.cc" // lalr1.cc:847
     break;
 
   case 84:
-#line 414 "parser.yy" // lalr1.cc:847
+#line 417 "parser.yy" // lalr1.cc:847
     { yylhs.value.as< int > () = 1; }
 #line 1403 "parser.cc" // lalr1.cc:847
     break;
 
   case 85:
-#line 418 "parser.yy" // lalr1.cc:847
+#line 421 "parser.yy" // lalr1.cc:847
     { //std::cout << " BOOL LITER " << std::endl;
       yylhs.value.as< Expression * > () = new Boolean(true); }
 #line 1410 "parser.cc" // lalr1.cc:847
     break;
 
   case 86:
-#line 421 "parser.yy" // lalr1.cc:847
+#line 424 "parser.yy" // lalr1.cc:847
     { //std::cout << " BOOL LITER " << std::endl;
       yylhs.value.as< Expression * > () = new Boolean(false); }
 #line 1417 "parser.cc" // lalr1.cc:847
     break;
 
   case 87:
-#line 426 "parser.yy" // lalr1.cc:847
+#line 429 "parser.yy" // lalr1.cc:847
     { //std::cout << " CHER LITER " << std::endl;
       yylhs.value.as< Expression * > () = new Char(yystack_[0].value.as< char > ());}
 #line 1424 "parser.cc" // lalr1.cc:847
     break;
 
   case 88:
-#line 431 "parser.yy" // lalr1.cc:847
+#line 434 "parser.yy" // lalr1.cc:847
     { //std::cout << " STRING LITER " << std::endl;
       yylhs.value.as< Expression * > () = new String(yystack_[0].value.as< std::string > ()); }
 #line 1431 "parser.cc" // lalr1.cc:847
     break;
 
   case 89:
-#line 436 "parser.yy" // lalr1.cc:847
+#line 439 "parser.yy" // lalr1.cc:847
     { //std::cout << " ARRAY LITER " << std::endl;
     yylhs.value.as< AssignRhs* > () = new ArrayLiter(yystack_[1].value.as< ExpressionList* > ()); }
 #line 1438 "parser.cc" // lalr1.cc:847
     break;
 
   case 90:
-#line 441 "parser.yy" // lalr1.cc:847
+#line 444 "parser.yy" // lalr1.cc:847
     { //std::cout << " EXPR LIST SEQ BASE " << std::endl;
 	  }
 #line 1445 "parser.cc" // lalr1.cc:847
     break;
 
   case 91:
-#line 444 "parser.yy" // lalr1.cc:847
+#line 447 "parser.yy" // lalr1.cc:847
     { //std::cout << " EXPR LIST SEQ BASE " << std::endl;
       yylhs.value.as< ExpressionList* > () = new ExpressionList();
       yylhs.value.as< ExpressionList* > ()->push_back(yystack_[0].value.as< Expression * > ()); }
@@ -1453,7 +1453,7 @@ namespace yy {
     break;
 
   case 92:
-#line 448 "parser.yy" // lalr1.cc:847
+#line 451 "parser.yy" // lalr1.cc:847
     { //std::cout << " EXPR LIST SEQ " << std::endl;
       std::swap(yylhs.value.as< ExpressionList* > (), yystack_[2].value.as< ExpressionList* > ());
       yylhs.value.as< ExpressionList* > ()->push_back(yystack_[0].value.as< Expression * > ()); }
@@ -1461,7 +1461,7 @@ namespace yy {
     break;
 
   case 93:
-#line 454 "parser.yy" // lalr1.cc:847
+#line 457 "parser.yy" // lalr1.cc:847
     { //std::cout << " NULL PAIR LITER " << std::endl;
       yylhs.value.as< Expression * > () = new Null(); }
 #line 1468 "parser.cc" // lalr1.cc:847
@@ -1723,31 +1723,31 @@ namespace yy {
   }
 
 
-  const signed char parser::yypact_ninf_ = -47;
+  const signed char parser::yypact_ninf_ = -49;
 
   const signed char parser::yytable_ninf_ = -84;
 
   const short int
   parser::yypact_[] =
   {
-      23,   -47,    32,   172,   -47,   172,   256,   256,   -47,   256,
-     256,   256,    -4,   -47,   -47,   -47,   -47,   256,   256,    45,
-     256,   256,   -47,   -47,     3,   -47,    16,   -47,   -27,   -47,
-     -47,   -47,    -3,   -47,     4,   -27,   -47,   -47,   -47,   -47,
-     256,   256,   256,   256,   256,   256,   -47,   -47,   170,   -47,
-     -47,    13,   -47,   -47,   -11,   -47,   -47,   -47,   -47,   291,
-     407,   407,   407,    43,   407,   407,   -47,   407,   407,   -47,
-     172,   200,     9,   -13,   256,   -47,    34,   -47,   -47,   -47,
-     -47,   -47,   369,   172,   256,   256,   256,   256,   256,   256,
-     256,   256,   256,   256,   256,   256,   256,   256,   -47,   172,
-      -4,    15,    24,    30,    20,   -47,    49,    82,    33,   256,
-     256,   -47,   -47,   407,   -47,   -47,   200,    51,   327,   -47,
-      10,   -47,   -47,    17,   -47,   -47,    17,    17,    17,    17,
-      17,    17,    17,    17,   348,     7,    43,    64,   407,   -26,
-     256,   407,   407,   -47,    92,   -21,   -47,   -27,   -47,   172,
-     -47,   -47,    66,   235,   -47,   256,   304,   172,    95,   109,
-     -47,    -2,   -47,   -47,   -16,   407,   407,   256,     5,   172,
-     -47,   -47,   -47,   256,   388,   -47,     6,   407,   -47,   -47
+      23,   -49,    32,   172,   -49,   172,   256,   256,   -49,   256,
+     256,   256,    -4,   -49,   -49,   -49,   -49,   256,   256,   -12,
+     256,   256,   -49,   -49,     3,   -49,    18,   -49,   -27,   -49,
+     -49,   -49,    13,   -49,     4,   -27,   -49,   -49,   -49,   -49,
+     256,   256,   256,   256,   256,   256,   -49,   -49,   170,   -49,
+     -49,    14,   -49,   -49,   -11,   -49,   -49,   -49,   -49,   291,
+     407,   407,   407,    43,   407,   407,   -49,   407,   407,   -49,
+     172,   200,     9,   -13,   256,   -49,    35,   -49,   -49,   -49,
+     -49,   -49,   369,   172,   256,   256,   256,   256,   256,   256,
+     256,   256,   256,   256,   256,   256,   256,   256,   -49,   172,
+      -4,    24,    30,    31,    20,   -49,    42,    82,    56,   256,
+     256,   -49,   -49,   407,   -49,   -49,   200,    51,   327,   -49,
+      10,   273,   273,    17,   -49,   -49,    17,    17,    17,    17,
+      17,    17,    17,    17,   348,     7,    43,    58,   407,   -26,
+     256,   407,   407,   -49,    89,   -21,   -49,   -27,   -49,   172,
+     -49,   -49,    63,   235,   -49,   256,   304,   172,    92,   109,
+     -49,    -2,   -49,   -49,   -16,   407,   407,   256,     5,   172,
+     -49,   -49,   -49,   256,   388,   -49,     6,   407,   -49,   -49
   };
 
   const unsigned char
@@ -1776,10 +1776,10 @@ namespace yy {
   const signed char
   parser::yypgoto_[] =
   {
-     -47,   -47,   -47,   -47,   -47,   -46,    11,    47,    99,    21,
-     -47,   -47,   -47,    -1,   -43,   -41,   -47,   -17,    -6,   -47,
-     -47,    22,   -47,   -47,   -47,   -47,   -47,   -47,   -47,   -47,
-     -47,   -47
+     -49,   -49,   -49,   -49,   -49,   -48,    11,    47,    93,    -3,
+     -49,   -49,   -49,    -1,   -43,   -41,   -49,   -18,    -6,   -49,
+     -49,    22,   -49,   -49,   -49,   -49,   -49,   -49,   -49,   -49,
+     -49,   -49
   };
 
   const short int
@@ -1798,16 +1798,16 @@ namespace yy {
      179,    64,    65,   116,    67,    68,    34,   149,   151,    72,
      102,   154,   103,   155,   158,    32,     1,    32,   159,   172,
       22,   117,     4,   173,    77,    78,    79,    80,    81,    82,
-      63,    32,    71,    74,    84,    85,    70,    87,    88,    98,
-      73,    70,    70,    70,    70,    70,   115,    76,    70,    97,
-     116,    72,   101,   100,    13,    14,    15,    16,   118,   136,
-     -39,    12,    13,    14,    15,    16,   -40,   140,   121,   122,
+      63,    32,    20,    21,    71,    22,    70,    87,    88,    98,
+      73,    70,    70,    70,    70,    70,   115,    76,    70,    74,
+      97,   116,   101,   100,    13,    14,    15,    16,   118,   136,
+      72,    12,    13,    14,    15,    16,   -39,   -40,   121,   122,
      123,   124,   125,   126,   127,   128,   129,   130,   131,   132,
-     133,   134,    32,   102,   120,   103,   144,    36,    37,    20,
-      21,   138,    22,   141,   142,    32,    22,    38,   153,   157,
-     135,   162,   169,   170,    39,    40,   147,   105,    66,   152,
+     133,   134,    32,   102,   120,   103,   144,    36,    37,    22,
+     140,   138,   153,   141,   142,    32,   157,    38,   162,   169,
+     135,   170,    66,   143,    39,    40,   147,   105,   152,     0,
        0,    32,    41,    42,    43,    44,    45,     0,   137,    12,
-      13,    14,    15,    16,   156,   101,     0,   143,     0,    22,
+      13,    14,    15,    16,   156,   101,     0,     0,     0,    22,
       46,    47,   -83,     0,     0,     0,     0,   165,     0,   166,
        0,     0,     0,     0,     0,     0,     0,     0,   147,     0,
      161,   174,     0,     0,     0,     0,     0,   177,   168,   160,
@@ -1824,8 +1824,8 @@ namespace yy {
        0,    36,    37,     0,     0,    41,    42,    43,    44,    45,
      163,    38,     0,     0,     0,     0,     0,     0,    39,    40,
        0,     0,    22,    46,    47,     0,    41,    42,    43,    44,
-      45,    99,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,    22,    46,    47,     0,     0,    84,    85,
+      45,    99,    86,    87,    88,    89,    90,    91,    92,    93,
+      94,    95,    96,    22,    46,    47,     0,     0,    84,    85,
       86,    87,    88,    89,    90,    91,    92,    93,    94,    95,
       96,    84,    85,    86,    87,    88,    89,    90,    91,    92,
       93,    94,    95,    96,     0,     0,     0,     0,     0,     0,
@@ -1848,16 +1848,16 @@ namespace yy {
        4,    17,    18,    26,    20,    21,     5,     7,    11,    46,
       63,    47,    63,    49,    45,     3,     3,     5,    49,    45,
       57,    44,     0,    49,    40,    41,    42,    43,    44,    45,
-      44,    19,    26,    46,    27,    28,    48,    30,    31,    60,
+      44,    19,    54,    55,    26,    57,    48,    30,    31,    60,
       28,    48,    48,    48,    48,    48,    47,    35,    48,    46,
-      26,    46,    63,    20,    21,    22,    23,    24,    74,    49,
-      46,    20,    21,    22,    23,    24,    46,    44,    84,    85,
+      46,    26,    63,    20,    21,    22,    23,    24,    74,    49,
+      46,    20,    21,    22,    23,    24,    46,    46,    84,    85,
       86,    87,    88,    89,    90,    91,    92,    93,    94,    95,
-      96,    97,    70,   136,    83,   136,    45,    15,    16,    54,
-      55,   107,    57,   109,   110,    83,    57,    25,    44,    17,
-      99,    45,    17,   159,    32,    33,   117,    70,    19,   136,
+      96,    97,    70,   136,    83,   136,    45,    15,    16,    57,
+      44,   107,    44,   109,   110,    83,    17,    25,    45,    17,
+      99,   159,    19,   116,    32,    33,   117,    70,   136,    -1,
       -1,    99,    40,    41,    42,    43,    44,    -1,   106,    20,
-      21,    22,    23,    24,   140,   136,    -1,   116,    -1,    57,
+      21,    22,    23,    24,   140,   136,    -1,    -1,    -1,    57,
       58,    59,    60,    -1,    -1,    -1,    -1,   153,    -1,   155,
       -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,   159,    -1,
      149,   167,    -1,    -1,    -1,    -1,    -1,   173,   157,   147,
@@ -1874,8 +1874,8 @@ namespace yy {
       -1,    15,    16,    -1,    -1,    40,    41,    42,    43,    44,
       45,    25,    -1,    -1,    -1,    -1,    -1,    -1,    32,    33,
       -1,    -1,    57,    58,    59,    -1,    40,    41,    42,    43,
-      44,    10,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-      -1,    -1,    -1,    57,    58,    59,    -1,    -1,    27,    28,
+      44,    10,    29,    30,    31,    32,    33,    34,    35,    36,
+      37,    38,    39,    57,    58,    59,    -1,    -1,    27,    28,
       29,    30,    31,    32,    33,    34,    35,    36,    37,    38,
       39,    27,    28,    29,    30,    31,    32,    33,    34,    35,
       36,    37,    38,    39,    -1,    -1,    -1,    -1,    -1,    -1,
@@ -1973,16 +1973,16 @@ namespace yy {
   const unsigned short int
   parser::yyrline_[] =
   {
-       0,    89,    89,   100,   102,   108,   114,   122,   126,   132,
-     137,   141,   147,   150,   153,   156,   159,   162,   165,   168,
-     171,   174,   177,   180,   185,   188,   191,   196,   199,   202,
-     205,   208,   211,   216,   220,   226,   229,   234,   237,   242,
-     245,   248,   253,   256,   259,   262,   267,   272,   277,   280,
-     283,   290,   293,   296,   299,   302,   305,   308,   311,   314,
-     317,   323,   326,   329,   332,   335,   340,   343,   346,   349,
-     352,   355,   358,   361,   364,   367,   370,   373,   376,   381,
-     386,   391,   406,   412,   413,   417,   420,   425,   430,   435,
-     441,   443,   447,   453
+       0,    92,    92,   103,   105,   111,   117,   125,   129,   135,
+     140,   144,   150,   153,   156,   159,   162,   165,   168,   171,
+     174,   177,   180,   183,   188,   191,   194,   199,   202,   205,
+     208,   211,   214,   219,   223,   229,   232,   237,   240,   245,
+     248,   251,   256,   259,   262,   265,   270,   275,   280,   283,
+     286,   293,   296,   299,   302,   305,   308,   311,   314,   317,
+     320,   326,   329,   332,   335,   338,   343,   346,   349,   352,
+     355,   358,   361,   364,   367,   370,   373,   376,   379,   384,
+     389,   394,   409,   415,   416,   420,   423,   428,   433,   438,
+     444,   446,   450,   456
   };
 
   // Print the state stack on the debug stream.
@@ -2018,7 +2018,7 @@ namespace yy {
 
 } // yy
 #line 2021 "parser.cc" // lalr1.cc:1155
-#line 463 "parser.yy" // lalr1.cc:1156
+#line 466 "parser.yy" // lalr1.cc:1156
 
 
 void yy::parser::error (const location_type& l, const std::string& m) {

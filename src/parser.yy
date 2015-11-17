@@ -78,8 +78,11 @@
 
 
 /* Precedence of operators */
+%left LOGOR LOGAND 
 %left LESS GREATER LESSEQUALS GREATEREQUALS NOTEQUALS EQUALS PLUS MINUS STAR 
-%left SLASH MODULO LOGOR LOGAND BANG LEN CHR ORD UMINUS UPLUS
+%left SLASH MODULO BANG LEN CHR ORD UMINUS UPLUS
+
+
 
 /* Start symbol. If omitted will default to first non_terminal symbol */
 %start program 
