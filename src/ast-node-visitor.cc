@@ -227,7 +227,6 @@ void AstNodeVisitor::visit(Assignment *node) {
     << "as opposed to " << node->rhs->type << std::endl;
     exit(200);
   }
-  // TODO:: Update variable value;
 }
 
 void AstNodeVisitor::visit(BeginStatement *node) {

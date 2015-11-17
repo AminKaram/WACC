@@ -383,14 +383,14 @@ ident:
       $$ = new Identifier($1); }
     ;
 array_elem_exp:
-    ident expr
+    ident LSQUARE expr RSQUARE
 		{ //std::cout << " ARRAY ELEM " << std::endl;
-      $$ = new ArrayElem($1, $2); }
+      $$ = new ArrayElem($1, $3); }
     ;
 array_elem_lhs:
-    ident expr
+    ident LSQUARE expr RSQUARE
 		{ //std::cout << " ARRAY ELEM " << std::endl;
-      $$ = new ArrayElem($1, $2); }
+      $$ = new ArrayElem($1, $3); }
     ;
 array_index:
 		LSQUARE expr RSQUARE
