@@ -338,9 +338,9 @@ public:
 class ArrayElem : public AssignLhs, public Expression {
 public: 
 	Identifier *id = NULL;
-	Expression *idx = NULL;
+	ExpressionList *idxs = NULL;
 
-  ArrayElem(Identifier *id, Expression *idxs);
+  ArrayElem(Identifier *id, ExpressionList *idxs);
   ~ArrayElem();
   void accept(AstNodeVisitor *visitor);
   std::string getId();
