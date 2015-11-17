@@ -76,9 +76,9 @@ public:
 
 class FunctionId : public SemanticId {
 public:
-  TypeId returnType;
+  TypeId *returnType;
   std::vector<ParamId> params;
-  FunctionId(ASTnode* astnode, TypeId ret, std::vector<ParamId> params) 
+  FunctionId(ASTnode* astnode, TypeId *ret, std::vector<ParamId> params) 
     : SemanticId(astnode), returnType(ret), params(params) { }
 };
 

@@ -131,14 +131,14 @@ void AstNodeVisitor::visit(VariableDeclaration *node) {
     std::cerr<< "is not a type" << node->type->name << std::endl;
     exit(200);
   }
-  //TypeId *t = dynamic_cast<TypeId*> (type);
-  if (var) {
+  FunctionId *t = dynamic_cast<FunctionId*> (var);
+  if (var && !t) {
     std::cerr<< "Already declared" << node->id->id << std::endl;
     exit(200);
   }
   node->rhs->accept(this);
   if (!(lookUpExpr(node->rhs)->equals(type))) {
-    std::cerr<< "RHS has invalid type. expected" << node->id->id << std::endl;
+    std::cerr<< type->name << " RHS has invalid type. expected " << lookUpExpr(node->rhs)->name << std::endl;
     exit(200);
   }
 //   std::cout << "VariableDeclarationVisitorbeforeaccept" << std::endl;
@@ -170,7 +170,7 @@ void AstNodeVisitor::visit(FunctionDeclaration *node) {
     TypeId *paramType = typeBuilder(node->parameters->operator[](i)->type);
     params.push_back(ParamId(NULL, paramType));
   }
-  FunctionId *func = new FunctionId(NULL, *returnType, params);
+  FunctionId *func = new FunctionId(NULL, returnType, params);
   scope->add(node->id->id, *func);
   scope = new SymbolTable(scope);
   scope->add("", *retType);
@@ -214,7 +214,7 @@ void AstNodeVisitor::visit(FunctionCall *node) {
       exit(200);
     }  
   }
-  addExpression(node,&func->returnType);
+  addExpression(node, func->returnType);
 }
 
 void AstNodeVisitor::visit(Assignment *node) {
