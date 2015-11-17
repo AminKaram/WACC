@@ -109,6 +109,15 @@ void AstNodeVisitor::visit(VariableDeclaration *node) {
     std::cerr<< "RHS has invalid type. expected" << node->id->id << std::endl;
     exit(200);
   }
+//   std::cout << "VariableDeclarationVisitorbeforeaccept" << std::endl;
+// // node->rhs->accept(this);
+//   std::cout << "VariableDeclarationVisitorhey" << std::endl;
+//  //std::cout<< "rhs is of type" << node->rhs->type << std::endl;
+//   std::cout << "VariableDeclarationVisitor" << std::endl;
+// // if (node->rhs->type != t->name) {
+// //   std::cerr<< "RHS has invalid type. expected" << node->id->id << std::endl;
+// //   exit(200);
+// // }
   VariableId variable(node, *t);
   scope->add(node->id->id, variable);
   std::cout << "VariableDeclarationVisitor end " << variable.name << std::endl;
@@ -333,7 +342,7 @@ void AstNodeVisitor::visit(UnaryOperator *node) {
 		exit(200);
 	} 
 	node->type = "bool";
-  } else if(oper == tok::TOK_MINUS) {
+  } else if(oper == tok::TOK_MINUS) { 
 	if( node->expr->type != "int") {
 	  std::cerr << "Operand of - is not an int" << std::endl;
 	  exit(200);

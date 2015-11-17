@@ -43,6 +43,7 @@ VariableDeclaration::~VariableDeclaration() {
     freePtr(rhs);
 }
 void VariableDeclaration:: accept(AstNodeVisitor *visitor) {
+   std::cout << "VariableDeclaration------visit" << std::endl;
   visitor->visit(this);
 }
 
