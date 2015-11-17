@@ -228,7 +228,7 @@ void AstNodeVisitor::visit(Assignment *node) {
     std::cerr << "semantic error: assigning to undeclared identifier" << node->lhs->getId() << std::endl;
     exit(200);
   }
-  if(lookUpExpr(node->rhs)->equals(type)) {
+  if(!lookUpExpr(node->rhs)->equals(type)) {
     std::cerr << "Invalid type in assignment of " << node->lhs->getId()
     << "as opposed to " << node->rhs->type << std::endl;
     exit(200);
