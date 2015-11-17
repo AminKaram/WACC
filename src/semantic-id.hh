@@ -5,56 +5,57 @@
 
 class SemanticId {
 public:
+  std::string name;
   ASTnode* astnode;
-  SemanticId() { }
-  SemanticId(ASTnode* astnode) : astnode(astnode){ }
+  SemanticId() {  }
+  SemanticId(ASTnode* astnode) : astnode(astnode){ name = "semanticId"; }
   virtual ~SemanticId() {}
 };
 
 
 class TypeId : public SemanticId {
 public:
-  TypeId(ASTnode* astnode) : SemanticId(astnode) { }
+  TypeId(ASTnode* astnode) : SemanticId(astnode) { name = "TypeId"; }
   bool equals(TypeId *other);
 };
 
 class IntTypeId : public TypeId {
 public:
-  IntTypeId(ASTnode* astnode) : TypeId(astnode) { }
+  IntTypeId(ASTnode* astnode) : TypeId(astnode) { name = "IntTypeId"; }
 };
 
 class BoolTypeId : public TypeId {
 public:
-  BoolTypeId(ASTnode* astnode) : TypeId(astnode) { }
+  BoolTypeId(ASTnode* astnode) : TypeId(astnode) {name = "BoolTypeId"; }
 };
 
 class CharTypeId : public TypeId {
 public:
-  CharTypeId(ASTnode* astnode) : TypeId(astnode) { }
+  CharTypeId(ASTnode* astnode) : TypeId(astnode) {name = "CharTypeId"; }
 };
 
 class StringTypeId : public TypeId {
 public:
-  StringTypeId(ASTnode* astnode) : TypeId(astnode) { }
+  StringTypeId(ASTnode* astnode) : TypeId(astnode) {name = "StringTypeId"; }
 };
 
 class VariableId : public SemanticId {
 public:
   TypeId type;
-  VariableId(ASTnode* astnode, TypeId type) : SemanticId(astnode), type(type) { }
+  VariableId(ASTnode* astnode, TypeId type) : SemanticId(astnode), type(type) {name = "VariableId"; }
 };
 
 class ParamId : public SemanticId {
 public:
   TypeId type;
-  ParamId(ASTnode* astnode, TypeId type) : SemanticId(astnode), type(type) { }
+  ParamId(ASTnode* astnode, TypeId type) : SemanticId(astnode), type(type) {name = "ParamId"; }
 };
 
 class ArrayId : public TypeId {
 public:
   TypeId elementType;
   ArrayId(ASTnode* astnode, TypeId elementType) : TypeId(astnode),
-                                    elementType(elementType) { }
+                                    elementType(elementType) {name = "ArrayId"; }
   bool equals(ArrayId *other);
 };
 
@@ -64,7 +65,7 @@ public:
   TypeId snd;
   PairId(ASTnode* astnode, TypeId fst, TypeId snd) : TypeId(astnode),
                                                      fst(fst),
-                                                     snd(snd) { }
+                                                     snd(snd) { name = "pairId"; }
   bool equals(PairId *other);
 };
 
