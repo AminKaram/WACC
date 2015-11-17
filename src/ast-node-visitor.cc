@@ -61,6 +61,10 @@ void AstNodeVisitor::visit(VariableDeclaration *node) {
     std::cerr<< "Already declared" << node->id->id << std::endl;
     exit(200);
   }
+  if (node->rhs->type != t->name) {
+    std::cerr<< "RHS has invalid type. expected" << node->id->id << std::endl;
+    exit(200);
+  }
   VariableId variable(node, *t);
   scope->add(node->id->id, variable);
   std::cout << "VariableDeclarationVisitor end " << variable.name << std::endl;
