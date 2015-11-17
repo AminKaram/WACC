@@ -375,13 +375,20 @@ void AstNodeVisitor::visit(BinaryOperator *node) {
 void AstNodeVisitor::visit(ArrayElem *node) {
   std::cout << "ArrayElemVisitor" << std::endl;
   SemanticId *value = scope->lookUpAll(node->id->id);
+  
   if(!value) {
     std::cerr << "Cannot access non declared array elem" << std::endl;
     exit(200);
   } 
+  TypeId *type = dynamic_cast<TypeId*> (value);
   VariableId* var = dynamic_cast<VariableId*> (value);
   ArrayId *arr = dynamic_cast<ArrayId*>(var->type);
-  if(!arr) {
+  StringTypeId *str = dynamic_cast<StringTypeId*>(var->type);
+    if(str) {
+        addExpression(static_cast<ASTnode*>(static_cast<AssignLhs*>(node)), new CharTypeId(NULL));
+        return;
+    }
+  if(!arr && !type->equals(arr)) {
     std::cerr <<"semantic error: identifier is not an array" << std::endl;
     exit(200);
   }
