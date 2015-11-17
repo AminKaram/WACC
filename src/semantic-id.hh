@@ -7,7 +7,7 @@ class SemanticId {
 public:
   ASTnode* astnode;
   SemanticId() { }
-  SemanticId(ASTnode* astnode, std::string name) : astnode(astnode), name(name) { }
+  SemanticId(ASTnode* astnode) : astnode(astnode){ }
   virtual ~SemanticId() {}
 };
 
@@ -15,35 +15,7 @@ public:
 class TypeId : public SemanticId {
 public:
   TypeId(ASTnode* astnode) : SemanticId(astnode) { }
-  bool equals(Type *other) {
-      IntTypeId *intMe = dynamic_cast<IntTypeId*>(this);
-      IntTypeId *intOther = dynamic_cast<IntTypeId*>(other);
-      if(intMe && intOther) return true;
-
-      BoolTypeId *boolMe = dynamic_cast<BoolTypeId*>(this);
-      BoolTypeId *boolOther = dynamic_cast<BoolTypeId*>(other);
-      if(boolMe && boolOther) return true;
-
-      CharTypeId *charMe = dynamic_cast<CharType*>(this);
-      CharTypeId *charOther = dynamic_cast<CharType*>(other);
-      if(charMe && charOther) return true;
-
-      StringTypeId *stringMe = dynamic_cast<StringTypeId*>(this);
-      StringTypeId *stringOther = dynamic_cast<StringTypeId*>(other);
-      if(stringMe && stringOther) return true;
-
-      PairKeyId *pairKeyMe = dynamic_cast<PairKeyId*>(this);
-      PairKeyId *pairKeyOther = dynamic_cast<PairKeyId*>(other);
-      if(pairKeyMe && pairKeyOther) return true;
-
-      ArrayId *arrayMe = dynamic_cast<ArrayId*>(this);
-      ArrayId *arrayOther = dynamic_cast<ArrayId*>(other);
-      if(arrayMe && arrayOther) return arrayMe.equals(arrayOther);
-
-      PairId *pairMe = dynamic_cast<PairId*>(this);
-      PairId *pairOther = dynamic_cast<PairId *>(other);
-      if(pairMe && pairOther) return pairMe.equals(pairOther);
-  }
+  bool equals(TypeId *other);
 };
 
 class IntTypeId : public TypeId {
@@ -101,8 +73,9 @@ public:
 };
 
 class PairKeyId : public TypeId {
+public:
   PairKeyId(ASTnode *astnode) : TypeId(astnode) { }
-}
+};
 
 class FunctionId : public SemanticId {
 public:
@@ -112,9 +85,41 @@ public:
     : SemanticId(astnode), returnType(ret), params(params) { }
 };
 
-class NullId : public SemanticId {
-
+class NullId : public TypeId {
+public:
+  NullId() : TypeId(NULL){}
 };
+
+bool TypeId::equals(TypeId* other) {
+  IntTypeId *intMe = dynamic_cast<IntTypeId*>(this);
+  IntTypeId *intOther = dynamic_cast<IntTypeId*>(other);
+  if(intMe && intOther) return true;
+  
+  BoolTypeId *boolMe = dynamic_cast<BoolTypeId*>(this);
+  BoolTypeId *boolOther = dynamic_cast<BoolTypeId*>(other);
+  if(boolMe && boolOther) return true;
+  
+  CharTypeId *charMe = dynamic_cast<CharTypeId*>(this);
+  CharTypeId *charOther = dynamic_cast<CharTypeId*>(other);
+  if(charMe && charOther) return true;
+  
+  StringTypeId *stringMe = dynamic_cast<StringTypeId*>(this);
+  StringTypeId *stringOther = dynamic_cast<StringTypeId*>(other);
+  if(stringMe && stringOther) return true;
+  
+  PairKeyId *pairKeyMe = dynamic_cast<PairKeyId*>(this);
+  PairKeyId *pairKeyOther = dynamic_cast<PairKeyId*>(other);
+  if(pairKeyMe && pairKeyOther) return true;
+  
+  ArrayId *arrayMe = dynamic_cast<ArrayId*>(this);
+  ArrayId *arrayOther = dynamic_cast<ArrayId*>(other);
+  if(arrayMe && arrayOther) return arrayMe->equals(arrayOther);
+  
+  PairId *pairMe = dynamic_cast<PairId*>(this);
+  PairId *pairOther = dynamic_cast<PairId *>(other);
+  if(pairMe && pairOther) return pairMe->equals(pairOther);
+  return false;
+}
 
 #endif // ! SEMANTIC_ID_HH
 

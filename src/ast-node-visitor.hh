@@ -13,6 +13,7 @@ public:
   void visit(ASTnode *node);
   void visit(Program *node);
   void visit(AssignRhs *rhs);
+  void visit(AssignLhs *rhs);
   void visit(StatSeq *node);
   void visit(FunctionDecList *node);  
   void visit(IntegerType *node); 

@@ -296,7 +296,7 @@ void AssignRhs::accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
 }
 
-AssignRhs::AssignRhs(std::string type) : type(type) { }
+AssignRhs::AssignRhs(std::string type) {this->type = type; }
 
 void Expression::accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
