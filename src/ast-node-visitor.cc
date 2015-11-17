@@ -363,7 +363,8 @@ void AstNodeVisitor::visit(ArrayElem *node) {
     std::cerr << "Cannot access non declared array elem" << std::endl;
     exit(200);
   } 
-  ArrayId* arr = dynamic_cast<ArrayId*> (value);
+  VariableId* var = dynamic_cast<VariableId*> (value);
+  ArrayId *arr = dynamic_cast<ArrayId*>(var->type);
   if(!arr) {
     std::cerr <<"semantic error: identifier is not an array" << std::endl;
     exit(200);
