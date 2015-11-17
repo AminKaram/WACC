@@ -451,28 +451,34 @@ void AstNodeVisitor::visit(ExitStatement *node) {
 }
 
 void AstNodeVisitor::visit(Number *node) {
+  std::cout << "NumberVisitor" << std::endl;
   addExpression(node, new IntTypeId(NULL));
 }
 
 void AstNodeVisitor::visit(Boolean *node) {
+  std::cout << "BooleanVisitor" << std::endl;
   addExpression(node, new BoolTypeId(NULL));
 }
 
 void AstNodeVisitor::visit(Char *node) {
+  std::cout << "CharVisitor" << std::endl;
   addExpression(node, new CharTypeId(NULL));
 }
 
 void AstNodeVisitor::visit(String *node) {
+  std::cout << "StringVisitor" << std::endl;
   addExpression(node, new StringTypeId(NULL));
 }
 
 void AstNodeVisitor::visit(NewPair *node) {
+  std::cout << "NewPairVisitor" << std::endl;
   node->fst->accept(this);
   node->snd->accept(this);
   addExpression(node, new PairId(NULL, *lookUpExpr(node->fst), *lookUpExpr(node->snd))); 
 }
 
 void AstNodeVisitor::visit(ArrayLiter *node) {
+  std::cout << "ArrayLiterVisitor" << std::endl;
   node->elems->operator[](0)->accept(this);
   TypeId* elemType = lookUpExpr(node->elems->operator[](0));
   for(int i=1; i < node->elems->size(); i++) {
@@ -487,16 +493,20 @@ void AstNodeVisitor::visit(ArrayLiter *node) {
 }
 
 void AstNodeVisitor::visit(PairType *node) {
+  std::cout << "PairTypeVisitor" << std::endl;
 }
 
 void AstNodeVisitor::visit(Null *node) {
+  std::cout << "NullVisitor" << std::endl;
   addExpression(node, new NullId());
 }
 
 void AstNodeVisitor::visit(ArrayType *node) {
+  std::cout << "ArrayTypVisitor" << std::endl;
 }
 
 void AstNodeVisitor::visit(Identifier *node) {
+  std::cout << "IdentifierVisitor" << std::endl;
   SemanticId *type = scope->lookUpAll(node->id);
   VariableId *idType = dynamic_cast<VariableId*>(type);
   if(!idType) {
