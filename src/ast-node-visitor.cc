@@ -7,6 +7,7 @@
 AstNodeVisitor::AstNodeVisitor() {
   scope = new SymbolTable(NULL);
   exprTable = new std::map<ASTnode*, TypeId*>();
+  funcLook = new std::map<std::string, FunctionDeclaration*>();
 }
 
 AstNodeVisitor::~AstNodeVisitor() {
@@ -71,6 +72,10 @@ void AstNodeVisitor::visit(Program *node) {
 //  PairId pairId(PairId(NULL, TypeId(NULL, "type"), TypeId(NULL, "type")));
 //  scope->add("pair", pairId);
 //  scope = new SymbolTable(scope);
+  for(int i=0; i < node->functions->funcs.size(); i++) {
+    funcLook->insert(std::pair<std::string, FunctionDeclaration*>(node->functions->funcs[i]->id->id,
+                node->functions->funcs[i]));
+  }
   node->functions->accept(this);
   scope = new SymbolTable(scope);
   scope->add("", intId); 
@@ -191,20 +196,15 @@ void AstNodeVisitor::visit(FunctionDeclaration *node) {
 
 void AstNodeVisitor::visit(FunctionCall *node) {
   std::cout << "FunctionCallVisitor" << std::endl;
-  SemanticId *value = scope->lookUpAll(node->id->id);
-  
-  if (!value) {
-    std::cerr<< "unknown function" << node->id->id << std::endl;
-    exit(200);
-  }
-  FunctionId* func = dynamic_cast<FunctionId*> (value);
-  if(!func) {
-    std::cerr<< "is not a function" << node->id->id << std::endl;
+  auto it = funcLook->find(node->id->id);
+
+  if (it == funcLook->end()) {
+    std::cerr<< "unknown function " << node->id->id << std::endl;
     exit(200);
   }
   
   // add a clause to check for correct number of args
-  if(node->parameters->size() != func->params.size()) {
+  if(node->parameters->size() != it->second->parameters->size()) {
     std::cerr << "semantic error: wrong number of arguments in function call"
       << std::endl;
     exit(200);
@@ -213,12 +213,13 @@ void AstNodeVisitor::visit(FunctionCall *node) {
   for(int i = 0; i < node->parameters->size(); i++) {
     node->parameters->operator[](i)->accept(this);
     TypeId *paramId = lookUpExpr(node->parameters->operator[](i));
-    if(!paramId->equals(func->params.operator[](i).type)) {
+
+    if(!paramId->equals(typeBuilder(it->second->parameters->operator[](i)->type))) {
       std::cerr << "Incorrect argument type in function call " << node->id->id << std::endl;
       exit(200);
     }  
   }
-  addExpression(node, func->returnType);
+  addExpression(node, typeBuilder(it->second->type));
 }
 
 void AstNodeVisitor::visit(Assignment *node) {
