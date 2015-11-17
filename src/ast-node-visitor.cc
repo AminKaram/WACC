@@ -90,7 +90,6 @@ void AstNodeVisitor::visit(AssignRhs *node) {
 }
 
 void AstNodeVisitor::visit(AssignLhs *node) {
-
 }
 
 void AstNodeVisitor::visit(Expression *node) {
@@ -284,6 +283,14 @@ void AstNodeVisitor::visit(ReadStatement *node) {
   if(!value) {
     std::cerr << "Cannot read undeclared variable: " << node->id->getId() 
               << std::endl;
+    exit(200);
+  }
+  VariableId *var = dynamic_cast<VariableId*>(value);
+  std::cout<< var << std::endl;
+  PairId *pair = dynamic_cast<PairId*>(var->type);
+  if(pair) {
+    std::cerr << "semantic error: reading into pair type is not allowed "
+        << std::endl;
     exit(200);
   }
 }

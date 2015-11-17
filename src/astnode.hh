@@ -21,7 +21,7 @@ public:
 
 class AssignLhs : public ASTnode {
 public:
-  virtual std::string getId() { }
+  virtual std::string getId();
 };
 
 class AssignRhs : public ASTnode {
