@@ -8,6 +8,7 @@
   /* Declarations of driver and parser to get the set of defined tokens */
   #include "parsing-driver.hh"
   #include "parser.hh"
+  #define tok yy::parser::token::yytokentype
 
   // Work around an incompatibility in flex (at least versions
   // 2.5.31 through 2.5.33): it generates code that does
@@ -81,26 +82,26 @@ read          return (token::make_READ(loc));
 newpair       return (token::make_NEWPAIR(loc)); 
 fst           return (token::make_FST(loc)); 
 snd           return (token::make_SND(loc)); 
-len           return (token::make_LEN(7, loc)); 
-ord           return (token::make_ORD(15, loc)); 
-chr           return (token::make_CHR(3, loc)); 
+len           return (token::make_LEN(tok::TOK_LEN, loc)); 
+ord           return (token::make_ORD(tok::TOK_ORD, loc)); 
+chr           return (token::make_CHR(tok::TOK_CHR, loc)); 
 true		      return (token::make_TRUE(loc));
 false 		    return (token::make_FALSE(loc));
-"<="          return (token::make_LESSEQUALS(9, loc));
-"<"           return (token::make_LESS(8, loc));
-">="          return (token::make_GREATEREQUALS(6, loc));
-">"           return (token::make_GREATER(5, loc));
-"=="          return (token::make_EQUALS(4, loc));
-"!="          return (token::make_NOTEQUALS(14, loc));
-"="           return (token::make_ASSIGN(1, loc));
-"!"           return (token::make_BANG(2, loc));
-"+"           return (token::make_PLUS(16, loc)); 
-"-"           minus = true; return (token::make_MINUS(12, loc)); 
-"*"           return (token::make_STAR(18, loc)); 
-"/"           return (token::make_SLASH(17, loc)); 
-"%"           return (token::make_MODULO(13, loc));
-"&&"          return (token::make_LOGAND(10, loc));
-"||"          return (token::make_LOGOR(11, loc));
+"<="          return (token::make_LESSEQUALS(tok::TOK_LESSEQUALS, loc));
+"<"           return (token::make_LESS(tok::TOK_LESS, loc));
+">="          return (token::make_GREATEREQUALS(tok::TOK_GREATEREQUALS, loc));
+">"           return (token::make_GREATER(tok::TOK_GREATER, loc));
+"=="          return (token::make_EQUALS(tok::TOK_EQUALS, loc));
+"!="          return (token::make_NOTEQUALS(tok::TOK_NOTEQUALS, loc));
+"="           return (token::make_ASSIGN(tok::TOK_ASSIGN, loc));
+"!"           return (token::make_BANG(tok::TOK_BANG, loc));
+"+"           return (token::make_PLUS(tok::TOK_PLUS, loc)); 
+"-"           minus = true; return (token::make_MINUS(tok::TOK_MINUS, loc)); 
+"*"           return (token::make_STAR(tok::TOK_STAR, loc)); 
+"/"           return (token::make_SLASH(tok::TOK_SLASH, loc)); 
+"%"           return (token::make_MODULO(tok::TOK_MODULO, loc));
+"&&"          return (token::make_LOGAND(tok::TOK_LOGAND, loc));
+"||"          return (token::make_LOGOR(tok::TOK_LOGOR, loc));
 "("           return (token::make_LPAREN(loc)); 
 ")"           return (token::make_RPAREN(loc)); 
 ";"           return (token::make_SEMICOLON(loc)); 

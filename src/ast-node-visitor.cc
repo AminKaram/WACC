@@ -316,6 +316,7 @@ void AstNodeVisitor::visit(BinaryOperator *node) {
   node->left->accept(this);
   node->right->accept(this);
 	int oper = node->op;
+  std::cout << oper << std::endl;
 	if((oper == tok::TOK_LOGOR) || (oper == tok::TOK_LOGAND)) {
     if(!(lookUpExpr(node->left)->equals(lookUpExpr(node->right)))
        || (!(lookUpExpr(node->left)->equals(new BoolTypeId(NULL))))) {

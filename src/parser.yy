@@ -42,8 +42,8 @@
 
 %token        PAIR INT BOOL CHAR STRING NULLTOKEN
 
-%token <int>  ASSIGN LOGOR LOGAND STAR SLASH MODULO PLUS MINUS LESS LESSEQUALS
-%token <int>  GREATER GREATEREQUALS EQUALS NOTEQUALS BANG LEN ORD CHR
+%token <int>  ASSIGN LOGOR LOGAND STAR SLASH MODULO PLUS MINUS LESS LESSEQUALS 
+%token <int>  GREATER GREATEREQUALS EQUALS NOTEQUALS BANG LEN ORD CHR 
 
 %token        LPAREN RPAREN LSQUARE RSQUARE SEMICOLON COMMA 
 
@@ -365,7 +365,7 @@ binary_op:
     { //std::cout << " LESSEQUALS BIN " << std::endl;
       $$ = new BinaryOperator($1, $2, $3); } 
   | expr EQUALS expr
-    { //std::cout << " EQUAL BIN " << std::endl;
+    { std::cout <<"token : " << $2 << std::endl;
       $$ = new BinaryOperator($1, $2, $3); } 
   | expr NOTEQUALS expr
     { //std::cout << " NOTEQUALS BIN " << std::endl;
