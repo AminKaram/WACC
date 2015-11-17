@@ -289,6 +289,15 @@ void AstNodeVisitor::visit(ReadStatement *node) {
   std::cout<< var << std::endl;
   PairId *pair = dynamic_cast<PairId*>(var->type);
   if(pair) {
+    PairElem *p = dynamic_cast<PairElem*>(node->id);
+    if(p) {
+      p->expr->accept(this);
+      TypeId *t = lookUpExpr(p->expr);
+      PairKeyId *k = dynamic_cast<PairKeyId*>(t);
+      if(!k) {
+        return;
+      }
+    }
     std::cerr << "semantic error: reading into pair type is not allowed "
         << std::endl;
     exit(200);
