@@ -27,7 +27,7 @@ bool TypeId::equals(TypeId* other) {
   
   PairId *pairMe = dynamic_cast<PairId*>(this);
   PairId *pairOther = dynamic_cast<PairId *>(other);
-  if(pairMe && pairOther) return pairMe->equals(pairOther);
+  if(pairMe && pairOther) {return pairMe->equals(pairOther);}
   return false;
 }
 
@@ -36,6 +36,11 @@ bool ArrayId::equals(ArrayId *other) {
 }
 
 bool PairId::equals(PairId *other) {
+  NullId* null = dynamic_cast<NullId*> (this);
+  if (null) {
+    std::cout<< "should get here" << std::endl;
+    return true;
+  }
   return (fst.equals(&(other->fst)) && snd.equals(&(other->snd)));
 }
 

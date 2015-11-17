@@ -82,9 +82,9 @@ public:
     : SemanticId(astnode), returnType(ret), params(params) { }
 };
 
-class NullId : public TypeId {
+class NullId : public PairId {
 public:
-  NullId() : TypeId(NULL){}
+  NullId() : PairId(NULL, TypeId(NULL), TypeId(NULL)){}
 };
 
 #endif // ! SEMANTIC_ID_HH
