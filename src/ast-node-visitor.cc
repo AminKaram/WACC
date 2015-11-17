@@ -335,7 +335,7 @@ void AstNodeVisitor::visit(BinaryOperator *node) {
 	} else if((oper >= tok::TOK_LESS) && (oper <= tok::TOK_GREATEREQUALS)) {
     if(!(lookUpExpr(node->left)->equals(lookUpExpr(node->right)))
        || (!(lookUpExpr(node->left)->equals(new IntTypeId(NULL)))
-       || (!(lookUpExpr(node->left)->equals(new CharTypeId(NULL)))))) {
+       || ((lookUpExpr(node->left)->equals(new CharTypeId(NULL)))))) {
 			std::cerr << "Expected type int/char for operators <,<=,>,>=" 
 					<< lookUpExpr(node->left)->name  << std::endl;
 			exit(200);
