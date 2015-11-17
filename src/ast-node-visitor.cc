@@ -21,7 +21,7 @@ void AstNodeVisitor::addExpression(ASTnode* node, TypeId* id) {
 TypeId* AstNodeVisitor::lookUpExpr(ASTnode* node) {
   auto it = exprTable->find(node);
   if ( it != exprTable->end()) return it->second;
-  return NULL;
+  return new NullId();
 }
 
 TypeId* AstNodeVisitor::typeBuilder(Type* type){
@@ -48,7 +48,7 @@ TypeId* AstNodeVisitor::typeBuilder(Type* type){
   } else if(pairType) {
     return new PairId(NULL, *typeBuilder(pairType->fst), *typeBuilder(pairType->snd));
   } else {
-    return NULL;
+    return new NullId();
   }
 }
 
@@ -138,7 +138,8 @@ void AstNodeVisitor::visit(VariableDeclaration *node) {
   }
   node->rhs->accept(this);
   if (!(lookUpExpr(node->rhs)->equals(type))) {
-    std::cerr<< "RHS has invalid type. expected" << node->id->id << std::endl;
+    std::cerr<< "RHS has invalid type. expected " << type->name << " but got" <<
+        lookUpExpr(node->rhs)->name <<std::endl;
     exit(200);
   }
 //   std::cout << "VariableDeclarationVisitorbeforeaccept" << std::endl;
@@ -269,7 +270,7 @@ void AstNodeVisitor::visit(WhileStatement *node) {
   node->expr->accept(this);
   if (!(lookUpExpr(node->expr)->equals(new BoolTypeId(NULL)))) {
 		std::cerr << "Type of expression in while requiered: bool. Actual type: " 
-             << node->expr->type << std::endl;
+             << lookUpExpr(node->expr)->name << std::endl;
 		exit(200); 
 	}
   scope = new SymbolTable(scope);	
@@ -373,8 +374,8 @@ void AstNodeVisitor::visit(PairElem *node) {
   std::cout << "PairElemVisitor" << std::endl;
   node->expr->accept(this);
   if(!(lookUpExpr(node->expr)->equals(new PairId(NULL, NullId(), NullId())))) {
-    std::cerr << "Type mismatch cannot get pair element of non pair expression" 
-              << std::endl;
+    std::cerr << "Type mismatch cannot get pair element of non pair expression "
+              <<lookUpExpr(node->expr)->name << std::endl;
     exit(200);
   } 
     TypeId *typeId = lookUpExpr(node->expr);

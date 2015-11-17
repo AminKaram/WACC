@@ -12,7 +12,6 @@ SymbolTable::~SymbolTable() {
 
 SemanticId* SymbolTable::lookUp(std::string id) {
   for (auto ite=dictionary->begin(); ite != dictionary->end(); ite++) {
-    std::cout<< "id: " << ite->first << std::endl;
   }
   auto it = dictionary->find(id);
   if (it != dictionary->end()) {
@@ -30,7 +29,6 @@ SemanticId* SymbolTable::lookUpAll(std::string id) {
     if(val) { return val;}
     s = s->encScope;
   }
-  std::cerr << " hey in lookup" << std::endl;
   return NULL;
 }
 
