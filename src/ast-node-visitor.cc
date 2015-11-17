@@ -42,11 +42,11 @@ TypeId* AstNodeVisitor::typeBuilder(Type* type){
   } else if(stringType) {
     return new StringTypeId(NULL);
   } else if(arrayType) {
-    return new ArrayId(NULL, *typeBuilder(arrayType->type));
+    return new ArrayId(NULL, typeBuilder(arrayType->type));
   } else if(pairKeyword) {
     return new PairKeyId(NULL);
   } else if(pairType) {
-    return new PairId(NULL, *typeBuilder(pairType->fst), *typeBuilder(pairType->snd));
+    return new PairId(NULL, typeBuilder(pairType->fst), typeBuilder(pairType->snd));
   } else {
     return new NullId();
   }
@@ -367,13 +367,13 @@ void AstNodeVisitor::visit(ArrayElem *node) {
     std::cerr <<"semantic error: identifier is not an array" << std::endl;
     exit(200);
   }
-  addExpression(static_cast<ASTnode*>(static_cast<AssignLhs*>(node)), &(arr->elementType));
+  addExpression(static_cast<ASTnode*>(static_cast<AssignLhs*>(node)), arr->elementType);
 }
 
 void AstNodeVisitor::visit(PairElem *node) {
   std::cout << "PairElemVisitor" << std::endl;
   node->expr->accept(this);
-  if(!(lookUpExpr(node->expr)->equals(new PairId(NULL, NullId(), NullId())))) {
+  if(!(lookUpExpr(node->expr)->equals(new PairId(NULL, new NullId(), new NullId())))) {
     std::cerr << "Type mismatch cannot get pair element of non pair expression "
               <<lookUpExpr(node->expr)->name << std::endl;
     exit(200);
@@ -386,9 +386,9 @@ void AstNodeVisitor::visit(PairElem *node) {
     }
     ASTnode *n = static_cast<ASTnode*>(static_cast<AssignLhs*>(node));
   if (node->fst) {
-    addExpression(n, &(pairType->fst));
+    addExpression(n, pairType->fst);
   } else {
-    addExpression(n, &(pairType->snd));
+    addExpression(n, pairType->snd);
   }
 }
 
@@ -426,7 +426,7 @@ void AstNodeVisitor::visit(UnaryOperator *node) {
 void AstNodeVisitor::visit(FreeStatement *node) {
   std::cout << "FreeStatementVisitor" << std::endl;
   node->expr->accept(this);
-  if(!(lookUpExpr(node->expr)->equals(new PairId(NULL, NullId(), NullId())))) {
+  if(!(lookUpExpr(node->expr)->equals(new PairId(NULL, new NullId(), new NullId())))) {
     std::cerr << "semantic error freeing a non pair type expression" << std::endl;
     exit(200);
   }
@@ -481,7 +481,7 @@ void AstNodeVisitor::visit(NewPair *node) {
   std::cout << "NewPairVisitor" << std::endl;
   node->fst->accept(this);
   node->snd->accept(this);
-  addExpression(node, new PairId(NULL, *lookUpExpr(node->fst), *lookUpExpr(node->snd))); 
+  addExpression(node, new PairId(NULL, lookUpExpr(node->fst), lookUpExpr(node->snd)));
 }
 
 void AstNodeVisitor::visit(ArrayLiter *node) {
@@ -500,7 +500,7 @@ void AstNodeVisitor::visit(ArrayLiter *node) {
       exit(200);
     }
   }
-  addExpression(node, new ArrayId(NULL, *elemType));
+  addExpression(node, new ArrayId(NULL, elemType));
 }
 
 void AstNodeVisitor::visit(PairType *node) {

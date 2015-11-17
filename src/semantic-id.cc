@@ -37,7 +37,7 @@ bool TypeId::equals(TypeId* other) {
 }
 
 bool ArrayId::equals(ArrayId *other) {
-    return elementType.equals(&(other->elementType));
+    return elementType->equals(other->elementType);
 }
 
 bool PairId::equals(PairId *other) {
@@ -47,6 +47,6 @@ bool PairId::equals(PairId *other) {
     std::cout<< "should get here" << std::endl;
     return true;
   }
-  return (fst.equals(&(other->fst)) && snd.equals(&(other->snd)));
+  return (fst->equals(other->fst) && snd->equals(other->snd));
 }
 

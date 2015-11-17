@@ -53,17 +53,17 @@ public:
 
 class ArrayId : public TypeId {
 public:
-  TypeId elementType;
-  ArrayId(ASTnode* astnode, TypeId elementType) : TypeId(astnode),
+  TypeId *elementType = new TypeId(NULL);
+  ArrayId(ASTnode* astnode, TypeId *elementType) : TypeId(astnode),
                                     elementType(elementType) {name = "ArrayId"; }
   bool equals(ArrayId *other);
 };
 
 class PairId : public TypeId {
 public:
-  TypeId fst;
-  TypeId snd;
-  PairId(ASTnode* astnode, TypeId fst, TypeId snd) : TypeId(astnode),
+  TypeId *fst;
+  TypeId *snd;
+  PairId(ASTnode* astnode, TypeId *fst, TypeId *snd) : TypeId(astnode),
                                                      fst(fst),
                                                      snd(snd) { name = "pairId"; }
   bool equals(PairId *other);
@@ -84,7 +84,7 @@ public:
 
 class NullId : public PairId {
 public:
-  NullId() : PairId(NULL, TypeId(NULL), TypeId(NULL)){}
+  NullId() : PairId(NULL, new TypeId(NULL), new TypeId(NULL)){}
 };
 
 #endif // ! SEMANTIC_ID_HH
