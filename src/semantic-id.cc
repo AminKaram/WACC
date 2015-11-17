@@ -36,14 +36,16 @@ bool TypeId::equals(TypeId* other) {
   if(stringMe && arrayOther){
     return arrayOther -> elementType->equals(new CharTypeId(NULL));
   }
+
   if(stringOther && arrayMe){
 	  
     return arrayMe -> elementType->equals(new CharTypeId(NULL));
   }
 
+  if(pairKeyMe && pairOther) return true;
+  if(pairKeyOther && pairMe) return true;
+
   return false;
-
-
 }
 
 bool ArrayId::equals(ArrayId *other) {
