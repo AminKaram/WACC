@@ -12,14 +12,14 @@ SymbolTable::~SymbolTable() {
 
 SemanticId* SymbolTable::lookUp(std::string id) {
   for (auto ite=dictionary->begin(); ite != dictionary->end(); ite++) {
-    std::cout<< "id: " << ite->first << std::endl;
+    //std::cout<< "id: " << ite->first << std::endl;
   }
   auto it = dictionary->find(id);
   if (it != dictionary->end()) {
-    std::cout << &(it->second) << "lookUp" << std::endl;
+    //std::cout << &(it->second) << "lookUp" << std::endl;
     return &(it->second);
   }
-  std::cout<<"look up fails"<<std::endl;
+  //std::cout<<"look up fails"<<std::endl;
   return NULL;
 }
 
@@ -30,7 +30,7 @@ SemanticId* SymbolTable::lookUpAll(std::string id) {
     if(val) { return val;}
     s = s->encScope;
   }
-  std::cerr << " hey in lookup" << std::endl;
+  //std::cerr << " hey in lookup" << std::endl;
   return NULL;
 }
 
@@ -39,7 +39,7 @@ int SymbolTable::add(std::string id, SemanticId& val) {
   if(ret.second) {
     return 0;
   }
-  std::cerr << "semantic error: Redefined variable." << id << std::endl;
+  //std::cerr << "semantic error: Redefined variable." << id << std::endl;
   exit(200);
 }
 

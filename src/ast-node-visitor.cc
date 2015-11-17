@@ -316,7 +316,7 @@ void AstNodeVisitor::visit(BinaryOperator *node) {
   node->left->accept(this);
   node->right->accept(this);
 	int oper = node->op;
-  std::cout << oper << std::endl;
+  //std::cout << oper << std::endl;
 	if((oper == tok::TOK_LOGOR) || (oper == tok::TOK_LOGAND)) {
     if(!(lookUpExpr(node->left)->equals(lookUpExpr(node->right)))
        || (!(lookUpExpr(node->left)->equals(new BoolTypeId(NULL))))) {
@@ -351,7 +351,7 @@ void AstNodeVisitor::visit(BinaryOperator *node) {
     addExpression(node, new BoolTypeId(NULL));
 	}
     std::cout << "binop node: " << node <<std::endl;
-  std::cout << "WUT" <<std::endl;
+	//std::cout << "WUT" <<std::endl;
   }
 
 void AstNodeVisitor::visit(ArrayElem *node) {
