@@ -25,19 +25,25 @@ bool TypeId::equals(TypeId* other) {
   ArrayId *arrayOther = dynamic_cast<ArrayId*>(other);
   if(arrayMe && arrayOther) return arrayMe->equals(arrayOther);
   
+  NullId *nullMe = dynamic_cast<NullId*>(this);
+  NullId *nullOther = dynamic_cast<NullId*>(other);
+  if(nullMe || nullOther) return true;
+  
   PairId *pairMe = dynamic_cast<PairId*>(this);
   PairId *pairOther = dynamic_cast<PairId *>(other);
   if(pairMe && pairOther) {return pairMe->equals(pairOther);}
   return false;
+  
 }
 
 bool ArrayId::equals(ArrayId *other) {
-  return elementType.equals(&(other->elementType));
+    return elementType.equals(&(other->elementType));
 }
 
 bool PairId::equals(PairId *other) {
   NullId* null = dynamic_cast<NullId*> (this);
-  if (null) {
+  NullId* nullOther = dynamic_cast<NullId*>(other);
+  if (null || nullOther ) {
     std::cout<< "should get here" << std::endl;
     return true;
   }

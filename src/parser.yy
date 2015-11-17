@@ -442,6 +442,7 @@ array_liter:
 expr_list:
     /* Empty rule for empty list */
     { //std::cout << " EXPR LIST SEQ BASE " << std::endl;
+		$$ = new ExpressionList();
 	  }
   | expr
 		{ //std::cout << " EXPR LIST SEQ BASE " << std::endl;
