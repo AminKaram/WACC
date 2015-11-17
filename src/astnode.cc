@@ -21,6 +21,16 @@ void StatSeq:: accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
 }
 
+bool StatSeq::containRet() {
+  for(int i=0; i < statements.size(); i++) {
+    ReturnStatement *ret = dynamic_cast<ReturnStatement*>(statements[i]);
+    if(ret) {
+      return true;    
+    }
+  }
+  return false;
+}
+
 FunctionDecList::FunctionDecList() { }
 FunctionDecList::~FunctionDecList() {
     for(int i=0; i < funcs.size(); i++) {

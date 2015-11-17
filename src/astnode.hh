@@ -50,6 +50,7 @@ public:
   StatSeq();
   ~StatSeq();
   void accept(AstNodeVisitor *visitor);
+  bool containRet();
 };
 
 class Type : public ASTnode {

@@ -74,6 +74,10 @@ void AstNodeVisitor::visit(Program *node) {
   node->functions->accept(this);
   scope = new SymbolTable(scope);
   scope->add("", intId); 
+  if(node->statements->containRet()) {
+    std::cerr << "semantic error: invalid global return" << std::endl;
+    exit(200);
+  }
   node->statements->accept(this);
 }
 
@@ -468,10 +472,6 @@ void AstNodeVisitor::visit(ReturnStatement *node) {
   node->expr->accept(this);
   SemanticId *rettype = scope->lookUpAll("");
   TypeId *ret = dynamic_cast<TypeId*>(rettype);
-  if(!scope->getEncScope()->getEncScope()) {
-    std::cerr << "Semantic Error: No return from program" << std::endl;
-    exit(200);
-  }
   if(!(lookUpExpr(node->expr)->equals(ret))) {
     std::cerr << "semantic error : wrong return type " << node->expr->type << std::endl;
     exit(200);
