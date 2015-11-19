@@ -7,12 +7,13 @@ class SemanticId {
 public:
   ASTnode* astnode;
   SemanticId(ASTnode* astnode);
-  virtual ~SemanticId();
+  virtual ~SemanticId() { }
 };
 
 
 class TypeId : public SemanticId {
 public:
+  std::string name = "type";
   TypeId(ASTnode* astnode);
   bool equals(TypeId *other);
 };
