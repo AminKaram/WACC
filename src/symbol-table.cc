@@ -14,10 +14,8 @@ SemanticId* SymbolTable::lookUp(std::string id) {
 
   auto it = dictionary->find(id);
   if (it != dictionary->end()) {
-    //std::cout << &(it->second) << "lookUp" << std::endl;
     return &(it->second);
   }
-  //std::cout<<"look up fails"<<std::endl;
   return NULL;
 }
 

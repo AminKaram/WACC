@@ -56,7 +56,6 @@ bool PairId::equals(PairId *other) {
   NullId* null = dynamic_cast<NullId*> (this);
   NullId* nullOther = dynamic_cast<NullId*>(other);
   if (null || nullOther ) {
-    std::cout<< "should get here" << std::endl;
     return true;
   }
   return (fst->equals(other->fst) && snd->equals(other->snd));

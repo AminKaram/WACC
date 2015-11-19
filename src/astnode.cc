@@ -233,7 +233,7 @@ void Null:: accept(AstNodeVisitor *visitor) {
 }
 
 BinaryOperator::BinaryOperator(Expression *left, int op, Expression *right)
-  : left(left), right(right), op(op) {std::cout << op <<std::endl;}
+  : left(left), right(right), op(op) { }
 BinaryOperator::~BinaryOperator() {freePtr(left); freePtr(right);}
 void BinaryOperator:: accept(AstNodeVisitor *visitor) {
   visitor->visit(this);

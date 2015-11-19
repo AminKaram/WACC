@@ -179,7 +179,6 @@ void AstNodeVisitor::visit(FunctionDeclaration *node) {
 }
 
 void AstNodeVisitor::visit(FunctionCall *node) {
-  std::cout << "FunctionCallVisitor" << std::endl;
   auto it = funcLook->find(node->id->id);
 
   if (it == funcLook->end()) {
@@ -272,7 +271,6 @@ void AstNodeVisitor::visit(ReadStatement *node) {
     exit(200);
   }
   VariableId *var = dynamic_cast<VariableId*>(value);
-  std::cout<< var << std::endl;
   PairId *pair = dynamic_cast<PairId*>(var->type);
   if(pair) {
     PairElem *p = dynamic_cast<PairElem*>(node->id);
@@ -474,7 +472,6 @@ void AstNodeVisitor::visit(NewPair *node) {
 }
 
 void AstNodeVisitor::visit(ArrayLiter *node) {
-  std::cout << "ArrayLiterVisitor1" << std::endl;
   if(node->elems->size() == 0) {
     addExpression(node, new NullId());
     return;
@@ -512,5 +509,4 @@ void AstNodeVisitor::visit(Identifier *node) {
   }
   addExpression(static_cast<ASTnode*>(static_cast<AssignLhs*>(node)), idType->type);
   addExpression(static_cast<ASTnode*>(static_cast<AssignRhs*>(node)), idType->type);
-  std::cout<<"leave"<<std::endl;
 }
