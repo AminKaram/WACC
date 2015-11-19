@@ -34,6 +34,6 @@ main: $(OBJS)
 	g++ -g $^ -o $@
 
 clean:
-	$(RM) -rf main location.hh position.hh stack.hh parser.output parser.cc parser.hh parser scanner.cc front-end.cc $(OBJS)
+	$(RM) -rf main location.hh position.hh stack.hh parser.output parser.cc parser.hh parser scanner.cc $(OBJS)
                
 .PHONY: all clean
