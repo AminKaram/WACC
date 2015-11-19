@@ -21,7 +21,7 @@ public:
 
 class AssignLhs : public ASTnode {
 public:
-  virtual std::string getId() { }
+  virtual std::string getId();
 };
 
 class AssignRhs : public ASTnode {
@@ -50,6 +50,7 @@ public:
   StatSeq();
   ~StatSeq();
   void accept(AstNodeVisitor *visitor);
+  bool containRet();
 };
 
 class Type : public ASTnode {
@@ -338,9 +339,9 @@ public:
 class ArrayElem : public AssignLhs, public Expression {
 public: 
 	Identifier *id = NULL;
-	Expression *idx = NULL;
+	ExpressionList *idxs = NULL;
 
-  ArrayElem(Identifier *id, Expression *idxs);
+  ArrayElem(Identifier *id, ExpressionList *idxs);
   ~ArrayElem();
   void accept(AstNodeVisitor *visitor);
   std::string getId();

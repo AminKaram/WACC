@@ -21,6 +21,16 @@ void StatSeq:: accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
 }
 
+bool StatSeq::containRet() {
+  for(int i=0; i < statements.size(); i++) {
+    ReturnStatement *ret = dynamic_cast<ReturnStatement*>(statements[i]);
+    if(ret) {
+      return true;    
+    }
+  }
+  return false;
+}
+
 FunctionDecList::FunctionDecList() { }
 FunctionDecList::~FunctionDecList() {
     for(int i=0; i < funcs.size(); i++) {
@@ -109,7 +119,9 @@ void PairType::accept(AstNodeVisitor *visitor){
 FunctionCall::FunctionCall(Identifier *id, ExpressionList *parameters)
     : id(id), parameters(parameters) {}
 FunctionCall::FunctionCall(Identifier *id)
-    : id(id) {}
+    : id(id) {
+		parameters = new ExpressionList();
+		}
 
 FunctionCall::~FunctionCall() {
      freePtr(id);
@@ -227,10 +239,13 @@ void BinaryOperator:: accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
 }
 
-ArrayElem::ArrayElem(Identifier *id, Expression *idx) : id(id), idx(idx) {}
+ArrayElem::ArrayElem(Identifier *id, ExpressionList *idxs) : id(id), idxs(idxs) {}
 ArrayElem::~ArrayElem() {
   freePtr(id);
-  freePtr(idx);
+  for(int i=0; i < idxs->size(); i++) {
+    freePtr(idxs->operator[](i));
+  }
+  freePtr(idxs);
 }
 void ArrayElem:: accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
@@ -254,7 +269,9 @@ std::string PairElem::getId() {
 }
 
 ArrayLiter::ArrayLiter(ExpressionList *elems) : AssignRhs("array"),
-                                                elems(elems) {}
+												elems(elems) {
+}
+
 ArrayLiter::~ArrayLiter() {
   for (int i = 0; i < elems->size(); ++i) {
     delete (*elems)[i];
@@ -297,3 +314,14 @@ AssignRhs::AssignRhs(std::string type) {this->type = type; }
 void Expression::accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
 }
+
+std::string AssignLhs::getId() {
+ ArrayElem *arr = dynamic_cast<ArrayElem*>(this);
+ Identifier *ident = dynamic_cast<Identifier*>(this);
+ PairElem *pair = dynamic_cast<PairElem*>(this);
+
+ if(arr) return arr->getId();
+ if(ident) return ident->getId();
+ if(pair) return pair->getId();
+}
+

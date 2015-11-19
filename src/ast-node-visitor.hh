@@ -53,6 +53,7 @@ public:
 private:
   SymbolTable *scope = NULL;
   std::map<ASTnode*, TypeId*> *exprTable;
+  std::map<std::string,FunctionDeclaration*> *funcLook;
   void addExpression(ASTnode*, TypeId*);
   TypeId* lookUpExpr(ASTnode *node);
   TypeId* typeBuilder(Type*);
