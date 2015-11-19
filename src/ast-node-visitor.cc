@@ -474,6 +474,11 @@ void AstNodeVisitor::visit(NewPair *node) {
 }
 
 void AstNodeVisitor::visit(ArrayLiter *node) {
+  std::cout << "ArrayLiterVisitor1" << std::endl;
+  if(node->elems->size() == 0) {
+    addExpression(node, new NullId());
+    return;
+  }
   node->elems->operator[](0)->accept(this);
   TypeId* elemType = lookUpExpr(node->elems->operator[](0));
   for(int i=1; i < node->elems->size(); i++) {
