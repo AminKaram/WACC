@@ -323,5 +323,6 @@ std::string AssignLhs::getId() {
  if(arr) return arr->getId();
  if(ident) return ident->getId();
  if(pair) return pair->getId();
+ return NULL;
 }
 
