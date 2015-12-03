@@ -1,13 +1,14 @@
 #include "ast-node-visitor.hh"
+#include "semantic-visitor.hh"
 #include "astnode.hh"
 #include "semantic-id.hh"
 #include "parser.hh"
 #define tok yy::parser::token::yytokentype
 
 SemanticVisitor::SemanticVisitor() {
-  scope = new SymbolTable(NULL);
+  scope     = new SymbolTable(NULL);
   exprTable = new std::map<ASTnode*, TypeId*>();
-  funcLook = new std::map<std::string, FunctionDeclaration*>();
+  funcLook  = new std::map<std::string, FunctionDeclaration*>();
 }
 
 SemanticVisitor::~SemanticVisitor() {
@@ -26,13 +27,13 @@ TypeId* SemanticVisitor::lookUpExpr(ASTnode* node) {
 }
 
 TypeId* SemanticVisitor::typeBuilder(Type* type){
-  IntegerType *intType = dynamic_cast<IntegerType*>(type);
-  BoolType *boolType = dynamic_cast<BoolType*>(type);
-  CharType *charType = dynamic_cast<CharType*>(type);
-  StringType *stringType = dynamic_cast<StringType*>(type);
-  ArrayType *arrayType = dynamic_cast<ArrayType*>(type);
+  IntegerType *intType     = dynamic_cast<IntegerType*>(type);
+  BoolType *boolType       = dynamic_cast<BoolType*>(type);
+  CharType *charType       = dynamic_cast<CharType*>(type);
+  StringType *stringType   = dynamic_cast<StringType*>(type);
+  ArrayType *arrayType     = dynamic_cast<ArrayType*>(type);
   PairKeyword *pairKeyword = dynamic_cast<PairKeyword*>(type);
-  PairType *pairType = dynamic_cast<PairType*>(type);
+  PairType *pairType       = dynamic_cast<PairType*>(type);
 
   if(intType) {
     return new IntTypeId(NULL); 
@@ -64,14 +65,14 @@ void SemanticVisitor::visit(Program *node) {
     funcLook->insert(std::pair<std::string, FunctionDeclaration*>(node->functions->funcs[i]->id->id,
                 node->functions->funcs[i]));
   }
-  node->functions->acceptSemantic(this);
+  node->functions->accept(this);
   scope = new SymbolTable(scope);
   scope->add("", intId); 
   if(node->statements->containRet()) {
     std::cerr << "semantic error: invalid global return" << std::endl;
     exit(200);
   }
-  node->statements->acceptSemantic(this);
+  node->statements->accept(this);
 }
 
 void SemanticVisitor::visit(AssignRhs *node) {
@@ -80,10 +81,10 @@ void SemanticVisitor::visit(AssignRhs *node) {
   Expression *expr       = dynamic_cast<Expression*>(node);
   PairElem *pairElem     = dynamic_cast<PairElem*>(node);
 
-  if(arrayLiter) arrayLiter->acceptSemantic(this);
-  if(newPair) newPair->acceptSemantic(this);
-  if(expr) expr->acceptSemantic(this);
-  if(pairElem) pairElem->acceptSemantic(this);
+  if(arrayLiter) arrayLiter->accept(this);
+  if(newPair) newPair->accept(this);
+  if(expr) expr->accept(this);
+  if(pairElem) pairElem->accept(this);
 }
 
 void SemanticVisitor::visit(AssignLhs *node) {
@@ -101,21 +102,21 @@ void SemanticVisitor::visit(Expression *node) {
   ArrayElem *arrayElem   = dynamic_cast<ArrayElem*>(node);
   UnaryOperator *unop    = dynamic_cast<UnaryOperator*>(node);
 
-  if(ident) ident->acceptSemantic(this);
-  if(funcCall) funcCall->acceptSemantic(this);
-  if(number) number->acceptSemantic(this);
-  if(boolean) boolean->acceptSemantic(this);
-  if(charId) charId->acceptSemantic(this);
-  if(stringId) stringId->acceptSemantic(this);
-  if(null) null->acceptSemantic(this);
-  if(binop) binop->acceptSemantic(this);
-  if(arrayElem) arrayElem->acceptSemantic(this);
-  if(unop) unop->acceptSemantic(this);
+  if(ident) ident->accept(this);
+  if(funcCall) funcCall->accept(this);
+  if(number) number->accept(this);
+  if(boolean) boolean->accept(this);
+  if(charId) charId->accept(this);
+  if(stringId) stringId->accept(this);
+  if(null) null->accept(this);
+  if(binop) binop->accept(this);
+  if(arrayElem) arrayElem->accept(this);
+  if(unop) unop->accept(this);
 }
 
 void SemanticVisitor::visit(StatSeq *node) {
   for(int i = 0; i < node->statements.size(); i++) {
-    (node->statements)[i]->acceptSemantic(this);
+    (node->statements)[i]->accept(this);
   }
 }
 
@@ -134,7 +135,7 @@ void SemanticVisitor::visit(VariableDeclaration *node) {
     exit(200);
   }
   
-  node->rhs->acceptSemantic(this);
+  node->rhs->accept(this);
   if (!(lookUpExpr(node->rhs)->equals(type))) {
     std::cerr << type->name << " RHS has invalid type. expected " 
         << lookUpExpr(node->rhs)->name << std::endl;
@@ -147,7 +148,7 @@ void SemanticVisitor::visit(VariableDeclaration *node) {
 
 void SemanticVisitor::visit(FunctionDecList *node) {
   for(int i = 0; i < node->funcs.size(); i++) {
-    (node->funcs)[i]->acceptSemantic(this);
+    (node->funcs)[i]->accept(this);
   }
 }
 
@@ -172,7 +173,7 @@ void SemanticVisitor::visit(FunctionDeclaration *node) {
     scope->add(id, *var);
   }
   
-  node->block->acceptSemantic(this);
+  node->block->accept(this);
   SymbolTable *tmp = scope->getEncScope();
   delete scope;
   scope = tmp; 
@@ -194,7 +195,7 @@ void SemanticVisitor::visit(FunctionCall *node) {
   }
 
   for(int i = 0; i < node->parameters->size(); i++) {
-    node->parameters->operator[](i)->acceptSemantic(this);
+    node->parameters->operator[](i)->accept(this);
     TypeId *paramId = lookUpExpr(node->parameters->operator[](i));
 
     if(!paramId->equals(typeBuilder(it->second->parameters->operator[](i)->type))) {
@@ -206,8 +207,8 @@ void SemanticVisitor::visit(FunctionCall *node) {
 }
 
 void SemanticVisitor::visit(Assignment *node) {
-  node->lhs->acceptSemantic(this);
-  node->rhs->acceptSemantic(this);
+  node->lhs->accept(this);
+  node->rhs->accept(this);
   TypeId *type = lookUpExpr(node->lhs);
   SemanticId *value = scope->lookUpAll(node->lhs->getId());
   
@@ -225,39 +226,39 @@ void SemanticVisitor::visit(Assignment *node) {
 
 void SemanticVisitor::visit(BeginStatement *node) {
   scope = new SymbolTable(scope);;
-  node->scope->acceptSemantic(this);
+  node->scope->accept(this);
   SymbolTable *tmp = scope->getEncScope();
   delete scope;
   scope = tmp;
 }
 
 void SemanticVisitor::visit(IfStatement *node) {
-  node->expr->acceptSemantic(this);
+  node->expr->accept(this);
   if (!(lookUpExpr(node->expr)->equals(new BoolTypeId(NULL)))) {
     std::cerr << "Type requiered: bool. Actual type: "
        << node->expr->type << std::endl;
     exit(200);
   }
   scope = new SymbolTable(scope);
-  node->thenS->acceptSemantic(this);
+  node->thenS->accept(this);
   SymbolTable *tmp = scope->getEncScope();
   delete scope;
   scope = new SymbolTable(tmp);
-  node->elseS->acceptSemantic(this);
+  node->elseS->accept(this);
   delete scope;
   scope = tmp;
 }
 
 
 void SemanticVisitor::visit(WhileStatement *node) {
-  node->expr->acceptSemantic(this);
+  node->expr->accept(this);
   if (!(lookUpExpr(node->expr)->equals(new BoolTypeId(NULL)))) {
     std::cerr << "Type of expression in while requiered: bool. Actual type: "
              << lookUpExpr(node->expr)->name << std::endl;
     exit(200);
   }
   scope = new SymbolTable(scope);
-  node->doS->acceptSemantic(this);
+  node->doS->accept(this);
   SymbolTable *tmp = scope->getEncScope();
   delete scope;
   scope = tmp;
@@ -275,7 +276,7 @@ void SemanticVisitor::visit(ReadStatement *node) {
   if(pair) {
     PairElem *p = dynamic_cast<PairElem*>(node->id);
     if(p) {
-      p->expr->acceptSemantic(this);
+      p->expr->accept(this);
       TypeId *t = lookUpExpr(p->expr);
       PairKeyId *k = dynamic_cast<PairKeyId*>(t);
       if(!k) {
@@ -295,16 +296,16 @@ void SemanticVisitor::visit(ReadStatement *node) {
 }
 
 void SemanticVisitor::visit(PrintStatement *node) {
-  node->expr->acceptSemantic(this);
+  node->expr->accept(this);
 }
 
 void SemanticVisitor::visit(PrintlnStatement *node) {
-  node->expr->acceptSemantic(this);
+  node->expr->accept(this);
 }
 
 void SemanticVisitor::visit(BinaryOperator *node) {
-  node->left->acceptSemantic(this);
-  node->right->acceptSemantic(this);
+  node->left->accept(this);
+  node->right->accept(this);
   int oper = node->op;
   
   if((oper == tok::TOK_LOGOR) || (oper == tok::TOK_LOGAND)) {
@@ -370,7 +371,7 @@ void SemanticVisitor::visit(ArrayElem *node) {
 }
 
 void SemanticVisitor::visit(PairElem *node) {
-  node->expr->acceptSemantic(this);
+  node->expr->accept(this);
   if(!(lookUpExpr(node->expr)->equals(new PairId(NULL, new NullId(), new NullId())))) {
     std::cerr << "Type mismatch cannot get pair element of non pair expression "
               <<lookUpExpr(node->expr)->name << std::endl;
@@ -392,7 +393,7 @@ void SemanticVisitor::visit(PairElem *node) {
 }
 
 void SemanticVisitor::visit(UnaryOperator *node) {
-  node->expr->acceptSemantic(this);
+  node->expr->accept(this);
   int oper = node->op;
   if( oper == tok::TOK_BANG) {
   if(!lookUpExpr(node->expr)->equals(new BoolTypeId(NULL))) {
@@ -423,7 +424,7 @@ void SemanticVisitor::visit(UnaryOperator *node) {
 }
 
 void SemanticVisitor::visit(FreeStatement *node) {
-  node->expr->acceptSemantic(this);
+  node->expr->accept(this);
   if(!(lookUpExpr(node->expr)->equals(new PairId(NULL, new NullId(), new NullId())))) {
     std::cerr << "semantic error freeing a non pair type expression" << std::endl;
     exit(200);
@@ -431,7 +432,7 @@ void SemanticVisitor::visit(FreeStatement *node) {
 }
 
 void SemanticVisitor::visit(ReturnStatement *node) {
-  node->expr->acceptSemantic(this);
+  node->expr->accept(this);
   SemanticId *rettype = scope->lookUpAll("");
   TypeId *ret = dynamic_cast<TypeId*>(rettype);
   if(!(lookUpExpr(node->expr)->equals(ret))) {
@@ -441,7 +442,7 @@ void SemanticVisitor::visit(ReturnStatement *node) {
 }
 
 void SemanticVisitor::visit(ExitStatement *node) {
-  node->expr->acceptSemantic(this);
+  node->expr->accept(this);
   if(!(lookUpExpr(node->expr)->equals(new IntTypeId(NULL)))) {
     std::cerr << "semantic error : wrong exit type, expected int got: " << node->expr->type
               << std::endl;
@@ -466,8 +467,8 @@ void SemanticVisitor::visit(String *node) {
 }
 
 void SemanticVisitor::visit(NewPair *node) {
-  node->fst->acceptSemantic(this);
-  node->snd->acceptSemantic(this);
+  node->fst->accept(this);
+  node->snd->accept(this);
   addExpression(node, new PairId(NULL, lookUpExpr(node->fst), lookUpExpr(node->snd)));
 }
 
@@ -476,10 +477,10 @@ void SemanticVisitor::visit(ArrayLiter *node) {
     addExpression(node, new NullId());
     return;
   }
-  node->elems->operator[](0)->acceptSemantic(this);
+  node->elems->operator[](0)->accept(this);
   TypeId* elemType = lookUpExpr(node->elems->operator[](0));
   for(int i=1; i < node->elems->size(); i++) {
-    node->elems->operator[](i)->acceptSemantic(this);
+    node->elems->operator[](i)->accept(this);
     TypeId* tmp = lookUpExpr(node->elems->operator[](i));
     if(!tmp->equals(elemType)) {
       std::cerr << "semantic error non matching types in array literal" << std::endl;
@@ -515,43 +516,3 @@ void SemanticVisitor::visit(IntegerType *node){}
 void SemanticVisitor::visit(BoolType *node){}
 void SemanticVisitor::visit(CharType *node){}
 void SemanticVisitor::visit(StringType *node){}
-
-
-void CodeGenVisitor::visit(ASTnode *node) {}
-void CodeGenVisitor::visit(Program *node){}
-void CodeGenVisitor::visit(AssignRhs *node){}
-void CodeGenVisitor::visit(AssignLhs *node){}
-void CodeGenVisitor::visit(Expression *node){}
-void CodeGenVisitor::visit(StatSeq *node){}
-void CodeGenVisitor::visit(FunctionDecList *node){}
-void CodeGenVisitor::visit(IntegerType *node){}
-void CodeGenVisitor::visit(BoolType *node){}
-void CodeGenVisitor::visit(CharType *node){}
-void CodeGenVisitor::visit(StringType *node){}
-void CodeGenVisitor::visit(ArrayType *node){}
-void CodeGenVisitor::visit(PairType *node){}
-void CodeGenVisitor::visit(VariableDeclaration *node){}
-void CodeGenVisitor::visit(FunctionDeclaration *node){}
-void CodeGenVisitor::visit(FunctionCall *node){}
-void CodeGenVisitor::visit(Assignment *node){}
-void CodeGenVisitor::visit(FreeStatement *node){}
-void CodeGenVisitor::visit(ReturnStatement *node){}
-void CodeGenVisitor:: visit(ExitStatement *node){}
-void CodeGenVisitor::visit(BeginStatement *node){}
-void CodeGenVisitor::visit(IfStatement *node){}
-void CodeGenVisitor::visit(WhileStatement *node){}
-void CodeGenVisitor::visit(ReadStatement *node){}
-void CodeGenVisitor::visit(PrintStatement *node){}
-void CodeGenVisitor::visit(PrintlnStatement *node){}
-void CodeGenVisitor::visit(Number *node){}
-void CodeGenVisitor::visit(Boolean *node){}
-void CodeGenVisitor::visit(Char *node){}
-void CodeGenVisitor::visit(String *node){}
-void CodeGenVisitor::visit(Null *node){}
-void CodeGenVisitor::visit(BinaryOperator *node){}
-void CodeGenVisitor::visit(Identifier *node){}
-void CodeGenVisitor::visit(ArrayElem *node){}
-void CodeGenVisitor::visit(PairElem *node){}
-void CodeGenVisitor::visit(ArrayLiter *node){}
-void CodeGenVisitor::visit(NewPair *node){}
-void CodeGenVisitor::visit(UnaryOperator *node){}

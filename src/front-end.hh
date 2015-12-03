@@ -1,7 +1,7 @@
 #ifndef FRONT_END_HH
 #define FRONT_END_HH
 #include "parsing-driver.hh"
-#include "ast-node-visitor.hh"
+#include "semantic-visitor.hh"
 
 class FrontEnd{
 public:

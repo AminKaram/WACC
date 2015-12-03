@@ -4,13 +4,12 @@
 #include <vector>
 #include <iostream>
 
-class SemanticVisitor;
-class CodeGenVisitor;
+class AstNodeVisitor;
 
 template<class T>
 void freePtr(T *ptr) {
-        if (ptr) delete ptr;
-        ptr = NULL;
+  if (ptr) delete ptr;
+  ptr = NULL;
 }
 
 class ASTnode {
@@ -18,8 +17,7 @@ public:
   std::string type;
   ASTnode() { }
   virtual ~ASTnode() {  }
-  virtual void acceptSemantic(SemanticVisitor *semanticVisitor);
- // virtual void acceptCodeGen(CodeGenVisitor *codeGenVisitor);
+  void accept(AstNodeVisitor *visitor);
 };
 
 class AssignLhs : public ASTnode {
@@ -31,13 +29,11 @@ class AssignRhs : public ASTnode {
 public: 
   AssignRhs() { }
   AssignRhs(std::string type);
-  void acceptSemantic(SemanticVisitor *semanticVisitor);
 };
 
 class Expression : public AssignRhs { 
 public: 
   virtual ~Expression() {} 
-  void acceptSemantic(SemanticVisitor *semanticVisitor);
 };
 typedef std::vector<Expression*> ExpressionList;
 
@@ -52,7 +48,6 @@ public:
   StatementList statements;
   StatSeq();
   ~StatSeq();
-  void acceptSemantic(SemanticVisitor *semanticVisitor);
   bool containRet();
 };
 
@@ -89,14 +84,12 @@ public:
 	
   ArrayType(Type *type); 
   ~ArrayType();
-  void acceptSemantic(SemanticVisitor *semanticVisitor);
 };
 
 class PairKeyword : public Type {
 public:
   PairKeyword();
   ~PairKeyword();
-  void acceptSemantic(SemanticVisitor *semanticVisitor);
 };
 
 class PairType : public Type {
@@ -106,7 +99,6 @@ public:
 
   PairType(Type *fst, Type *snd);
   ~PairType();
-  void acceptSemantic(SemanticVisitor *semanticVisitor);
 };
 
 class Identifier : public Expression, public AssignLhs {
@@ -116,7 +108,6 @@ public:
   Identifier(){}
   Identifier(std::string& id) : id(id){}
   ~Identifier(){}
-  void acceptSemantic(SemanticVisitor *semanticVisitor);
   std::string getId();
 };
 
@@ -131,7 +122,6 @@ public:
   VariableDeclaration(Type *type, Identifier *id, AssignRhs *rhs);
 
   ~VariableDeclaration();
-  void acceptSemantic(SemanticVisitor *semanticVisitor);
 };
 typedef std::vector<VariableDeclaration*> VariableList;
 
@@ -148,7 +138,6 @@ public:
       VariableList *parameters, StatSeq *block);
 
   ~FunctionDeclaration(); 
-  void acceptSemantic(SemanticVisitor *semanticVisitor);
 };
 
 typedef std::vector<FunctionDeclaration*> FunctionList;
@@ -158,7 +147,6 @@ public:
   FunctionList funcs;
   FunctionDecList();
   ~FunctionDecList();
-  void acceptSemantic(SemanticVisitor *semanticVisitor);
 };
 
 class FunctionCall : public Expression {
@@ -170,7 +158,6 @@ public:
   FunctionCall(Identifier *id);
 
   ~FunctionCall();
-  void acceptSemantic(SemanticVisitor *semanticVisitor);
 };
 
 class Program : public ASTnode{
@@ -180,7 +167,6 @@ public:
   
   Program(FunctionDecList* fs, StatSeq* stats);
   ~Program();
-  void acceptSemantic(SemanticVisitor *semanticVisitor);
 };
 
 class Assignment : public Statement {
@@ -189,18 +175,13 @@ public:
   AssignRhs *rhs = NULL;
 
   Assignment(AssignLhs *lhs, AssignRhs *rhs);
-
   ~Assignment();
-
-  void acceptSemantic(SemanticVisitor *semanticVisitor);
 };
 
 class SkipStatement : public Statement {
 public:
   SkipStatement();
   ~SkipStatement();
-
-  void acceptSemantic(SemanticVisitor *semanticVisitor);
 };
 
 class FreeStatement : public Statement {
@@ -209,7 +190,6 @@ public:
 
   FreeStatement(Expression *expr);
   ~FreeStatement();
-  void acceptSemantic(SemanticVisitor* semanticVisitor);
 };
 
 class ReturnStatement : public Statement {
@@ -218,7 +198,6 @@ public:
 
   ReturnStatement(Expression *expr);
   ~ReturnStatement();
-  void acceptSemantic(SemanticVisitor *semanticVisitor);
 };
 
 class ExitStatement : public Statement {
@@ -227,7 +206,6 @@ public:
 
   ExitStatement(Expression *expr);
   ~ExitStatement();
-  void acceptSemantic(SemanticVisitor *semanticVisitor);
 };
 
 class BeginStatement : public Statement {
@@ -236,7 +214,6 @@ public:
   StatSeq *scope = NULL;
   BeginStatement(StatSeq *scope);
   ~BeginStatement();
-  void acceptSemantic(SemanticVisitor *semanticVisitor);
 };
 
 class IfStatement : public Statement {
@@ -248,7 +225,6 @@ public:
   IfStatement(Expression *expr, StatSeq *thenS);
   IfStatement(Expression *expr, StatSeq *thenS, StatSeq *elseS);
   ~IfStatement();
-  void acceptSemantic(SemanticVisitor *semanticVisitor);
 };
 
 class WhileStatement : public Statement {
@@ -258,7 +234,6 @@ public:
 
   WhileStatement(Expression *expr, StatSeq *doS);
   ~WhileStatement();
-  void acceptSemantic(SemanticVisitor *semanticVisitor);
 };
 
 class ReadStatement : public Statement {
@@ -267,7 +242,6 @@ public:
   
   ReadStatement(AssignLhs *id);
   ~ReadStatement();
-  void acceptSemantic(SemanticVisitor *semanticVisitor);
 };
 
 class PrintStatement : public Statement {
@@ -276,7 +250,6 @@ public:
 
   PrintStatement(Expression *expr);
   ~PrintStatement();
-  void acceptSemantic(SemanticVisitor *semanticVisitor);
 };
 
 class PrintlnStatement : public Statement {
@@ -285,7 +258,6 @@ public:
 
   PrintlnStatement(Expression *expr);
   ~PrintlnStatement();
-  void acceptSemantic(SemanticVisitor *semanticVisitor);
 };
 
 class Number : public Expression {
@@ -294,7 +266,6 @@ public:
   int value;
   
   Number(int value);
-  void acceptSemantic(SemanticVisitor *semanticVisitor);
 };
 
 class Boolean : public Expression {
@@ -303,7 +274,6 @@ public:
   bool value;
 
   Boolean(bool value);
-  void acceptSemantic(SemanticVisitor *semanticVisitor);
 };
 
 class Char : public Expression {
@@ -312,7 +282,6 @@ public:
   char value;
 
   Char(char value);
-  void acceptSemantic(SemanticVisitor *semanticVisitor);
 };
 
 class String : public Expression {
@@ -320,12 +289,10 @@ public:
   std::string value = "string";
 
   String(std::string value);
-  void acceptSemantic(SemanticVisitor *semanticVisitor);
 };
 
 class Null : public Expression {
 public:
-  void acceptSemantic(SemanticVisitor *semanticVisitor);
 };
 
 class BinaryOperator : public Expression {
@@ -336,7 +303,6 @@ public:
 	
   BinaryOperator(Expression *left, int op, Expression *right);
   ~BinaryOperator();
-  void acceptSemantic(SemanticVisitor *semanticVisitor);
 };
 
 class ArrayElem : public AssignLhs, public Expression {
@@ -346,7 +312,6 @@ public:
 
   ArrayElem(Identifier *id, ExpressionList *idxs);
   ~ArrayElem();
-  void acceptSemantic(SemanticVisitor *semanticVisitor);
   std::string getId();
 };
 
@@ -357,7 +322,6 @@ public:
 	
   PairElem(bool fst, Expression *expr);
   ~PairElem();
-  void acceptSemantic(SemanticVisitor *semanticVisitor);
   std::string getId();
 };
 
@@ -367,7 +331,6 @@ public:
 
 	ArrayLiter(ExpressionList *elems);
   ~ArrayLiter();
-  void acceptSemantic(SemanticVisitor *semanticVisitor);
 };
 
 class NewPair : public AssignRhs {
@@ -377,7 +340,6 @@ public:
 
   NewPair(Expression *fst, Expression *snd);
   ~NewPair();
-  void acceptSemantic(SemanticVisitor *semanticVisitor);
 };
 
 class UnaryOperator : public Expression	{
@@ -387,7 +349,6 @@ public:
 
 	UnaryOperator(int op, Expression *expr);
     ~UnaryOperator();
-    void acceptSemantic(SemanticVisitor *semanticVisitor);
 };
 
 #endif // ! ASTNODE_HH
