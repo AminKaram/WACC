@@ -6,8 +6,8 @@ ParsingDriver::ParsingDriver() : trace_scanning(false),
 { }
 
 ParsingDriver::~ParsingDriver() { 
-  delete ast;
-  ast = NULL;
+  //delete ast;
+  //ast = NULL;
 }
 
 int ParsingDriver::parse(const std::string &f) {
