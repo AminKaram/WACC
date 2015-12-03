@@ -4,28 +4,28 @@
 #include "parser.hh"
 #define tok yy::parser::token::yytokentype
 
-AstNodeVisitor::AstNodeVisitor() {
+SemanticVisitor::SemanticVisitor() {
   scope = new SymbolTable(NULL);
   exprTable = new std::map<ASTnode*, TypeId*>();
   funcLook = new std::map<std::string, FunctionDeclaration*>();
 }
 
-AstNodeVisitor::~AstNodeVisitor() {
+SemanticVisitor::~SemanticVisitor() {
   delete scope;
   scope = NULL;
 }
 
-void AstNodeVisitor::addExpression(ASTnode* node, TypeId* id) {
+void SemanticVisitor::addExpression(ASTnode* node, TypeId* id) {
   exprTable->operator[](node) = id;
 }
 
-TypeId* AstNodeVisitor::lookUpExpr(ASTnode* node) {
+TypeId* SemanticVisitor::lookUpExpr(ASTnode* node) {
   auto it = exprTable->find(node);
   if ( it != exprTable->end()) return it->second;
   return new NullId();
 }
 
-TypeId* AstNodeVisitor::typeBuilder(Type* type){
+TypeId* SemanticVisitor::typeBuilder(Type* type){
   IntegerType *intType = dynamic_cast<IntegerType*>(type);
   BoolType *boolType = dynamic_cast<BoolType*>(type);
   CharType *charType = dynamic_cast<CharType*>(type);
@@ -55,41 +55,41 @@ TypeId* AstNodeVisitor::typeBuilder(Type* type){
 }
 
 
-void AstNodeVisitor::visit(ASTnode *node){
+void SemanticVisitor::visit(ASTnode *node){
 }
 
-void AstNodeVisitor::visit(Program *node) {
+void SemanticVisitor::visit(Program *node) {
   IntTypeId intId(NULL);
   for(int i=0; i < node->functions->funcs.size(); i++) {
     funcLook->insert(std::pair<std::string, FunctionDeclaration*>(node->functions->funcs[i]->id->id,
                 node->functions->funcs[i]));
   }
-  node->functions->accept(this);
+  node->functions->acceptSemantic(this);
   scope = new SymbolTable(scope);
   scope->add("", intId); 
   if(node->statements->containRet()) {
     std::cerr << "semantic error: invalid global return" << std::endl;
     exit(200);
   }
-  node->statements->accept(this);
+  node->statements->acceptSemantic(this);
 }
 
-void AstNodeVisitor::visit(AssignRhs *node) { 
+void SemanticVisitor::visit(AssignRhs *node) {
   ArrayLiter *arrayLiter = dynamic_cast<ArrayLiter*>(node);
   NewPair *newPair       = dynamic_cast<NewPair*>(node);
   Expression *expr       = dynamic_cast<Expression*>(node);
   PairElem *pairElem     = dynamic_cast<PairElem*>(node);
 
-  if(arrayLiter) arrayLiter->accept(this);
-  if(newPair) newPair->accept(this);
-  if(expr) expr->accept(this);
-  if(pairElem) pairElem->accept(this);
+  if(arrayLiter) arrayLiter->acceptSemantic(this);
+  if(newPair) newPair->acceptSemantic(this);
+  if(expr) expr->acceptSemantic(this);
+  if(pairElem) pairElem->acceptSemantic(this);
 }
 
-void AstNodeVisitor::visit(AssignLhs *node) {
+void SemanticVisitor::visit(AssignLhs *node) {
 }
 
-void AstNodeVisitor::visit(Expression *node) {
+void SemanticVisitor::visit(Expression *node) {
   Identifier *ident      = dynamic_cast<Identifier*>(node);
   FunctionCall *funcCall = dynamic_cast<FunctionCall*>(node);
   Number *number         = dynamic_cast<Number*>(node);
@@ -101,25 +101,25 @@ void AstNodeVisitor::visit(Expression *node) {
   ArrayElem *arrayElem   = dynamic_cast<ArrayElem*>(node);
   UnaryOperator *unop    = dynamic_cast<UnaryOperator*>(node);
 
-  if(ident) ident->accept(this);
-  if(funcCall) funcCall->accept(this);
-  if(number) number->accept(this);
-  if(boolean) boolean->accept(this); 
-  if(charId) charId->accept(this);
-  if(stringId) stringId->accept(this);
-  if(null) null->accept(this);
-  if(binop) binop->accept(this);
-  if(arrayElem) arrayElem->accept(this);
-  if(unop) unop->accept(this);
+  if(ident) ident->acceptSemantic(this);
+  if(funcCall) funcCall->acceptSemantic(this);
+  if(number) number->acceptSemantic(this);
+  if(boolean) boolean->acceptSemantic(this);
+  if(charId) charId->acceptSemantic(this);
+  if(stringId) stringId->acceptSemantic(this);
+  if(null) null->acceptSemantic(this);
+  if(binop) binop->acceptSemantic(this);
+  if(arrayElem) arrayElem->acceptSemantic(this);
+  if(unop) unop->acceptSemantic(this);
 }
 
-void AstNodeVisitor::visit(StatSeq *node) {
+void SemanticVisitor::visit(StatSeq *node) {
   for(int i = 0; i < node->statements.size(); i++) {
-    (node->statements)[i]->accept(this);
+    (node->statements)[i]->acceptSemantic(this);
   }
 }
 
-void AstNodeVisitor::visit(VariableDeclaration *node) {
+void SemanticVisitor::visit(VariableDeclaration *node) {
   TypeId *type = typeBuilder(node->type);
   SemanticId *var = scope->lookUp(node->id->id);
   
@@ -134,10 +134,10 @@ void AstNodeVisitor::visit(VariableDeclaration *node) {
     exit(200);
   }
   
-  node->rhs->accept(this);
+  node->rhs->acceptSemantic(this);
   if (!(lookUpExpr(node->rhs)->equals(type))) {
     std::cerr << type->name << " RHS has invalid type. expected " 
-			  << lookUpExpr(node->rhs)->name << std::endl;
+        << lookUpExpr(node->rhs)->name << std::endl;
     exit(200);
   }
 
@@ -145,13 +145,13 @@ void AstNodeVisitor::visit(VariableDeclaration *node) {
   scope->add(node->id->id, *variable);
 }
 
-void AstNodeVisitor::visit(FunctionDecList *node) {
+void SemanticVisitor::visit(FunctionDecList *node) {
   for(int i = 0; i < node->funcs.size(); i++) {
-    (node->funcs)[i]->accept(this);
+    (node->funcs)[i]->acceptSemantic(this);
   }
 }
 
-void AstNodeVisitor::visit(FunctionDeclaration *node) {
+void SemanticVisitor::visit(FunctionDeclaration *node) {
   TypeId *returnType = typeBuilder(node->type);
   SemanticId *retType  = returnType;
   std::vector<ParamId> params;
@@ -172,13 +172,13 @@ void AstNodeVisitor::visit(FunctionDeclaration *node) {
     scope->add(id, *var);
   }
   
-  node->block->accept(this);
+  node->block->acceptSemantic(this);
   SymbolTable *tmp = scope->getEncScope();
   delete scope;
   scope = tmp; 
 }
 
-void AstNodeVisitor::visit(FunctionCall *node) {
+void SemanticVisitor::visit(FunctionCall *node) {
   auto it = funcLook->find(node->id->id);
 
   if (it == funcLook->end()) {
@@ -189,12 +189,12 @@ void AstNodeVisitor::visit(FunctionCall *node) {
   // add a clause to check for correct number of args
   if(node->parameters->size() != it->second->parameters->size()) {
     std::cerr << "semantic error: wrong number of arguments in function call"
-			  << std::endl;
+        << std::endl;
     exit(200);
   }
 
   for(int i = 0; i < node->parameters->size(); i++) {
-    node->parameters->operator[](i)->accept(this);
+    node->parameters->operator[](i)->acceptSemantic(this);
     TypeId *paramId = lookUpExpr(node->parameters->operator[](i));
 
     if(!paramId->equals(typeBuilder(it->second->parameters->operator[](i)->type))) {
@@ -205,65 +205,65 @@ void AstNodeVisitor::visit(FunctionCall *node) {
   addExpression(node, typeBuilder(it->second->type));
 }
 
-void AstNodeVisitor::visit(Assignment *node) {
-  node->lhs->accept(this);
-  node->rhs->accept(this);
+void SemanticVisitor::visit(Assignment *node) {
+  node->lhs->acceptSemantic(this);
+  node->rhs->acceptSemantic(this);
   TypeId *type = lookUpExpr(node->lhs);
   SemanticId *value = scope->lookUpAll(node->lhs->getId());
   
   if(!value) {
     std::cerr << "semantic error: assigning to undeclared identifier" 
-			  << node->lhs->getId() << std::endl;
+        << node->lhs->getId() << std::endl;
     exit(200);
   }
   if(!lookUpExpr(node->rhs)->equals(type)) {
     std::cerr << "Invalid type in assignment of " << node->lhs->getId()
-			  << "as opposed to " << node->rhs->type << std::endl;
+        << "as opposed to " << node->rhs->type << std::endl;
     exit(200);
   }
 }
 
-void AstNodeVisitor::visit(BeginStatement *node) {
+void SemanticVisitor::visit(BeginStatement *node) {
   scope = new SymbolTable(scope);;
-  node->scope->accept(this);
+  node->scope->acceptSemantic(this);
   SymbolTable *tmp = scope->getEncScope();
   delete scope;
   scope = tmp;
 }
 
-void AstNodeVisitor::visit(IfStatement *node) {
-  node->expr->accept(this);
-	if (!(lookUpExpr(node->expr)->equals(new BoolTypeId(NULL)))) {
-		std::cerr << "Type requiered: bool. Actual type: " 
-			 << node->expr->type << std::endl;
-		exit(200); 
-	}
+void SemanticVisitor::visit(IfStatement *node) {
+  node->expr->acceptSemantic(this);
+  if (!(lookUpExpr(node->expr)->equals(new BoolTypeId(NULL)))) {
+    std::cerr << "Type requiered: bool. Actual type: "
+       << node->expr->type << std::endl;
+    exit(200);
+  }
   scope = new SymbolTable(scope);
-  node->thenS->accept(this);
+  node->thenS->acceptSemantic(this);
   SymbolTable *tmp = scope->getEncScope();
   delete scope;
   scope = new SymbolTable(tmp);
-	node->elseS->accept(this);
+  node->elseS->acceptSemantic(this);
   delete scope;
   scope = tmp;
 }
 
 
-void AstNodeVisitor::visit(WhileStatement *node) {
-  node->expr->accept(this);
+void SemanticVisitor::visit(WhileStatement *node) {
+  node->expr->acceptSemantic(this);
   if (!(lookUpExpr(node->expr)->equals(new BoolTypeId(NULL)))) {
-		std::cerr << "Type of expression in while requiered: bool. Actual type: " 
+    std::cerr << "Type of expression in while requiered: bool. Actual type: "
              << lookUpExpr(node->expr)->name << std::endl;
-		exit(200); 
-	}
-  scope = new SymbolTable(scope);	
-	node->doS->accept(this);
+    exit(200);
+  }
+  scope = new SymbolTable(scope);
+  node->doS->acceptSemantic(this);
   SymbolTable *tmp = scope->getEncScope();
   delete scope;
   scope = tmp;
 }
 
-void AstNodeVisitor::visit(ReadStatement *node) {
+void SemanticVisitor::visit(ReadStatement *node) {
   SemanticId *value = scope->lookUpAll(node->id->getId());
   if(!value) {
     std::cerr << "Cannot read undeclared variable: " << node->id->getId() 
@@ -275,7 +275,7 @@ void AstNodeVisitor::visit(ReadStatement *node) {
   if(pair) {
     PairElem *p = dynamic_cast<PairElem*>(node->id);
     if(p) {
-      p->expr->accept(this);
+      p->expr->acceptSemantic(this);
       TypeId *t = lookUpExpr(p->expr);
       PairKeyId *k = dynamic_cast<PairKeyId*>(t);
       if(!k) {
@@ -294,59 +294,59 @@ void AstNodeVisitor::visit(ReadStatement *node) {
   }
 }
 
-void AstNodeVisitor::visit(PrintStatement *node) {
-  node->expr->accept(this);
+void SemanticVisitor::visit(PrintStatement *node) {
+  node->expr->acceptSemantic(this);
 }
 
-void AstNodeVisitor::visit(PrintlnStatement *node) {
-  node->expr->accept(this);
+void SemanticVisitor::visit(PrintlnStatement *node) {
+  node->expr->acceptSemantic(this);
 }
 
-void AstNodeVisitor::visit(BinaryOperator *node) {
-  node->left->accept(this);
-  node->right->accept(this);
-	int oper = node->op;
+void SemanticVisitor::visit(BinaryOperator *node) {
+  node->left->acceptSemantic(this);
+  node->right->acceptSemantic(this);
+  int oper = node->op;
   
-	if((oper == tok::TOK_LOGOR) || (oper == tok::TOK_LOGAND)) {
+  if((oper == tok::TOK_LOGOR) || (oper == tok::TOK_LOGAND)) {
     if(!(lookUpExpr(node->left)->equals(lookUpExpr(node->right)))
        || (!(lookUpExpr(node->left)->equals(new BoolTypeId(NULL))))) {
      
-		  std::cerr << "Expected bool type for operands &&,||" 
-					<< lookUpExpr(node->right)->name  << std::endl;
-		  exit(200);
-	  }
+      std::cerr << "Expected bool type for operands &&,||"
+          << lookUpExpr(node->right)->name  << std::endl;
+      exit(200);
+    }
     addExpression(node, new BoolTypeId(NULL));
-	} else if((oper >= tok::TOK_SLASH) && (oper <= tok::TOK_MINUS)) {
-	  if(!(lookUpExpr(node->left)->equals(lookUpExpr(node->right)))
+  } else if((oper >= tok::TOK_SLASH) && (oper <= tok::TOK_MINUS)) {
+    if(!(lookUpExpr(node->left)->equals(lookUpExpr(node->right)))
        || (!(lookUpExpr(node->left)->equals(new IntTypeId(NULL))))) {
       std::cerr << "right " << lookUpExpr(node->right)->name << std::endl;  
-		  std::cerr <<  lookUpExpr(node->left) <<std::endl;
+      std::cerr <<  lookUpExpr(node->left) <<std::endl;
       std::cerr << "Expected int type for operands /,*,%,+,- "
-					<< lookUpExpr(node->left)->name  << std::endl;
-		  exit(200);
-	  }
+          << lookUpExpr(node->left)->name  << std::endl;
+      exit(200);
+    }
     addExpression(node, new IntTypeId(NULL));
-	} else if((oper >= tok::TOK_LESS) && (oper <= tok::TOK_GREATEREQUALS)) {
+  } else if((oper >= tok::TOK_LESS) && (oper <= tok::TOK_GREATEREQUALS)) {
     if(!(lookUpExpr(node->left)->equals(lookUpExpr(node->right)))){
       std::cerr<<"Left and right of operator to be the same type"<<std::endl;
     }else if(!(lookUpExpr(node->left)->equals(new IntTypeId(NULL))||
        ((lookUpExpr(node->left)->equals(new CharTypeId(NULL)))))) {
-			std::cerr << "Expected type int/char for operators <,<=,>,>=" 
-					<< lookUpExpr(node->left)->name  << std::endl;
-			exit(200);
-	  }
+      std::cerr << "Expected type int/char for operators <,<=,>,>="
+          << lookUpExpr(node->left)->name  << std::endl;
+      exit(200);
+    }
     addExpression(node, new BoolTypeId(NULL));
-	} else if((oper == tok::TOK_EQUALS) || (oper == tok::TOK_NOTEQUALS)) {
-	  if(!(lookUpExpr(node->left)->equals(lookUpExpr(node->right)))) {
-		  std::cerr << "lhs and rhs types do not match for operators ==,!="
-					<< lookUpExpr(node->left)->name  << std::endl;
+  } else if((oper == tok::TOK_EQUALS) || (oper == tok::TOK_NOTEQUALS)) {
+    if(!(lookUpExpr(node->left)->equals(lookUpExpr(node->right)))) {
+      std::cerr << "lhs and rhs types do not match for operators ==,!="
+          << lookUpExpr(node->left)->name  << std::endl;
           exit(200);
-	  }
+    }
     addExpression(node, new BoolTypeId(NULL));
-	}
+  }
   }
 
-void AstNodeVisitor::visit(ArrayElem *node) {
+void SemanticVisitor::visit(ArrayElem *node) {
   SemanticId *value = scope->lookUpAll(node->id->id);
   
   if(!value) {
@@ -369,8 +369,8 @@ void AstNodeVisitor::visit(ArrayElem *node) {
   addExpression(static_cast<ASTnode*>(static_cast<AssignLhs*>(node)), arr->elementType);
 }
 
-void AstNodeVisitor::visit(PairElem *node) {
-  node->expr->accept(this);
+void SemanticVisitor::visit(PairElem *node) {
+  node->expr->acceptSemantic(this);
   if(!(lookUpExpr(node->expr)->equals(new PairId(NULL, new NullId(), new NullId())))) {
     std::cerr << "Type mismatch cannot get pair element of non pair expression "
               <<lookUpExpr(node->expr)->name << std::endl;
@@ -391,47 +391,47 @@ void AstNodeVisitor::visit(PairElem *node) {
   }
 }
 
-void AstNodeVisitor::visit(UnaryOperator *node) {
-  node->expr->accept(this);
+void SemanticVisitor::visit(UnaryOperator *node) {
+  node->expr->acceptSemantic(this);
   int oper = node->op;
   if( oper == tok::TOK_BANG) {
-	if(!lookUpExpr(node->expr)->equals(new BoolTypeId(NULL))) {
-		std::cerr << "Operand of ! is not a bool" << std::endl;
-		exit(200);
-	} 
+  if(!lookUpExpr(node->expr)->equals(new BoolTypeId(NULL))) {
+    std::cerr << "Operand of ! is not a bool" << std::endl;
+    exit(200);
+  }
   addExpression(node, new BoolTypeId(NULL));
   } else if(oper == tok::TOK_MINUS) {
   if(!lookUpExpr(node->expr)->equals(new IntTypeId(NULL))) {
-	  std::cerr << "Operand of - is not an int" << std::endl;
-	  exit(200);
-	}
+    std::cerr << "Operand of - is not an int" << std::endl;
+    exit(200);
+  }
     addExpression(node, new IntTypeId(NULL));
   } else if(oper == tok::TOK_ORD) {
-	if(!lookUpExpr(node->expr)->equals(new CharTypeId(NULL))) {
-		std::cerr << "Operand of ord is not a char" << std::endl;
-		exit(200);
-	}
+  if(!lookUpExpr(node->expr)->equals(new CharTypeId(NULL))) {
+    std::cerr << "Operand of ord is not a char" << std::endl;
+    exit(200);
+  }
     addExpression(node, new IntTypeId(NULL));
   } else if(oper == tok::TOK_CHR) {
-	if(!lookUpExpr(node->expr)->equals(new IntTypeId(NULL))) {
-		std::cerr << "Operand of chr is not an int" << std::endl;
-		exit(200);
-	}
-	
+  if(!lookUpExpr(node->expr)->equals(new IntTypeId(NULL))) {
+    std::cerr << "Operand of chr is not an int" << std::endl;
+    exit(200);
+  }
+
   addExpression(node, new CharTypeId(NULL));
   } 
 }
 
-void AstNodeVisitor::visit(FreeStatement *node) {
-  node->expr->accept(this);
+void SemanticVisitor::visit(FreeStatement *node) {
+  node->expr->acceptSemantic(this);
   if(!(lookUpExpr(node->expr)->equals(new PairId(NULL, new NullId(), new NullId())))) {
     std::cerr << "semantic error freeing a non pair type expression" << std::endl;
     exit(200);
   }
 }
 
-void AstNodeVisitor::visit(ReturnStatement *node) {
-  node->expr->accept(this);
+void SemanticVisitor::visit(ReturnStatement *node) {
+  node->expr->acceptSemantic(this);
   SemanticId *rettype = scope->lookUpAll("");
   TypeId *ret = dynamic_cast<TypeId*>(rettype);
   if(!(lookUpExpr(node->expr)->equals(ret))) {
@@ -440,8 +440,8 @@ void AstNodeVisitor::visit(ReturnStatement *node) {
   }
 }
 
-void AstNodeVisitor::visit(ExitStatement *node) { 
-  node->expr->accept(this);
+void SemanticVisitor::visit(ExitStatement *node) {
+  node->expr->acceptSemantic(this);
   if(!(lookUpExpr(node->expr)->equals(new IntTypeId(NULL)))) {
     std::cerr << "semantic error : wrong exit type, expected int got: " << node->expr->type
               << std::endl;
@@ -449,37 +449,37 @@ void AstNodeVisitor::visit(ExitStatement *node) {
   }
 }
 
-void AstNodeVisitor::visit(Number *node) {
+void SemanticVisitor::visit(Number *node) {
   addExpression(node, new IntTypeId(NULL));
 }
 
-void AstNodeVisitor::visit(Boolean *node) {
+void SemanticVisitor::visit(Boolean *node) {
   addExpression(node, new BoolTypeId(NULL));
 }
 
-void AstNodeVisitor::visit(Char *node) {
+void SemanticVisitor::visit(Char *node) {
   addExpression(node, new CharTypeId(NULL));
 }
 
-void AstNodeVisitor::visit(String *node) {
+void SemanticVisitor::visit(String *node) {
   addExpression(node, new StringTypeId(NULL));
 }
 
-void AstNodeVisitor::visit(NewPair *node) {
-  node->fst->accept(this);
-  node->snd->accept(this);
+void SemanticVisitor::visit(NewPair *node) {
+  node->fst->acceptSemantic(this);
+  node->snd->acceptSemantic(this);
   addExpression(node, new PairId(NULL, lookUpExpr(node->fst), lookUpExpr(node->snd)));
 }
 
-void AstNodeVisitor::visit(ArrayLiter *node) {
+void SemanticVisitor::visit(ArrayLiter *node) {
   if(node->elems->size() == 0) {
     addExpression(node, new NullId());
     return;
   }
-  node->elems->operator[](0)->accept(this);
+  node->elems->operator[](0)->acceptSemantic(this);
   TypeId* elemType = lookUpExpr(node->elems->operator[](0));
   for(int i=1; i < node->elems->size(); i++) {
-    node->elems->operator[](i)->accept(this);
+    node->elems->operator[](i)->acceptSemantic(this);
     TypeId* tmp = lookUpExpr(node->elems->operator[](i));
     if(!tmp->equals(elemType)) {
       std::cerr << "semantic error non matching types in array literal" << std::endl;
@@ -489,17 +489,17 @@ void AstNodeVisitor::visit(ArrayLiter *node) {
   addExpression(node, new ArrayId(NULL, elemType));
 }
 
-void AstNodeVisitor::visit(PairType *node) {
+void SemanticVisitor::visit(PairType *node) {
 }
 
-void AstNodeVisitor::visit(Null *node) {
+void SemanticVisitor::visit(Null *node) {
   addExpression(node, new NullId());
 }
 
-void AstNodeVisitor::visit(ArrayType *node) {
+void SemanticVisitor::visit(ArrayType *node) {
 }
 
-void AstNodeVisitor::visit(Identifier *node) {
+void SemanticVisitor::visit(Identifier *node) {
   SemanticId *type = scope->lookUpAll(node->id);
   VariableId *idType = dynamic_cast<VariableId*>(type);
   if(!idType) {
@@ -510,3 +510,48 @@ void AstNodeVisitor::visit(Identifier *node) {
   addExpression(static_cast<ASTnode*>(static_cast<AssignLhs*>(node)), idType->type);
   addExpression(static_cast<ASTnode*>(static_cast<AssignRhs*>(node)), idType->type);
 }
+
+void SemanticVisitor::visit(IntegerType *node){}
+void SemanticVisitor::visit(BoolType *node){}
+void SemanticVisitor::visit(CharType *node){}
+void SemanticVisitor::visit(StringType *node){}
+
+
+void CodeGenVisitor::visit(ASTnode *node) {}
+void CodeGenVisitor::visit(Program *node){}
+void CodeGenVisitor::visit(AssignRhs *node){}
+void CodeGenVisitor::visit(AssignLhs *node){}
+void CodeGenVisitor::visit(Expression *node){}
+void CodeGenVisitor::visit(StatSeq *node){}
+void CodeGenVisitor::visit(FunctionDecList *node){}
+void CodeGenVisitor::visit(IntegerType *node){}
+void CodeGenVisitor::visit(BoolType *node){}
+void CodeGenVisitor::visit(CharType *node){}
+void CodeGenVisitor::visit(StringType *node){}
+void CodeGenVisitor::visit(ArrayType *node){}
+void CodeGenVisitor::visit(PairType *node){}
+void CodeGenVisitor::visit(VariableDeclaration *node){}
+void CodeGenVisitor::visit(FunctionDeclaration *node){}
+void CodeGenVisitor::visit(FunctionCall *node){}
+void CodeGenVisitor::visit(Assignment *node){}
+void CodeGenVisitor::visit(FreeStatement *node){}
+void CodeGenVisitor::visit(ReturnStatement *node){}
+void CodeGenVisitor:: visit(ExitStatement *node){}
+void CodeGenVisitor::visit(BeginStatement *node){}
+void CodeGenVisitor::visit(IfStatement *node){}
+void CodeGenVisitor::visit(WhileStatement *node){}
+void CodeGenVisitor::visit(ReadStatement *node){}
+void CodeGenVisitor::visit(PrintStatement *node){}
+void CodeGenVisitor::visit(PrintlnStatement *node){}
+void CodeGenVisitor::visit(Number *node){}
+void CodeGenVisitor::visit(Boolean *node){}
+void CodeGenVisitor::visit(Char *node){}
+void CodeGenVisitor::visit(String *node){}
+void CodeGenVisitor::visit(Null *node){}
+void CodeGenVisitor::visit(BinaryOperator *node){}
+void CodeGenVisitor::visit(Identifier *node){}
+void CodeGenVisitor::visit(ArrayElem *node){}
+void CodeGenVisitor::visit(PairElem *node){}
+void CodeGenVisitor::visit(ArrayLiter *node){}
+void CodeGenVisitor::visit(NewPair *node){}
+void CodeGenVisitor::visit(UnaryOperator *node){}

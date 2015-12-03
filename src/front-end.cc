@@ -2,7 +2,7 @@
 
 FrontEnd::FrontEnd() {
   driver = new ParsingDriver();
-  semanticAnalyzer = new AstNodeVisitor();
+  semanticAnalyzer = new SemanticVisitor();
 }
 
 FrontEnd::~FrontEnd() {
