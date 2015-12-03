@@ -1,9 +1,9 @@
 #!/bin/bash
 #command line testing utility wor the wacc front-end.
 
-VALID="$HOME/Programming/Uni/second_year/labs/wacc_examples/valid/"
-SYNTAX="$HOME/Programming/Uni/second_year/labs/wacc_examples/invalid/syntaxErr/"
-SEMANTIC="$HOME/Programming/Uni/second_year/labs/wacc_examples/invalid/semanticErr/"
+VALID="$HOME/wacc_examples/valid/"
+SYNTAX="$HOME/wacc_examples/invalid/syntaxErr/"
+SEMANTIC="$HOME/wacc_examples/invalid/semanticErr/"
 
 VFAIL=0
 SYFAIL=0
@@ -11,8 +11,8 @@ SEFAIL=0
 
 make
 
+echo""
 echo "VALID TESTS "
-echo ""
 echo ""
 echo ""
 for f in $(find "$VALID" -name '*.wacc')
@@ -74,3 +74,8 @@ echo""
 echo""
 echo "SEMANTIC TESTS $((45-$SEFAIL))/45"
 
+if ((VFAIL + SYFAIL + SEFAIL == 0)); then
+				echo ""
+				echo "ALL TESTS PASS"
+				echo ""
+	fi
