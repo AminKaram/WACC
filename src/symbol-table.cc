@@ -35,7 +35,7 @@ int SymbolTable::add(std::string id, SemanticId& val) {
   if(ret.second) {
     return 0;
   }
-  std::cerr << "semantic error: Redefined variable." << id << std::endl;
+  std::cerr << "semantic error: Redefined variable " << id << std::endl;
   exit(200);
 }
 

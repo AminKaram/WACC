@@ -19,12 +19,12 @@ public:
   virtual void accept(AstNodeVisitor *visitor);
 };
 
-class AssignLhs : public ASTnode {
+class AssignLhs : public virtual ASTnode {
 public:
   virtual std::string getId();
 };
 
-class AssignRhs : public ASTnode {
+class AssignRhs : public virtual ASTnode {
 public: 
   AssignRhs() { }
   AssignRhs(std::string type);
@@ -34,7 +34,7 @@ public:
 class Expression : public AssignRhs { 
 public: 
   virtual ~Expression() {} 
-  void accept(AstNodeVisitor *visitor);
+  void virtual accept(AstNodeVisitor *visitor);
 };
 typedef std::vector<Expression*> ExpressionList;
 

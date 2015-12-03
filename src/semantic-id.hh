@@ -1,7 +1,7 @@
 #ifndef SEMANTIC_ID_HH
 #define SEMANTIC_ID_HH
 #include "astnode.hh"
-
+#include <string>
 
 class SemanticId {
 public:
@@ -13,29 +13,38 @@ public:
 
 class TypeId : public SemanticId {
 public:
-  std::string name = "type";
   TypeId(ASTnode* astnode);
-  bool equals(TypeId *other);
+  virtual ~TypeId() = 0;
+  bool virtual equals(TypeId *other) = 0;
+  std::string virtual name() = 0; 
 };
 
 class IntTypeId : public TypeId {
 public:
   IntTypeId(ASTnode* astnode);
+  bool equals(TypeId *other);
+  std::string name(); 
 };
 
 class BoolTypeId : public TypeId {
 public:
-  BoolTypeId(ASTnode* astnode) : TypeId(astnode) {}
+  BoolTypeId(ASTnode* astnode);
+  bool equals(TypeId *other);
+  std::string name(); 
 };
 
 class CharTypeId : public TypeId {
 public:
   CharTypeId(ASTnode* astnode);
+  bool equals(TypeId *other);
+  std::string name(); 
 };
 
 class StringTypeId : public TypeId {
 public:
   StringTypeId(ASTnode* astnode);
+  bool equals(TypeId *other);
+  std::string name(); 
 };
 
 class VariableId : public SemanticId {
@@ -52,9 +61,10 @@ public:
 
 class ArrayId : public TypeId {
 public:
-  TypeId *elementType = new TypeId(NULL);
+  TypeId *elementType;
   ArrayId(ASTnode* astnode, TypeId *elementType);
-  bool equals(ArrayId *other);
+  bool equals(TypeId *other);
+  std::string name(); 
 };
 
 class PairId : public TypeId {
@@ -62,12 +72,15 @@ public:
   TypeId *fst;
   TypeId *snd;
   PairId(ASTnode* astnode, TypeId *fst, TypeId *snd);
-  bool equals(PairId *other);
+  bool equals(TypeId *other);
+  std::string name(); 
 };
 
-class PairKeyId : public TypeId {
+class PairKeyId : public PairId {
 public:
   PairKeyId(ASTnode *astnode);
+  bool equals(TypeId *other);
+  std::string name(); 
 };
 
 class FunctionId : public SemanticId {
@@ -80,6 +93,8 @@ public:
 class NullId : public PairId {
 public:
   NullId();
+  bool equals(TypeId *other);
+  std::string name(); 
 };
 
 #endif // ! SEMANTIC_ID_HH
