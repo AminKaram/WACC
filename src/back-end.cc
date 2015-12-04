@@ -1,4 +1,4 @@
-#include "Back-End.hh"
+#include "back-end.hh"
 
 BackEnd::BackEnd(std::ostream* stream) {
   codeGenerator = new CodeGenVisitor(stream);
