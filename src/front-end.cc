@@ -25,3 +25,7 @@ int FrontEnd::check(Program *node) {
 	semanticAnalyzer->visit(node);
 	return 0;
 }
+
+Program* FrontEnd::getProgram() {
+  return driver->ast;
+}

@@ -20,12 +20,12 @@ public:
   void accept(AstNodeVisitor *visitor);
 };
 
-class AssignLhs : public ASTnode {
+class AssignLhs : public virtual ASTnode {
 public:
   virtual std::string getId();
 };
 
-class AssignRhs : public ASTnode {
+class AssignRhs : public virtual ASTnode {
 public: 
   AssignRhs() { }
   AssignRhs(std::string type);

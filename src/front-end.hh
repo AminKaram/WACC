@@ -9,10 +9,12 @@ public:
   ~FrontEnd();
   int check(Program*);
   int run(char*);
+  Program *getProgram();
 
 private:
   ParsingDriver *driver;
   AstNodeVisitor *semanticAnalyzer;
+  bool parsed = false;
 };
 
 #endif // ! FRONT_END_HH

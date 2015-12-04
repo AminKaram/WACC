@@ -4,8 +4,8 @@
 
 class CodeGenVisitor : public AstNodeVisitor {
 public:
-  CodeGenVisitor();
-   ~CodeGenVisitor();
+  CodeGenVisitor(std::ostream *stream);
+  ~CodeGenVisitor();
 
   void visit(ASTnode *node);
   void visit(Program *node);
@@ -47,6 +47,10 @@ public:
   void visit(UnaryOperator *node);
 
   void defineLabel(String label);
+
+private:
+  std::ostream *output;
+
 };
 
 

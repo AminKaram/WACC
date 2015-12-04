@@ -1,5 +1,8 @@
 #include "code-generation-visitor.hh"
 
+CodeGenVisitor::CodeGenVisitor(std::ostream* stream) {
+  output = stream;
+}
 
 void CodeGenVisitor::visit(ASTnode *node) {}
 void CodeGenVisitor::visit(Program *node) {}

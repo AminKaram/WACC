@@ -13,7 +13,7 @@ public:
   ParsingDriver();
   virtual ~ParsingDriver();  
 
-  Program *ast;
+  Program *ast = NULL;
 
   // Handling the scanner
   void scan_begin();
