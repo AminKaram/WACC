@@ -5,8 +5,14 @@ CodeGenVisitor::CodeGenVisitor(std::ostream* stream) {
 }
 CodeGenVisitor::~CodeGenVisitor() { }
 
-void CodeGenVisitor::visit(ASTnode *node) {}
-void CodeGenVisitor::visit(Program *node) {}
+void CodeGenVisitor::visit(ASTnode *node) {
+}
+
+void CodeGenVisitor::visit(Program *node) {
+  node->functions->accept(this);
+  node->statements->accept(this);
+}
+
 void CodeGenVisitor::visit(AssignRhs *node) {}
 void CodeGenVisitor::visit(AssignLhs *node) {}
 void CodeGenVisitor::visit(Expression *node) {}
@@ -24,7 +30,7 @@ void CodeGenVisitor::visit(FunctionCall *node) {}
 void CodeGenVisitor::visit(Assignment *node) {}
 void CodeGenVisitor::visit(FreeStatement *node) {}
 void CodeGenVisitor::visit(ReturnStatement *node) {}
-void CodeGenVisitor::visit(ExitStatement *node) {}
+void CodeGenVisitor::visit(ExitStatement *node) {std::cout<< "e" <<std::endl;}
 void CodeGenVisitor::visit(BeginStatement *node) {}
 void CodeGenVisitor::visit(IfStatement *node) {}
 void CodeGenVisitor::visit(WhileStatement *node) {}

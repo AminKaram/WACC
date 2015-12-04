@@ -360,14 +360,14 @@ void SemanticVisitor::visit(ArrayElem *node) {
   ArrayId *arr = dynamic_cast<ArrayId*>(var->type);
   StringTypeId *str = dynamic_cast<StringTypeId*>(var->type);
     if(str) {
-        addExpression(static_cast<ASTnode*>(static_cast<AssignLhs*>(node)), new CharTypeId(NULL));
+        addExpression(node, new CharTypeId(NULL));
         return;
     }
   if(!arr && !type->equals(arr)) {
     std::cerr <<"semantic error: identifier is not an array" << std::endl;
     exit(200);
   }
-  addExpression(static_cast<ASTnode*>(static_cast<AssignLhs*>(node)), arr->elementType);
+  addExpression(node, arr->elementType);
 }
 
 void SemanticVisitor::visit(PairElem *node) {
@@ -383,7 +383,7 @@ void SemanticVisitor::visit(PairElem *node) {
       std::cerr << "semantic error accessing elem of undefined pair" << std::endl;
       exit(200);
     }
-    ASTnode *n = static_cast<ASTnode*>(static_cast<AssignLhs*>(node));
+    ASTnode *n = node;
     
   if (node->fst) {
     addExpression(n, pairType->fst);
@@ -442,6 +442,7 @@ void SemanticVisitor::visit(ReturnStatement *node) {
 }
 
 void SemanticVisitor::visit(ExitStatement *node) {
+  std::cout << "exit" << std::endl;
   node->expr->accept(this);
   if(!(lookUpExpr(node->expr)->equals(new IntTypeId(NULL)))) {
     std::cerr << "semantic error : wrong exit type, expected int got: " << node->expr->type
@@ -508,8 +509,8 @@ void SemanticVisitor::visit(Identifier *node) {
               << std::endl;
     exit(200);
   }
-  addExpression(static_cast<ASTnode*>(static_cast<AssignLhs*>(node)), idType->type);
-  addExpression(static_cast<ASTnode*>(static_cast<AssignRhs*>(node)), idType->type);
+  addExpression(node, idType->type);
+  addExpression(node, idType->type);
 }
 
 void SemanticVisitor::visit(IntegerType *node){}

@@ -17,7 +17,7 @@ public:
   std::string type;
   ASTnode() { }
   virtual ~ASTnode() {  }
-  void accept(AstNodeVisitor *visitor);
+  virtual void accept(AstNodeVisitor *visitor);
 };
 
 class AssignLhs : public virtual ASTnode {
@@ -49,6 +49,7 @@ public:
   StatSeq();
   ~StatSeq();
   bool containRet();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class Type : public ASTnode {
@@ -147,6 +148,7 @@ public:
   FunctionList funcs;
   FunctionDecList();
   ~FunctionDecList();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class FunctionCall : public Expression {
@@ -167,6 +169,7 @@ public:
   
   Program(FunctionDecList* fs, StatSeq* stats);
   ~Program();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class Assignment : public Statement {
@@ -206,6 +209,7 @@ public:
 
   ExitStatement(Expression *expr);
   ~ExitStatement();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class BeginStatement : public Statement {
