@@ -20,6 +20,8 @@ void CodeGenVisitor::visit(AssignLhs *node) {}
 void CodeGenVisitor::visit(Expression *node) {}
 
 void CodeGenVisitor::visit(StatSeq *node) {
+
+
   for(int i = 0; i < node->statements.size(); i++) {
     (node->statements)[i]->accept(this);
   }
@@ -46,21 +48,28 @@ void CodeGenVisitor::visit(BeginStatement *node) {}
 void CodeGenVisitor::visit(IfStatement *node) {}
 void CodeGenVisitor::visit(WhileStatement *node) {}
 void CodeGenVisitor::visit(ReadStatement *node) {}
+std::string CodeGenVisitor::visitAndPrintReg(Expression *node) {
+	*output << "MOV R1, \"Hello World\"" << std::endl;
+//			    "string:" << std::endl <<
+//				".ascii \"Hello Worldn\" " << std::endl;
+				
+	return "R1";
+}
 void CodeGenVisitor::visit(PrintStatement *node) {
+	std::cout << "print statement" << std::endl;
 	*output <<  "PUSH R0" << std::endl <<
 				"PUSH R1" << std::endl <<
+				"PUSH R7" << std::endl <<
 				std::endl <<
 				"MOV R7, #4" << std::endl <<
 		 		"MOV R0, #1" << std::endl <<
-			 	"MOV R2, #12" << std::endl <<
-				"LDR R1, =string" << std::endl <<
+			 	"MOV R2, #12" << std::endl;
+			 				 	
+	*output <<	"LDR R1, " << visitAndPrintReg(node->expr) << std::endl <<
 				"SWI 0" << std::endl <<
 				"MOV R7, #1" << std::endl <<
 				"SWI 0" << std::endl <<
-				".data" << std::endl <<
-			  "string:" << std::endl <<
-				" .ascii \"Hello World.\" " << std::endl <<
-				std::endl <<
+				"POP R7" << std::endl <<
 				"POP R1" << std::endl <<
 				"POP R0";
 				
@@ -99,4 +108,7 @@ std::string CodeGenVisitor::getAvailableRegister() {
 	std::cerr << "ERROR. There are no available registers";
 }
 
-
+void CodeGenVisitor::freeRegister(std::string reg) {
+	regTable->find(reg)->second = true;
+	*output << "MOV " << reg << ", " << "0" << std::endl; 
+}

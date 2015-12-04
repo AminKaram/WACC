@@ -32,6 +32,7 @@ public:
   void visit(IfStatement *node);
   void visit(WhileStatement *node);
   void visit(ReadStatement *node);
+  std::string visitAndPrintReg(Expression *node);
   void visit(PrintStatement *node);
   void visit(PrintlnStatement *node);
   void visit(Number *node);
@@ -51,6 +52,7 @@ public:
   
   void populateRegMap();
   std::string getAvailableRegister();
+  void freeRegister(std::string reg);
   
 
 private:

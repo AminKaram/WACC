@@ -170,6 +170,10 @@ ReadStatement::~ReadStatement() {freePtr(id);}
 PrintStatement::PrintStatement(Expression *expr) : expr(expr) {}
 PrintStatement::~PrintStatement() {freePtr(expr);}
 
+void PrintStatement::accept(AstNodeVisitor *visitor) {
+	visitor->visit(this);
+}
+
 PrintlnStatement::PrintlnStatement(Expression *expr) : expr(expr) {}
 PrintlnStatement::~PrintlnStatement() {freePtr(expr);}
 

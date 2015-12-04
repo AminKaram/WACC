@@ -254,6 +254,7 @@ public:
 
   PrintStatement(Expression *expr);
   ~PrintStatement();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class PrintlnStatement : public Statement {
