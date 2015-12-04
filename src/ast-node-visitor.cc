@@ -163,15 +163,16 @@ void AstNodeVisitor::visit(Assignment *node) {
   node->lhs->accept(this);
   node->rhs->accept(this);
   SemanticId *value = scope->lookUpAll(node->lhs->getId());
-  VariableId *var = dynamic_cast<VariableId*>(value);
+  TypeId *typeId = node->lhs->type;
   
   if(!value) {
     std::cerr << "semantic error: assigning to undeclared identifier" 
 			  << node->lhs->getId() << std::endl;
     exit(200);
   }
-  if(!node->rhs->type->equals(var->type)) {
-    std::cerr << "Invalid type in assignment of " << var->type->name()
+
+  if(!node->rhs->type->equals(typeId)) {
+    std::cerr << "Invalid type in assignment of " << typeId->name()
 			  << " as opposed to " << node->rhs->type->name() << std::endl;
     exit(200);
   }

@@ -16,6 +16,7 @@ void freePtr(T *ptr) {
 
 class ASTnode {
 public:
+  TypeId *type = NULL;
   ASTnode() { }
   virtual ~ASTnode() {  }
   virtual void accept(AstNodeVisitor *visitor);
@@ -29,8 +30,6 @@ public:
 
 class AssignRhs : public virtual ASTnode {
 public: 
-  SymbolTable *scope = NULL;
-  TypeId *type = NULL;
   AssignRhs() { }
   void accept(AstNodeVisitor *visitor);
 };
