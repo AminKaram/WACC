@@ -1,4 +1,5 @@
 #include "symbol-table.hh"
+#include <iostream>
 
 SymbolTable::SymbolTable(SymbolTable *encScope) : encScope(encScope) {
   dictionary = new std::map<std::string, SemanticId&>();    

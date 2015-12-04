@@ -17,12 +17,6 @@ public:
   void visit(Expression *node); 
   void visit(StatSeq *node);
   void visit(FunctionDecList *node);  
-  void visit(IntegerType *node); 
-  void visit(BoolType *node);  
-  void visit(CharType *node);  
-  void visit(StringType *node);
-  void visit(ArrayType *node);
-  void visit(PairType *node);
   void visit(VariableDeclaration *node);
   void visit(FunctionDeclaration *node);
   void visit(FunctionCall *node);
@@ -52,11 +46,7 @@ public:
 
 private:
   SymbolTable *scope = NULL;
-  std::map<ASTnode*, TypeId*> *exprTable;
   std::map<std::string,FunctionDeclaration*> *funcLook;
-  void addExpression(ASTnode*, TypeId*);
-  TypeId* lookUpExpr(ASTnode *node);
-  TypeId* typeBuilder(Type*);
 };
 
 #endif // ! AST_NODE_VISITOR_HH

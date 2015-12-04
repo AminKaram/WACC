@@ -1,11 +1,11 @@
 #include "semantic-id.hh"
 
-SemanticId::SemanticId(ASTnode* astnode) : astnode(astnode){ }
+SemanticId::SemanticId() { }
 
-TypeId::TypeId(ASTnode* astnode) : SemanticId(astnode) {}
+TypeId::TypeId() : SemanticId() {}
 TypeId::~TypeId() {}
 
-IntTypeId::IntTypeId(ASTnode* astnode) : TypeId(astnode) {}
+IntTypeId::IntTypeId() : TypeId() {}
 bool IntTypeId::equals(TypeId *other) {
   IntTypeId *intOther = dynamic_cast<IntTypeId*>(other);
   return intOther != NULL; 
@@ -14,7 +14,7 @@ std::string IntTypeId::name() {
   return std::string("int");
 }
 
-BoolTypeId::BoolTypeId(ASTnode *astnode) : TypeId(astnode) {}
+BoolTypeId::BoolTypeId() : TypeId() {}
 bool BoolTypeId::equals(TypeId *other) {
   BoolTypeId* boolOther = dynamic_cast<BoolTypeId*>(other);
   return boolOther != NULL;
@@ -23,7 +23,7 @@ std::string BoolTypeId::name() {
   return std::string("bool");
 }
 
-CharTypeId::CharTypeId(ASTnode* astnode) : TypeId(astnode) {}
+CharTypeId::CharTypeId() : TypeId() {}
 bool CharTypeId::equals(TypeId *other) {
   CharTypeId *charOther = dynamic_cast<CharTypeId*>(other);
   return charOther != NULL;
@@ -32,12 +32,12 @@ std::string CharTypeId::name() {
   return std::string("char");
 }
 
-StringTypeId::StringTypeId(ASTnode* astnode) : TypeId(astnode) {}
+StringTypeId::StringTypeId() : TypeId() {}
 bool StringTypeId::equals(TypeId *other) {
   StringTypeId *stringOther = dynamic_cast<StringTypeId*>(other);
   ArrayId *arrayOther = dynamic_cast<ArrayId*>(other);
   if(arrayOther) {
-    if (arrayOther->elementType->equals(new CharTypeId(NULL))) {
+    if (arrayOther->elementType->equals(new CharTypeId())) {
       return true;
     }
   }
@@ -47,18 +47,15 @@ std::string StringTypeId::name() {
   return std::string("string");
 }
 
-VariableId::VariableId(ASTnode* astnode, TypeId *type)
-                     : SemanticId(astnode), type(type){}
+VariableId::VariableId(TypeId *type) : SemanticId(), type(type){}
 
-ParamId::ParamId(ASTnode* astnode, TypeId *type)
-               : SemanticId(astnode), type(type) {}
+ParamId::ParamId(TypeId *type) : SemanticId(), type(type) {}
 
-ArrayId:: ArrayId(ASTnode* astnode, TypeId *elementType)
-             : TypeId(astnode), elementType(elementType) {}
+ArrayId:: ArrayId(TypeId *elementType) : TypeId(), elementType(elementType) {}
 bool ArrayId::equals(TypeId *other) {
   ArrayId *arrayOther = dynamic_cast<ArrayId*>(other);
   StringTypeId *stringOther = dynamic_cast<StringTypeId*>(other);
-  if(stringOther && elementType->equals(new CharTypeId(NULL))) {
+  if(stringOther && elementType->equals(new CharTypeId())) {
     return true;
   }
   if(arrayOther) {
@@ -70,8 +67,7 @@ std::string ArrayId::name() {
   return std::string (elementType->name() + "[]");
 }
 
-PairId::PairId(ASTnode* astnode, TypeId *fst, TypeId *snd)
-                     : TypeId(astnode), fst(fst), snd(snd) {}
+PairId::PairId(TypeId *fst, TypeId *snd) : TypeId(), fst(fst), snd(snd) {}
 bool PairId::equals(TypeId *other) {
   PairId *pairOther = dynamic_cast<PairId*>(other);
   if(pairOther) {
@@ -88,7 +84,7 @@ std::string PairId::name() {
   return std::string("(" + fst->name() + ", " + snd->name() + ")");
 }
 
-PairKeyId::PairKeyId(ASTnode *astnode) : PairId(astnode, NULL, NULL) { }
+PairKeyId::PairKeyId() : PairId(NULL, NULL) { }
 bool PairKeyId::equals(TypeId *other) {
   PairId *pairOther = dynamic_cast<PairId*>(other);
   return other != NULL;
@@ -97,11 +93,10 @@ std::string PairKeyId::name() {
   return std::string("pair");
 }
 
-FunctionId::FunctionId(ASTnode* astnode, TypeId *ret,
-                          std::vector<ParamId> params)
-: SemanticId(astnode), returnType(ret), params(params) { }
+FunctionId::FunctionId(TypeId *ret, std::vector<ParamId> params)
+                    : SemanticId(), returnType(ret), params(params) { }
 
-NullId::NullId() : PairId(NULL, NULL, NULL){}
+NullId::NullId() : PairId(NULL, NULL){}
 bool NullId::equals(TypeId* other) {
   PairId *pairOther = dynamic_cast<PairId*>(other);
   return other != NULL;
