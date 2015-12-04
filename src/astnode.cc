@@ -8,6 +8,10 @@ void ASTnode::accept(AstNodeVisitor *visitor) {
 Program::Program(FunctionDecList* fs, StatSeq* stats) : functions(fs), statements(stats) { }
 Program::~Program() { freePtr(functions); freePtr(statements); }
 
+void Program::accept(AstNodeVisitor *visitor) {
+  visitor->visit(this);
+}
+
 StatSeq::StatSeq() { };
 StatSeq:: ~StatSeq() {
   for(int i = 0; i < statements.size(); i++ ) {
@@ -25,12 +29,21 @@ bool StatSeq::containRet() {
   return false;
 }
 
+void StatSeq::accept(AstNodeVisitor *visitor) {
+  visitor->visit(this);
+}
+
 FunctionDecList::FunctionDecList() { }
 FunctionDecList::~FunctionDecList() {
     for(int i=0; i < funcs.size(); i++) {
       freePtr(funcs[i]);
     }
 }
+
+void FunctionDecList::accept(AstNodeVisitor *visitor) {
+  visitor->visit(this);
+}
+
 VariableDeclaration::VariableDeclaration(Type *type, Identifier *id)
     : type(type), id(id) {}
 
@@ -122,6 +135,10 @@ ReturnStatement::~ReturnStatement() { freePtr(expr); }
 
 ExitStatement::ExitStatement(Expression *expr) : expr(expr) {}
 ExitStatement::~ExitStatement() { freePtr(expr);}
+
+void ExitStatement::accept(AstNodeVisitor *visitor) {
+  visitor->visit(this);
+}
 
 
 BeginStatement::BeginStatement(StatSeq *scope) : scope(scope) {}

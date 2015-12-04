@@ -7,13 +7,28 @@ CodeGenVisitor::CodeGenVisitor(std::ostream* stream) {
 
 CodeGenVisitor::~CodeGenVisitor() { }
 
-void CodeGenVisitor::visit(ASTnode *node) {}
-void CodeGenVisitor::visit(Program *node) {}
+void CodeGenVisitor::visit(ASTnode *node) {
+}
+
+void CodeGenVisitor::visit(Program *node) {
+  node->functions->accept(this);
+  node->statements->accept(this);
+}
+
 void CodeGenVisitor::visit(AssignRhs *node) {}
 void CodeGenVisitor::visit(AssignLhs *node) {}
 void CodeGenVisitor::visit(Expression *node) {}
-void CodeGenVisitor::visit(StatSeq *node) {}
-void CodeGenVisitor::visit(FunctionDecList *node) {}
+
+void CodeGenVisitor::visit(StatSeq *node) {
+  for(int i = 0; i < node->statements.size(); i++) {
+    (node->statements)[i]->accept(this);
+  }
+}
+void CodeGenVisitor::visit(FunctionDecList *node) {
+  for(int i = 0; i < node->funcs.size(); i++) {
+    (node->funcs)[i]->accept(this);
+  }
+}
 void CodeGenVisitor::visit(IntegerType *node) {}
 void CodeGenVisitor::visit(BoolType *node) {}
 void CodeGenVisitor::visit(CharType *node) {}

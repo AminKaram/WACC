@@ -10,7 +10,6 @@ int main(int argc, char **argv) {
   res = frontEnd->run(argv[1]);
 
   std::ofstream assemblyOutput;
-  std::cout << argv[1] << std::endl;
   std::string argAsString (argv[1]);
   std::string substr = argAsString.substr(0, argAsString.find(".wacc"));
   assemblyOutput.open(substr.append(".s"));
@@ -18,6 +17,7 @@ int main(int argc, char **argv) {
   BackEnd* backEnd = new BackEnd(&assemblyOutput);
   backEnd->generateCode(frontEnd->getProgram());
   delete frontEnd;
+  assemblyOutput.close();
   delete backEnd;
   return res;
 }
