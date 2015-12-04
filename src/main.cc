@@ -18,6 +18,7 @@ int main(int argc, char **argv) {
   BackEnd* backEnd = new BackEnd(&assemblyOutput);
   backEnd->generateCode(frontEnd->getProgram());
   delete frontEnd;
+  assemblyOutput.close();
   delete backEnd;
   return res;
 }
