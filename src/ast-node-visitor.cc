@@ -163,16 +163,16 @@ void AstNodeVisitor::visit(Assignment *node) {
   node->lhs->accept(this);
   node->rhs->accept(this);
   SemanticId *value = scope->lookUpAll(node->lhs->getId());
-  TypeId *type = dynamic_cast<TypeId*>(value);
+  VariableId *var = dynamic_cast<VariableId*>(value);
   
   if(!value) {
     std::cerr << "semantic error: assigning to undeclared identifier" 
 			  << node->lhs->getId() << std::endl;
     exit(200);
   }
-  if(!node->rhs->type->equals(type)) {
-    std::cerr << "Invalid type in assignment of " << node->lhs->getId()
-			  << "as opposed to " << node->rhs->type->name() << std::endl;
+  if(!node->rhs->type->equals(var->type)) {
+    std::cerr << "Invalid type in assignment of " << var->type->name()
+			  << " as opposed to " << node->rhs->type->name() << std::endl;
     exit(200);
   }
 }
@@ -272,8 +272,8 @@ void AstNodeVisitor::visit(BinaryOperator *node) {
 	  }
     node->type = new IntTypeId();
 	} else if((oper >= tok::TOK_LESS) && (oper <= tok::TOK_GREATEREQUALS)) {
-    if(!(left->equals(right)) || !left->equals(new IntTypeId()) ||
-       !left->equals(new CharTypeId())) {
+    if(!(left->equals(right)) || !(left->equals(new IntTypeId()) ||
+       left->equals(new CharTypeId()))) {
 			std::cerr << "semantic error: expected type int/char for operators <,<=,>,>=, got instead " 
 					<< left->name()  << std::endl;
 			exit(200);

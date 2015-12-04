@@ -167,6 +167,8 @@ ArrayLiter::~ArrayLiter() {
   freePtr(elems);
 }
 
+Statement::~Statement() { }
+
 NewPair::NewPair(Expression *fst, Expression *snd) : AssignRhs(), 
                                                      fst(fst),
                                                      snd(snd) {}
@@ -223,3 +225,4 @@ void PairElem::accept(AstNodeVisitor *visitor) { visitor->visit(this); }
 void ArrayLiter::accept(AstNodeVisitor *visitor) { visitor->visit(this); }
 void NewPair::accept(AstNodeVisitor *visitor) { visitor->visit(this); }
 void UnaryOperator::accept(AstNodeVisitor *visitor) { visitor->visit(this); }
+void SkipStatement::accept(AstNodeVisitor *visitor) { visitor->visit(this); }

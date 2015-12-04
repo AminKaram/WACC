@@ -45,8 +45,8 @@ typedef std::vector<Expression*> ExpressionList;
 
 class Statement : public ASTnode { 
 public: 
-  virtual ~Statement() {}
-  void accept(AstNodeVisitor *visitor);
+  Statement() { }
+  virtual ~Statement();  
 };
 typedef std::vector<Statement*> StatementList;
 
@@ -148,10 +148,10 @@ public:
 
 class SkipStatement : public Statement {
 public:
-  SkipStatement() { }
+  SkipStatement() : Statement() { }
   ~SkipStatement() { }
-  void accept(AstNodeVisitor *visitor);
 
+  void accept(AstNodeVisitor *visitor);
 };
 
 class FreeStatement : public Statement {
