@@ -3,6 +3,7 @@
 CodeGenVisitor::CodeGenVisitor(std::ostream* stream) {
   output = stream;
 }
+CodeGenVisitor::~CodeGenVisitor() { }
 
 void CodeGenVisitor::visit(ASTnode *node) {}
 void CodeGenVisitor::visit(Program *node) {}
