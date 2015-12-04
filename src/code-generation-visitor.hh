@@ -4,6 +4,7 @@
 
 class CodeGenVisitor : public AstNodeVisitor {
 public:
+  const int MAX_REG_NUMBER = 16;
   CodeGenVisitor(std::ostream *stream);
   ~CodeGenVisitor();
 
@@ -47,10 +48,14 @@ public:
   void visit(UnaryOperator *node);
 
   void defineLabel(String label);
+  
+  void populateRegMap();
+  std::string getAvailableRegister();
+  
 
 private:
   std::ostream *output;
-
+  std::map<std::string, bool> *regTable;
 };
 
 

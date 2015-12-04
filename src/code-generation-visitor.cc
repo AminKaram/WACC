@@ -1,8 +1,10 @@
 #include "code-generation-visitor.hh"
 
 CodeGenVisitor::CodeGenVisitor(std::ostream* stream) {
-  output = stream;
+  output   = stream;
+  regTable = new std::map<std::string, bool>();
 }
+
 CodeGenVisitor::~CodeGenVisitor() { }
 
 void CodeGenVisitor::visit(ASTnode *node) {}
@@ -29,7 +31,26 @@ void CodeGenVisitor::visit(BeginStatement *node) {}
 void CodeGenVisitor::visit(IfStatement *node) {}
 void CodeGenVisitor::visit(WhileStatement *node) {}
 void CodeGenVisitor::visit(ReadStatement *node) {}
-void CodeGenVisitor::visit(PrintStatement *node) {}
+void CodeGenVisitor::visit(PrintStatement *node) {
+	*output <<  "PUSH R0" << std::endl <<
+				"PUSH R1" << std::endl <<
+				std::endl <<
+				"MOV R7, #4" << std::endl <<
+		 		"MOV R0, #1" << std::endl <<
+			 	"MOV R2, #12" << std::endl <<
+				"LDR R1, =string" << std::endl <<
+				"SWI 0" << std::endl <<
+				"MOV R7, #1" << std::endl <<
+				"SWI 0" << std::endl <<
+				".data" << std::endl <<
+			  "string:" << std::endl <<
+				" .ascii \"Hello World.\" " << std::endl <<
+				std::endl <<
+				"POP R1" << std::endl <<
+				"POP R0";
+				
+}
+
 void CodeGenVisitor::visit(PrintlnStatement *node) {}
 void CodeGenVisitor::visit(Number *node) {}
 void CodeGenVisitor::visit(Boolean *node) {}
@@ -45,3 +66,22 @@ void CodeGenVisitor::visit(NewPair *node) {}
 void CodeGenVisitor::visit(UnaryOperator *node) {}
 
 void CodeGenVisitor::defineLabel(String label) {}
+
+void CodeGenVisitor::populateRegMap() {
+	for (int i = 0; i < MAX_REG_NUMBER - 1; ++i) {
+		regTable->insert(std::pair <std::string, bool> 
+										(std::string("R" + i), true));
+	}  
+}
+
+std::string CodeGenVisitor::getAvailableRegister() {
+	for (auto it = regTable->begin(); it != regTable->end(); ++it) {
+		if(it->second) {
+			it->second = false;
+			return it->first;
+		}
+	}
+	std::cerr << "ERROR. There are no available registers";
+}
+
+
