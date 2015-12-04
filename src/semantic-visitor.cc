@@ -442,7 +442,6 @@ void SemanticVisitor::visit(ReturnStatement *node) {
 }
 
 void SemanticVisitor::visit(ExitStatement *node) {
-  std::cout << "exit" << std::endl;
   node->expr->accept(this);
   if(!(lookUpExpr(node->expr)->equals(new IntTypeId(NULL)))) {
     std::cerr << "semantic error : wrong exit type, expected int got: " << node->expr->type

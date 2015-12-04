@@ -137,7 +137,6 @@ ExitStatement::ExitStatement(Expression *expr) : expr(expr) {}
 ExitStatement::~ExitStatement() { freePtr(expr);}
 
 void ExitStatement::accept(AstNodeVisitor *visitor) {
-  std::cout << "exit statement accept" << std::endl;
   visitor->visit(this);
 }
 
