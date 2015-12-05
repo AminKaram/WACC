@@ -218,6 +218,7 @@ public:
   StatSeq *scope = NULL;
   BeginStatement(StatSeq *scope);
   ~BeginStatement();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class IfStatement : public Statement {

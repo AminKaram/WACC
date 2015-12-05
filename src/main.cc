@@ -11,8 +11,8 @@ int main(int argc, char **argv) {
 
   std::ofstream assemblyOutput;
   std::string argAsString (argv[1]);
-  std::string substr = argAsString.substr(0, argAsString.find(".wacc"));
-  assemblyOutput.open(substr.append(".s"));
+  std::string substr = argAsString.substr(argAsString.find_last_of("/") + 1);
+  assemblyOutput.open(substr.substr(0, substr.find(".wacc")).append(".s"));
 
   BackEnd* backEnd = new BackEnd(&assemblyOutput);
   backEnd->generateCode(frontEnd->getProgram());

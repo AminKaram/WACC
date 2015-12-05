@@ -11,6 +11,9 @@ void CodeGenVisitor::visit(ASTnode *node) {
 }
 
 void CodeGenVisitor::visit(Program *node) {
+  *output << ".text" << std::endl << std:: endl
+          << ".global main" << std::endl;
+
   node->functions->accept(this);
   node->statements->accept(this);
 }
@@ -21,10 +24,14 @@ void CodeGenVisitor::visit(Expression *node) {}
 
 void CodeGenVisitor::visit(StatSeq *node) {
 
-
+  *output << "main:"     << std::endl
+          << "PUSH {lr}" << std::endl;
   for(int i = 0; i < node->statements.size(); i++) {
     (node->statements)[i]->accept(this);
   }
+  *output << "POP {pc}" << std::endl
+          << ".ltorg"   << std::endl;
+
 }
 void CodeGenVisitor::visit(FunctionDecList *node) {
   for(int i = 0; i < node->funcs.size(); i++) {
@@ -43,7 +50,13 @@ void CodeGenVisitor::visit(FunctionCall *node) {}
 void CodeGenVisitor::visit(Assignment *node) {}
 void CodeGenVisitor::visit(FreeStatement *node) {}
 void CodeGenVisitor::visit(ReturnStatement *node) {}
-void CodeGenVisitor::visit(ExitStatement *node) {}
+void CodeGenVisitor::visit(ExitStatement *node) {
+  node->expr->accept(this);
+
+  *output  << "LDR R4, =(The result of evaluating expr goes here" << std::endl
+           << "MOV R0, R4" << std:: endl
+           << "BL exit"    << std::endl;
+}
 void CodeGenVisitor::visit(BeginStatement *node) {}
 void CodeGenVisitor::visit(IfStatement *node) {}
 void CodeGenVisitor::visit(WhileStatement *node) {}
@@ -56,7 +69,6 @@ std::string CodeGenVisitor::visitAndPrintReg(Expression *node) {
 	return "R1";
 }
 void CodeGenVisitor::visit(PrintStatement *node) {
-	std::cout << "print statement" << std::endl;
 	*output <<  "PUSH R0" << std::endl <<
 				"PUSH R1" << std::endl <<
 				"PUSH R7" << std::endl <<

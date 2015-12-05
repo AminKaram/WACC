@@ -144,6 +144,10 @@ void ExitStatement::accept(AstNodeVisitor *visitor) {
 BeginStatement::BeginStatement(StatSeq *scope) : scope(scope) {}
 BeginStatement::~BeginStatement() {freePtr(scope); }
 
+void BeginStatement::accept(AstNodeVisitor *visitor) {
+  std::cout << "begin" << std::endl;
+  visitor -> visit(this);
+}
 
 IfStatement::IfStatement(Expression *expr, StatSeq *thenS)
   : expr(expr), thenS(thenS) {}
