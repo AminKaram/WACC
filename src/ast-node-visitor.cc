@@ -316,7 +316,7 @@ void AstNodeVisitor::visit(BinaryOperator *node) {
 		  exit(200);
 	  }
     addExpression(node, new BoolTypeId(NULL));
-	} else if((oper >= tok::TOK_SLASH) && (oper <= tok::TOK_MINUS)) {
+	} else if((oper >= tok::TOK_STAR) && (oper <= tok::TOK_MINUS)) {
 	  if(!(lookUpExpr(node->left)->equals(lookUpExpr(node->right)))
        || (!(lookUpExpr(node->left)->equals(new IntTypeId(NULL))))) {
       std::cerr << "right " << lookUpExpr(node->right)->name << std::endl;  
