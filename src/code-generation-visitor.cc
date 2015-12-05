@@ -1,4 +1,6 @@
 #include "code-generation-visitor.hh"
+#include "parser.hh"
+#define tok yy::parser::token::yytokentype
 
 CodeGenVisitor::CodeGenVisitor(std::ostream* stream) {
   output   = stream;
@@ -81,7 +83,38 @@ void CodeGenVisitor::visit(Boolean *node) {}
 void CodeGenVisitor::visit(Char *node) {}
 void CodeGenVisitor::visit(String *node) {}
 void CodeGenVisitor::visit(Null *node) {}
-void CodeGenVisitor::visit(BinaryOperator *node) {}
+void CodeGenVisitor::visit(BinaryOperator *node) {
+   int oper = node -> op;
+   if (oper == tok::TOK_LOGOR){
+        // Implementation code-gen for OR 
+   } else if (oper == tok::TOK_LOGAND){
+        // Implementation code-gen for AND 
+   } else if (oper == tok::TOK_STAR){
+        // Implementation code gen for MULTIPLY
+   } else if (oper == tok::TOK_SLASH){
+        // Implementation code-gen for DIVIDE 
+   } else if (oper == tok::TOK_MODULO){
+        // Implementation code-gen for MODULO 
+   } else if (oper == tok::TOK_PLUS){
+        // Implementation code-gen for PLUS 
+   } else if (oper == tok::TOK_MINUS){
+        // Implementation code-gen for MINUS
+   } else if (oper == tok::TOK_LESS){
+        // Implementation code-gen for LESS 
+   } else if (oper == tok::TOK_LESSEQUALS){
+        // Implementation code-gen for LESSEQUALS 
+   } else if (oper == tok::TOK_GREATER){
+        // Implementation code-gen for GREATER 
+   } else if (oper == tok::TOK_GREATEREQUALS){
+        // Implementation code-gen for GREATEREQUALS 
+   } else if (oper == tok::TOK_EQUALS){
+        // Implementation code-gen for EQUALS 
+   } else if (oper == tok::TOK_NOTEQUALS){
+        // Implementation code-gen for Not EQUAL
+   }
+ 
+
+}
 void CodeGenVisitor::visit(Identifier *node) {}
 void CodeGenVisitor::visit(ArrayElem *node) {}
 void CodeGenVisitor::visit(PairElem *node) {}
