@@ -259,14 +259,14 @@ void AstNodeVisitor::visit(BinaryOperator *node) {
 	int oper = node->op;
   
 	if((oper == tok::TOK_LOGOR) || (oper == tok::TOK_LOGAND)) {
-    if(!(left->equals(right) || (!(left->equals(new BoolTypeId()))))) {
+    if(!left->equals(right) || !left->equals(new BoolTypeId())) {
 		  std::cerr << "semantic error: expected bool type for operands &&,||, got instead " 
                 << right->name() << std::endl;
 		  exit(200);
 	  }
     node->type= new BoolTypeId();
-	} else if((oper >= tok::TOK_SLASH) && (oper <= tok::TOK_MINUS)) {
-	  if(!(left->equals(right) || !(left->equals(new IntTypeId())))) {
+	} else if((oper >= tok::TOK_STAR) && (oper <= tok::TOK_MINUS)) {
+	  if(!left->equals(right) || !left->equals(new IntTypeId())) {
       std::cerr << "semantic error: expected int type for operands /,*,%,+,-, got instead " 
                 << left->name() << std::endl;
 		  exit(200);
@@ -349,6 +349,13 @@ void AstNodeVisitor::visit(UnaryOperator *node) {
 	    std::cerr << "Operand of - is not an int" << std::endl;
 	    exit(200);
 	  }
+    node->type = new IntTypeId();
+  } else if(oper == tok::TOK_LEN) {
+    ArrayId *array = dynamic_cast<ArrayId*>(type);
+    if(!array) {
+      std::cerr << "semantic error: cannot get len of non array type" << std::endl;
+      exit(200);
+    }
     node->type = new IntTypeId();
   } else if(oper == tok::TOK_ORD) {
 	  if(!type->equals(new CharTypeId())) {
