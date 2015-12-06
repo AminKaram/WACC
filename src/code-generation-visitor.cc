@@ -198,7 +198,9 @@ void CodeGenVisitor::visit(PrintlnStatement *node) {
 void CodeGenVisitor::visit(Number *node) {
   *output << "  LDR R4, =" << node->value << std::endl;
 }
-void CodeGenVisitor::visit(Boolean *node) {}
+void CodeGenVisitor::visit(Boolean *node) {
+  *output << "  MOV R4, #" << node->value << std::endl;
+}
 void CodeGenVisitor::visit(Char *node) {}
 void CodeGenVisitor::visit(String *node) {}
 void CodeGenVisitor::visit(Null *node) {}
