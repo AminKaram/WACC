@@ -256,8 +256,8 @@ void CodeGenVisitor::visit(BinaryOperator *node) {
      std:: string firstReg = getAvailableRegister();
      std:: string secondReg = getAvailableRegister();
 
-     *output << "LDR "<< firstReg /* << "[address where first AND value is stored]" (e.g. [sp])*/ << std::endl; 
-     *output << "LDR "<< secondReg /* << "[address where second AND value is stored] (e.g. [sp , #4] )" */ << std::endl;
+     *output << "LDR "<< firstReg /* << "[address where first MUL operand is stored]" (e.g. [sp])*/ << std::endl; 
+     *output << "LDR "<< secondReg /* << "[address where second MUL operand is stored] (e.g. [sp , #4] )" */ << std::endl;
 
      *output << "SMULL "<< firstReg << " " << secondReg << " " <<firstReg << " "
              << secondReg << std:: endl
@@ -277,8 +277,8 @@ void CodeGenVisitor::visit(BinaryOperator *node) {
      std:: string firstReg = getAvailableRegister();
      std:: string secondReg = getAvailableRegister();
 
-     *output << "LDR "<< firstReg /* << "[address where first AND value is stored]" (e.g. [sp])*/ << std::endl; 
-     *output << "LDR "<< secondReg /* << "[address where second AND value is stored] (e.g. [sp , #4] )" */ << std::endl;
+     *output << "LDR "<< firstReg /* << "[address where first DIV operand is stored]" (e.g. [sp])*/ << std::endl; 
+     *output << "LDR "<< secondReg /* << "[address where second DIV operand is stored] (e.g. [sp , #4] )" */ << std::endl;
 
 // not sure about the following assembly code from here
 // Need to add the error code in
@@ -287,11 +287,49 @@ void CodeGenVisitor::visit(BinaryOperator *node) {
       freeRegister(secondReg);  
 
    } else if (oper == tok::TOK_MODULO){
-        // Implementation code-gen for MODULO 
+ // ----------------------------------------Implementation code-gen for MODULO 
+     std:: string firstReg = getAvailableRegister();
+     std:: string secondReg = getAvailableRegister();
+
+     *output << "LDR "<< firstReg /* << "[address where first MOD operand is stored]" (e.g. [sp])*/ << std::endl; 
+     *output << "LDR "<< secondReg /* << "[address where second MOD operand is stored] (e.g. [sp , #4] )" */ << std::endl;
+
+// not sure about the following assembly code from here
+// Need to add the error code in
+      freeRegister(firstReg);
+      freeRegister(secondReg);  
+
    } else if (oper == tok::TOK_PLUS){
-        // Implementation code-gen for PLUS 
+//----------------------------------------- Implementation code-gen for PLUS 
+     std:: string firstReg = getAvailableRegister();
+     std:: string secondReg = getAvailableRegister();
+
+     *output << "LDR "<< firstReg /* << "[address where first ADD operand is stored]" (e.g. [sp])*/ << std::endl; 
+     *output << "LDR "<< secondReg /* << "[address where second ADD operand is stored] (e.g. [sp , #4] )" */ << std::endl;
+
+     *output << "ADDS "<< firstReg <<" "<< firstReg <<" "<< secondReg << std::endl
+             //<< "BELVS p_throw_overflow_error"<< std::endl
+             << "MOV R0 "<< firstReg << std::endl;
+             
+// Need to add the error code in
+      freeRegister(firstReg);
+      freeRegister(secondReg);
+
    } else if (oper == tok::TOK_MINUS){
-        // Implementation code-gen for MINUS
+ //----------------------------------------- Implementation code-gen for MINUS
+     std:: string firstReg = getAvailableRegister();
+     std:: string secondReg = getAvailableRegister();
+
+     *output << "LDR "<< firstReg /* << "[address where first MINUS operand is stored]" (e.g. [sp])*/ << std::endl; 
+     *output << "LDR "<< secondReg /* << "[address where second MINUS operand is stored] (e.g. [sp , #4] )" */ << std::endl;
+
+     *output << "SUBS "<< firstReg <<" "<< firstReg <<" "<< secondReg << std::endl
+             //<< "BELVS p_throw_overflow_error"<< std::endl
+             << "MOV R0 "<< firstReg << std::endl;
+             
+// Need to add the error code in
+      freeRegister(firstReg);
+      freeRegister(secondReg);
    } else if (oper == tok::TOK_LESS){
         // Implementation code-gen for LESS 
    } else if (oper == tok::TOK_LESSEQUALS){
