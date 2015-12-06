@@ -201,7 +201,9 @@ void CodeGenVisitor::visit(Number *node) {
 void CodeGenVisitor::visit(Boolean *node) {
   *output << "  MOV R4, #" << node->value << std::endl;
 }
-void CodeGenVisitor::visit(Char *node) {}
+void CodeGenVisitor::visit(Char *node) {
+  *output << "  MOV R4, #'" << node->value  << "'" << std::endl;
+}
 void CodeGenVisitor::visit(String *node) {}
 void CodeGenVisitor::visit(Null *node) {}
 
