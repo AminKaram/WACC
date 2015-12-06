@@ -86,6 +86,17 @@ void CodeGenVisitor::visit(VariableDeclaration *node) {
          << "STR r0 [sp]" << std::endl
          << "ADD sp, sp, #" /*<< typeSize*/ << std::endl
          << "MOV r0 #0" << std::endl;
+
+// effective version of variable dec(USED IN DECLARING MULTIPLE VARIABLE)
+// let x be sum of the memory size of type in each assignment statement for all of 
+// the statement
+// SUB sp, sp, x
+// MOV r0, #value of first assign
+// STR r0, [sp, x - memory size of first assignment type]
+// repeat until all assignment done 
+// ADD sp, sp, x
+// See many variables declaration example for more information
+
   
 }
 void CodeGenVisitor::visit(FunctionDeclaration *node) {
