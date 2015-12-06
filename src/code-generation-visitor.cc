@@ -79,7 +79,26 @@ void CodeGenVisitor::visit(CharType *node) {}
 void CodeGenVisitor::visit(StringType *node) {}
 void CodeGenVisitor::visit(ArrayType *node) {}
 void CodeGenVisitor::visit(PairType *node) {}
-void CodeGenVisitor::visit(VariableDeclaration *node) {}
+void CodeGenVisitor::visit(VariableDeclaration *node) {
+// simpliest version for implementing variable declaration
+  *output<< "SUB sp, sp, #" /*<< typeSize*/ << std::endl
+         << "MOV r0, #" /*<< the right hand side value*/ << std::endl
+         << "STR r0 [sp]" << std::endl
+         << "ADD sp, sp, #" /*<< typeSize*/ << std::endl
+         << "MOV r0 #0" << std::endl;
+
+// effective version of variable dec(USED IN DECLARING MULTIPLE VARIABLE)
+// let x be sum of the memory size of type in each assignment statement for all of 
+// the statement
+// SUB sp, sp, x
+// MOV r0, #value of first assign
+// STR r0, [sp, x - memory size of first assignment type]
+// repeat until all assignment done 
+// ADD sp, sp, x
+// See many variables declaration example for more information
+
+  
+}
 void CodeGenVisitor::visit(FunctionDeclaration *node) {
   *output << node->id->id.append("_").append(node->id->id).append(":")
           << std::endl
@@ -210,31 +229,206 @@ void CodeGenVisitor::visit(Null *node) {}
 void CodeGenVisitor::visit(BinaryOperator *node) {
    int oper = node -> op;
    if (oper == tok::TOK_LOGOR){
-        // Implementation code-gen for OR 
+// ---------------------------------------Implementation code-gen for OR 
+     std:: string firstReg = getAvailableRegister();
+     std:: string secondReg = getAvailableRegister();
+      
+     *output << "LDRSB "<< firstReg /* << "[address where first OR value is stored]" (e.g. [sp])*/ << std::endl; 
+     *output << "LDRSB "<< secondReg /* << "[address where second OR value is stored] (e.g. [sp , #1] )" */ << std::endl;
+     *output << "ORR "<< firstReg << " " << firstReg << " " <<secondReg    
+             << std:: endl
+             << "MOV R0 " << firstReg;
+
+      freeRegister(firstReg);
+      freeRegister(secondReg);
    } else if (oper == tok::TOK_LOGAND){
-        // Implementation code-gen for AND 
+//---------------------------------------- Implementation code-gen for AND      
+ 
+     std:: string firstReg = getAvailableRegister();
+     std:: string secondReg = getAvailableRegister();
+      
+     *output << "LDRSB "<< firstReg /* << "[address where first AND value is stored]" (e.g. [sp])*/ << std::endl; 
+     *output << "LDRSB "<< secondReg /* << "[address where second AND value is stored] (e.g. [sp , #1] )" */ << std::endl;
+
+     *output << "AND "<< firstReg << " " << firstReg << " " <<secondReg    
+             << std:: endl
+             << "MOV R0 " << firstReg;
+
+      freeRegister(firstReg);
+      freeRegister(secondReg);   
+        
    } else if (oper == tok::TOK_STAR){
-        // Implementation code gen for MULTIPLY
+//----------------------- ------------------Implementation code gen for MULTIPLY
+     std:: string firstReg = getAvailableRegister();
+     std:: string secondReg = getAvailableRegister();
+
+     *output << "LDR "<< firstReg /* << "[address where first MUL operand is stored]" (e.g. [sp])*/ << std::endl; 
+     *output << "LDR "<< secondReg /* << "[address where second MUL operand is stored] (e.g. [sp , #4] )" */ << std::endl;
+
+     *output << "SMULL "<< firstReg << " " << secondReg << " " <<firstReg << " "
+             << secondReg << std:: endl
+             << "CMP " << secondReg << firstReg << "ASR #31" << std ::endl
+             << "BLNE p_throw_overflow_error" /*need to propagate these error message*/ << std::endl
+             << "MOV R0 " << firstReg;
+
+// Need to add the error code in
+
+      freeRegister(firstReg);
+      freeRegister(secondReg);  
+
    } else if (oper == tok::TOK_SLASH){
-        // Implementation code-gen for DIVIDE 
+
+//---------------------------------------- Implementation code-gen for DIVIDE 
+
+     std:: string firstReg = getAvailableRegister();
+     std:: string secondReg = getAvailableRegister();
+
+     *output << "LDR "<< firstReg /* << "[address where first DIV operand is stored]" (e.g. [sp])*/ << std::endl; 
+     *output << "LDR "<< secondReg /* << "[address where second DIV operand is stored] (e.g. [sp , #4] )" */ << std::endl;
+
+// not sure about the following assembly code from here
+// Need to add the error code in
+
+      freeRegister(firstReg);
+      freeRegister(secondReg);  
+
    } else if (oper == tok::TOK_MODULO){
-        // Implementation code-gen for MODULO 
+ // ----------------------------------------Implementation code-gen for MODULO 
+     std:: string firstReg = getAvailableRegister();
+     std:: string secondReg = getAvailableRegister();
+
+     *output << "LDR "<< firstReg /* << "[address where first MOD operand is stored]" (e.g. [sp])*/ << std::endl; 
+     *output << "LDR "<< secondReg /* << "[address where second MOD operand is stored] (e.g. [sp , #4] )" */ << std::endl;
+
+// not sure about the following assembly code from here
+// Need to add the error code in
+      freeRegister(firstReg);
+      freeRegister(secondReg);  
+
    } else if (oper == tok::TOK_PLUS){
-        // Implementation code-gen for PLUS 
+//----------------------------------------- Implementation code-gen for PLUS 
+     std:: string firstReg = getAvailableRegister();
+     std:: string secondReg = getAvailableRegister();
+
+     *output << "LDR "<< firstReg /* << "[address where first ADD operand is stored]" (e.g. [sp])*/ << std::endl; 
+     *output << "LDR "<< secondReg /* << "[address where second ADD operand is stored] (e.g. [sp , #4] )" */ << std::endl;
+
+     *output << "ADDS "<< firstReg <<" "<< firstReg <<" "<< secondReg << std::endl
+             //<< "BELVS p_throw_overflow_error"<< std::endl
+             << "MOV R0 "<< firstReg << std::endl;
+             
+// Need to add the error code in
+      freeRegister(firstReg);
+      freeRegister(secondReg);
+
    } else if (oper == tok::TOK_MINUS){
-        // Implementation code-gen for MINUS
+ //----------------------------------------- Implementation code-gen for MINUS
+     std:: string firstReg = getAvailableRegister();
+     std:: string secondReg = getAvailableRegister();
+
+     *output << "LDR "<< firstReg /* << "[address where first MINUS operand is stored]" (e.g. [sp])*/ << std::endl; 
+     *output << "LDR "<< secondReg /* << "[address where second MINUS operand is stored] (e.g. [sp , #4] )" */ << std::endl;
+
+     *output << "SUBS "<< firstReg <<" "<< firstReg <<" "<< secondReg << std::endl
+             //<< "BELVS p_throw_overflow_error"<< std::endl
+             << "MOV R0 "<< firstReg << std::endl;
+             
+// Need to add the error code in
+      freeRegister(firstReg);
+      freeRegister(secondReg);
+
    } else if (oper == tok::TOK_LESS){
-        // Implementation code-gen for LESS 
+//------------------------------------------- Implementation code-gen for LESS 
+     std:: string firstReg = getAvailableRegister();
+     std:: string secondReg = getAvailableRegister();
+
+     *output << "LDR "<< firstReg /* << "[address where first operand is stored]" (e.g. [sp])*/ << std::endl; 
+     *output << "LDR "<< secondReg /* << "[address where second operand is stored] (e.g. [sp , #4] )" */ << std::endl;
+
+     *output << "CMP "<< firstReg <<", "<< secondReg << std::endl
+             //<< "BELVS p_throw_overflow_error"<< std::endl
+             << "MOV R0 "<< firstReg << std::endl;
+             
+// some more implementation 
+      freeRegister(firstReg);
+      freeRegister(secondReg);
+
+
    } else if (oper == tok::TOK_LESSEQUALS){
-        // Implementation code-gen for LESSEQUALS 
+//-------------------------------------Implementation code-gen for LESSEQUALS
+     std:: string firstReg = getAvailableRegister();
+     std:: string secondReg = getAvailableRegister();
+
+     *output << "LDR "<< firstReg /* << "[address where first operand is stored]" (e.g. [sp])*/ << std::endl; 
+     *output << "LDR "<< secondReg /* << "[address where second operand is stored] (e.g. [sp , #4] )" */ << std::endl;
+
+     *output << "CMP "<< firstReg <<", "<< secondReg << std::endl
+             //<< "BELVS p_throw_overflow_error"<< std::endl
+             << "MOV R0 "<< firstReg << std::endl;
+             
+// some more implementation 
+      freeRegister(firstReg);
+      freeRegister(secondReg); 
    } else if (oper == tok::TOK_GREATER){
-        // Implementation code-gen for GREATER 
+//--------------------------------------- Implementation code-gen for GREATER 
+     std:: string firstReg = getAvailableRegister();
+     std:: string secondReg = getAvailableRegister();
+
+     *output << "LDR "<< firstReg /* << "[address where first operand is stored]" (e.g. [sp])*/ << std::endl; 
+     *output << "LDR "<< secondReg /* << "[address where second operand is stored] (e.g. [sp , #4] )" */ << std::endl;
+
+     *output << "CMP "<< firstReg <<", "<< secondReg << std::endl
+             //<< "BELVS p_throw_overflow_error"<< std::endl
+             << "MOV R0 "<< firstReg << std::endl;
+             
+// some more implementation 
+      freeRegister(firstReg);
+      freeRegister(secondReg);
    } else if (oper == tok::TOK_GREATEREQUALS){
-        // Implementation code-gen for GREATEREQUALS 
+//--------------------------------- Implementation code-gen for GREATEREQUALS 
+     std:: string firstReg = getAvailableRegister();
+     std:: string secondReg = getAvailableRegister();
+
+     *output << "LDR "<< firstReg /* << "[address where first operand is stored]" (e.g. [sp])*/ << std::endl; 
+     *output << "LDR "<< secondReg /* << "[address where second operand is stored] (e.g. [sp , #4] )" */ << std::endl;
+
+     *output << "CMP "<< firstReg <<", "<< secondReg << std::endl
+             //<< "BELVS p_throw_overflow_error"<< std::endl
+             << "MOV R0 "<< firstReg << std::endl;
+             
+// some more implementation 
+      freeRegister(firstReg);
+      freeRegister(secondReg);
    } else if (oper == tok::TOK_EQUALS){
-        // Implementation code-gen for EQUALS 
+ //------------------------------------- Implementation code-gen for EQUALS 
+     std:: string firstReg = getAvailableRegister();
+     std:: string secondReg = getAvailableRegister();
+
+     *output << "LDR "<< firstReg /* << "[address where first operand is stored]" (e.g. [sp])*/ << std::endl; 
+     *output << "LDR "<< secondReg /* << "[address where second operand is stored] (e.g. [sp , #4] )" */ << std::endl;
+
+     *output << "CMP "<< firstReg <<", "<< secondReg << std::endl
+             //<< "BELVS p_throw_overflow_error"<< std::endl
+             << "MOV R0 "<< firstReg << std::endl;
+             
+// some more implementation 
+      freeRegister(firstReg);
+      freeRegister(secondReg);
    } else if (oper == tok::TOK_NOTEQUALS){
-        // Implementation code-gen for Not EQUAL
+//---------------------------------- Implementation code-gen for Not EQUAL
+     std:: string firstReg = getAvailableRegister();
+     std:: string secondReg = getAvailableRegister();
+
+     *output << "LDR "<< firstReg /* << "[address where first operand is stored]" (e.g. [sp])*/ << std::endl; 
+     *output << "LDR "<< secondReg /* << "[address where second operand is stored] (e.g. [sp , #4] )" */ << std::endl;
+
+     *output << "CMP "<< firstReg <<", "<< secondReg << std::endl
+             //<< "BELVS p_throw_overflow_error"<< std::endl
+             << "MOV R0 "<< firstReg << std::endl;
+             
+// some more implementation 
+      freeRegister(firstReg);
+      freeRegister(secondReg);
    }
  
 
