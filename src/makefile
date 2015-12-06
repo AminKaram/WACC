@@ -1,16 +1,22 @@
 all: main 
 
-OBJS = scanner.o parser.o main.o parsing-driver.o astnode.o symbol-table.o ast-node-visitor.o front-end.o semantic-id.o
+OBJS = scanner.o parser.o main.o parsing-driver.o astnode.o symbol-table.o front-end.o back-end.o semantic-id.o code-generation-visitor.o semantic-visitor.o
 
 CPPFLAGS = -fmax-errors=20 -std=c++11 -Wno-deprecated-register -g
 
-main.o: main.cc front-end.o
+main.o: main.cc front-end.o back-end.o
+	g++ -c -g $(CPPFLAGS) -o $@ $<
+
+code-generation-visitor.o: code-generation-visitor.cc ast-node-visitor.hh	
 	g++ -c -g $(CPPFLAGS) -o $@ $<
 
 semantic-id.o: semantic-id.cc semantic-id.hh
 	g++ -c -g $(CPPFLAGS) -o $@ $<
 
-front-end.o: front-end.cc front-end.hh parser.o ast-node-visitor.o
+back-end.o: back-end.cc back-end.hh code-generation-visitor.o
+	g++ -c -g $(CPPFLAGS) -o $@ $<
+
+front-end.o: front-end.cc front-end.hh parser.o semantic-visitor.o
 	g++ -c -g $(CPPFLAGS) -o $@ $<
 
 astnode.o: astnode.cc astnode.hh
@@ -19,7 +25,7 @@ astnode.o: astnode.cc astnode.hh
 parsing-driver.o: parsing-driver.cc parsing-driver.hh parser.o
 	g++ -c -g $(CPPFLAGS) -o $@ $<
 
-ast-node-visitor.o: ast-node-visitor.cc ast-node-visitor.hh astnode.o semantic-id.o symbol-table.o parser.hh
+semantic-visitor.o: semantic-visitor.cc ast-node-visitor.hh astnode.o semantic-id.o symbol-table.o parser.hh
 	g++ -c -g $(CPPFLAGS) -o $@ $<
 
 symbol-table.o: symbol-table.cc symbol-table.hh

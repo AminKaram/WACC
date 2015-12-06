@@ -1,13 +1,14 @@
 #include "astnode.hh"
 #include "ast-node-visitor.hh"
 
-void ASTnode::accept(AstNodeVisitor *visitor) { 
+void ASTnode::accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
 }
 
 Program::Program(FunctionDecList* fs, StatSeq* stats) : functions(fs), statements(stats) { }
 Program::~Program() { freePtr(functions); freePtr(statements); }
-void Program:: accept(AstNodeVisitor *visitor) {
+
+void Program::accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
 }
 
@@ -16,9 +17,6 @@ StatSeq:: ~StatSeq() {
   for(int i = 0; i < statements.size(); i++ ) {
     freePtr(statements[i]);
   }
-}
-void StatSeq:: accept(AstNodeVisitor *visitor) {
-  visitor->visit(this);
 }
 
 bool StatSeq::containRet() {
@@ -31,13 +29,22 @@ bool StatSeq::containRet() {
   return false;
 }
 
+void StatSeq::accept(AstNodeVisitor *visitor) {
+  visitor->visit(this);
+}
+
 FunctionDecList::FunctionDecList() { }
 FunctionDecList::~FunctionDecList() {
     for(int i=0; i < funcs.size(); i++) {
       freePtr(funcs[i]);
     }
 }
-void FunctionDecList:: accept(AstNodeVisitor *visitor) {
+
+void FunctionDecList::accept(AstNodeVisitor *visitor) {
+  visitor->visit(this);
+}
+
+void Expression::accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
 }
 
@@ -52,14 +59,11 @@ VariableDeclaration::~VariableDeclaration() {
     freePtr(id);
     freePtr(rhs);
 }
-void VariableDeclaration:: accept(AstNodeVisitor *visitor) {
-  visitor->visit(this);
-}
 
 FunctionDeclaration::FunctionDeclaration(Type *type, Identifier *id, StatSeq *block) 
     : type(type), id(id), block(block) {
-		parameters = new VariableList();
-		}
+        parameters = new VariableList();
+        }
 
 FunctionDeclaration::FunctionDeclaration(Type *type, Identifier *id, 
       VariableList *parameters, StatSeq *block) 
@@ -76,7 +80,8 @@ FunctionDeclaration::~FunctionDeclaration() {
     }
     freePtr(block);
 }
-void FunctionDeclaration:: accept(AstNodeVisitor *visitor) {
+
+void FunctionDeclaration::accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
 }
 
@@ -91,37 +96,32 @@ CharType::CharType() : Type("char") { }
 
 SkipStatement::SkipStatement() {}
 SkipStatement::~SkipStatement() {}
-void SkipStatement::accept(AstNodeVisitor *visitor){
-  visitor->visit(this);
-}
+
 
 StringType::StringType() : Type("string") { }
 
 ArrayType::ArrayType(Type *type) : Type("array"), type(type) { }
 ArrayType::~ArrayType() { freePtr(type); }
-void ArrayType::accept(AstNodeVisitor *visitor){ 
-  visitor->visit(this); 
-}
+
 
 PairKeyword::PairKeyword() : Type("pair") { }
 PairKeyword::~PairKeyword() { }
-void PairKeyword::accept(AstNodeVisitor *visitor){
-  visitor->visit(this);
-}
+
 
 PairType::PairType(Type *fst, Type *snd) : Type("pair"), fst(fst), snd(snd) {}
 PairType::~PairType() {freePtr(fst); freePtr(snd); }
-
-void PairType::accept(AstNodeVisitor *visitor){
-  visitor->visit(this);
-}
 
 FunctionCall::FunctionCall(Identifier *id, ExpressionList *parameters)
     : id(id), parameters(parameters) {}
 FunctionCall::FunctionCall(Identifier *id)
     : id(id) {
-		parameters = new ExpressionList();
-		}
+        parameters = new ExpressionList();
+        }
+
+void FunctionCall::accept(AstNodeVisitor *visitor) {
+  visitor->visit(this);
+}
+
 
 FunctionCall::~FunctionCall() {
      freePtr(id);
@@ -132,40 +132,37 @@ FunctionCall::~FunctionCall() {
         freePtr(parameters);
      }
 }
-void FunctionCall:: accept(AstNodeVisitor *visitor) {
-  visitor->visit(this);
-}
 
 Assignment::Assignment(AssignLhs *lhs, AssignRhs *rhs)
   : lhs(lhs), rhs(rhs) {}
 
 Assignment::~Assignment() { freePtr(lhs); freePtr(rhs); }
-void Assignment:: accept(AstNodeVisitor *visitor) {
-  visitor->visit(this);
-}
 
 FreeStatement::FreeStatement(Expression *expr) : expr(expr) {}
 FreeStatement::~FreeStatement() { freePtr(expr); }
-void FreeStatement::accept(AstNodeVisitor *visitor) {
-  visitor->visit(this);
-}
+
 
 ReturnStatement::ReturnStatement(Expression *expr) : expr(expr) {}
 ReturnStatement::~ReturnStatement() { freePtr(expr); }
-void ReturnStatement:: accept(AstNodeVisitor *visitor) {
+
+void ReturnStatement::accept(AstNodeVisitor* visitor) {
   visitor->visit(this);
 }
 
 ExitStatement::ExitStatement(Expression *expr) : expr(expr) {}
 ExitStatement::~ExitStatement() { freePtr(expr);}
-void ExitStatement:: accept(AstNodeVisitor *visitor) {
+
+void ExitStatement::accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
 }
 
+
 BeginStatement::BeginStatement(StatSeq *scope) : scope(scope) {}
 BeginStatement::~BeginStatement() {freePtr(scope); }
-void BeginStatement:: accept(AstNodeVisitor *visitor) {
-  visitor->visit(this);
+
+void BeginStatement::accept(AstNodeVisitor *visitor) {
+  std::cout << "begin" << std::endl;
+  visitor -> visit(this);
 }
 
 IfStatement::IfStatement(Expression *expr, StatSeq *thenS)
@@ -179,63 +176,73 @@ IfStatement::~IfStatement() {
   freePtr(thenS);
   freePtr(elseS);
 }
-void IfStatement:: accept(AstNodeVisitor *visitor) {
+
+void IfStatement::accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
 }
+
 
 WhileStatement::WhileStatement(Expression *expr, StatSeq *doS)
   : expr(expr), doS(doS) {}
 WhileStatement::~WhileStatement() {freePtr(expr); freePtr(doS); }
-void WhileStatement:: accept(AstNodeVisitor *visitor) {
+
+void WhileStatement::accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
 }
+
 
 ReadStatement::ReadStatement(AssignLhs *id) : id(id) {}
 ReadStatement::~ReadStatement() {freePtr(id);}
-void ReadStatement:: accept(AstNodeVisitor *visitor) {
-  visitor->visit(this);
-}
+
 
 PrintStatement::PrintStatement(Expression *expr) : expr(expr) {}
 PrintStatement::~PrintStatement() {freePtr(expr);}
-void PrintStatement:: accept(AstNodeVisitor *visitor) {
-  visitor->visit(this);
+
+void PrintStatement::accept(AstNodeVisitor *visitor) {
+	visitor->visit(this);
 }
 
 PrintlnStatement::PrintlnStatement(Expression *expr) : expr(expr) {}
 PrintlnStatement::~PrintlnStatement() {freePtr(expr);}
-void PrintlnStatement:: accept(AstNodeVisitor *visitor) {
+
+void PrintlnStatement::accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
 }
 
+
 Number::Number(int value) : value(value) {}
-void Number:: accept(AstNodeVisitor *visitor) {
+
+void Number::accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
 }
 
 Boolean::Boolean(bool value) : value(value) {}
-void Boolean:: accept(AstNodeVisitor *visitor) {
+
+void Boolean::accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
 }
 
 Char::Char(char value) : value(value) {}
-void Char:: accept(AstNodeVisitor *visitor) {
+
+void Char::accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
 }
 
 String::String(std::string value) : value(value) {}
-void String:: accept(AstNodeVisitor *visitor) {
+
+void String::accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
 }
 
-void Null:: accept(AstNodeVisitor *visitor) {
+void Null::accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
 }
 
 BinaryOperator::BinaryOperator(Expression *left, int op, Expression *right)
   : left(left), right(right), op(op) { }
 BinaryOperator::~BinaryOperator() {freePtr(left); freePtr(right);}
-void BinaryOperator:: accept(AstNodeVisitor *visitor) {
+
+void BinaryOperator::accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
 }
 
@@ -247,19 +254,18 @@ ArrayElem::~ArrayElem() {
   }
   freePtr(idxs);
 }
-void ArrayElem:: accept(AstNodeVisitor *visitor) {
-  visitor->visit(this);
-}
 
 std::string ArrayElem::getId() {
   return (id->id);
 }
 
-PairElem::PairElem(bool fst, Expression *expr) : fst(fst), expr(expr) {}
-PairElem::~PairElem() {freePtr(expr);}
-void PairElem:: accept(AstNodeVisitor *visitor) {
+void ArrayElem::accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
 }
+
+PairElem::PairElem(bool fst, Expression *expr) : fst(fst), expr(expr) {}
+PairElem::~PairElem() {freePtr(expr);}
+
 std::string PairElem::getId() {
   ArrayElem *arrayElem = dynamic_cast<ArrayElem*>(expr);
   Identifier *ident = dynamic_cast<Identifier*>(expr);
@@ -269,7 +275,7 @@ std::string PairElem::getId() {
 }
 
 ArrayLiter::ArrayLiter(ExpressionList *elems) : AssignRhs("array"),
-												elems(elems) {
+                                                     elems(elems) {
 }
 
 ArrayLiter::~ArrayLiter() {
@@ -278,20 +284,16 @@ ArrayLiter::~ArrayLiter() {
   }
   freePtr(elems);
 }
-void ArrayLiter::accept(AstNodeVisitor *visitor) {
-  visitor->visit(this);
-}
+
 
 NewPair::NewPair(Expression *fst, Expression *snd) : AssignRhs("pair"), 
                                                      fst(fst),
                                                      snd(snd) {}
 NewPair::~NewPair() {freePtr(fst); freePtr(snd);}
-void NewPair:: accept(AstNodeVisitor *visitor) {
-  visitor->visit(this);
-}
 
 UnaryOperator::UnaryOperator(int op, Expression *expr) : op(op), expr(expr) {}
 UnaryOperator::~UnaryOperator() {freePtr(expr);}
+
 void UnaryOperator::accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
 }
@@ -300,20 +302,11 @@ std::string Identifier::getId() {
   return id;
 }
 
-
-void Identifier::accept(AstNodeVisitor *visitor){
-  visitor->visit(this);
-}
-
-void AssignRhs::accept(AstNodeVisitor *visitor) {
+void Identifier::accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
 }
 
 AssignRhs::AssignRhs(std::string type) {this->type = type; }
-
-void Expression::accept(AstNodeVisitor *visitor) {
-  visitor->visit(this);
-}
 
 std::string AssignLhs::getId() {
  ArrayElem *arr = dynamic_cast<ArrayElem*>(this);

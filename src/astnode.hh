@@ -3,12 +3,13 @@
 
 #include <vector>
 #include <iostream>
+
 class AstNodeVisitor;
 
 template<class T>
 void freePtr(T *ptr) {
-        if (ptr) delete ptr;
-        ptr = NULL;
+  if (ptr) delete ptr;
+  ptr = NULL;
 }
 
 class ASTnode {
@@ -19,16 +20,15 @@ public:
   virtual void accept(AstNodeVisitor *visitor);
 };
 
-class AssignLhs : public ASTnode {
+class AssignLhs : public virtual ASTnode {
 public:
   virtual std::string getId();
 };
 
-class AssignRhs : public ASTnode {
+class AssignRhs : public virtual ASTnode {
 public: 
   AssignRhs() { }
   AssignRhs(std::string type);
-  void accept(AstNodeVisitor *visitor);
 };
 
 class Expression : public AssignRhs { 
@@ -49,8 +49,8 @@ public:
   StatementList statements;
   StatSeq();
   ~StatSeq();
-  void accept(AstNodeVisitor *visitor);
   bool containRet();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class Type : public ASTnode {
@@ -86,14 +86,12 @@ public:
 	
   ArrayType(Type *type); 
   ~ArrayType();
-  void accept(AstNodeVisitor *visitor);
 };
 
 class PairKeyword : public Type {
 public:
   PairKeyword();
   ~PairKeyword();
-  void accept(AstNodeVisitor *visitor);
 };
 
 class PairType : public Type {
@@ -103,7 +101,6 @@ public:
 
   PairType(Type *fst, Type *snd);
   ~PairType();
-  void accept(AstNodeVisitor *visitor);
 };
 
 class Identifier : public Expression, public AssignLhs {
@@ -113,8 +110,8 @@ public:
   Identifier(){}
   Identifier(std::string& id) : id(id){}
   ~Identifier(){}
-  void accept(AstNodeVisitor *visitor);
   std::string getId();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class VariableDeclaration : public Statement { 
@@ -128,7 +125,6 @@ public:
   VariableDeclaration(Type *type, Identifier *id, AssignRhs *rhs);
 
   ~VariableDeclaration();
-  void accept(AstNodeVisitor *visitor);
 };
 typedef std::vector<VariableDeclaration*> VariableList;
 
@@ -145,6 +141,7 @@ public:
       VariableList *parameters, StatSeq *block);
 
   ~FunctionDeclaration(); 
+
   void accept(AstNodeVisitor *visitor);
 };
 
@@ -186,18 +183,13 @@ public:
   AssignRhs *rhs = NULL;
 
   Assignment(AssignLhs *lhs, AssignRhs *rhs);
-
   ~Assignment();
-
-  void accept(AstNodeVisitor *visitor);
 };
 
 class SkipStatement : public Statement {
 public:
   SkipStatement();
   ~SkipStatement();
-
-  void accept(AstNodeVisitor *visitor);
 };
 
 class FreeStatement : public Statement {
@@ -206,7 +198,6 @@ public:
 
   FreeStatement(Expression *expr);
   ~FreeStatement();
-  void accept(AstNodeVisitor* visitor);
 };
 
 class ReturnStatement : public Statement {
@@ -215,7 +206,7 @@ public:
 
   ReturnStatement(Expression *expr);
   ~ReturnStatement();
-  void accept(AstNodeVisitor *visitor);
+  void accept(AstNodeVisitor* visitor);
 };
 
 class ExitStatement : public Statement {
@@ -245,7 +236,7 @@ public:
   IfStatement(Expression *expr, StatSeq *thenS);
   IfStatement(Expression *expr, StatSeq *thenS, StatSeq *elseS);
   ~IfStatement();
-  void accept(AstNodeVisitor *visitor);
+  void accept(AstNodeVisitor* visitor);
 };
 
 class WhileStatement : public Statement {
@@ -255,7 +246,7 @@ public:
 
   WhileStatement(Expression *expr, StatSeq *doS);
   ~WhileStatement();
-  void accept(AstNodeVisitor *visitor);
+  void accept(AstNodeVisitor * visitor);
 };
 
 class ReadStatement : public Statement {
@@ -264,7 +255,6 @@ public:
   
   ReadStatement(AssignLhs *id);
   ~ReadStatement();
-  void accept(AstNodeVisitor *visitor);
 };
 
 class PrintStatement : public Statement {
@@ -343,8 +333,8 @@ public:
 
   ArrayElem(Identifier *id, ExpressionList *idxs);
   ~ArrayElem();
-  void accept(AstNodeVisitor *visitor);
   std::string getId();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class PairElem : public AssignLhs, public AssignRhs {
@@ -354,7 +344,6 @@ public:
 	
   PairElem(bool fst, Expression *expr);
   ~PairElem();
-  void accept(AstNodeVisitor *visitor);
   std::string getId();
 };
 
@@ -364,7 +353,6 @@ public:
 
 	ArrayLiter(ExpressionList *elems);
   ~ArrayLiter();
-  void accept(AstNodeVisitor *visitor);
 };
 
 class NewPair : public AssignRhs {
@@ -374,7 +362,6 @@ public:
 
   NewPair(Expression *fst, Expression *snd);
   ~NewPair();
-  void accept(AstNodeVisitor *visitor);
 };
 
 class UnaryOperator : public Expression	{

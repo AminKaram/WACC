@@ -1,15 +1,16 @@
 #ifndef SEMANTIC_ID_HH
 #define SEMANTIC_ID_HH
+
 #include "astnode.hh"
 
+class ASTnode;
 
 class SemanticId {
 public:
   ASTnode* astnode;
   SemanticId(ASTnode* astnode);
-  virtual ~SemanticId() { }
+  virtual ~SemanticId() {}
 };
-
 
 class TypeId : public SemanticId {
 public:
