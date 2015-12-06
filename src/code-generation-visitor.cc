@@ -224,20 +224,31 @@ void CodeGenVisitor::visit(BinaryOperator *node) {
    int oper = node -> op;
    if (oper == tok::TOK_LOGOR){
         // Implementation code-gen for OR 
+     std:: string firstReg = getAvailableRegister();
+     std:: string secondReg = getAvailableRegister();
+      
+     *output << "LDRSB "<< firstReg /* << "[address where first OR value is stored]" (e.g. [sp])*/ << std::endl; 
+     *output << "LDRSB "<< secondReg /* << "[address where second OR value is stored] (e.g. [sp , #1] )" */ << std::endl;
+     *output << "ORR "<< firstReg << " " << firstReg << " " <<secondReg    
+             << std:: endl
+             << "MOV R0 " << firstReg;
+
+      freeRegister(firstReg);
+      freeRegister(secondReg);
    } else if (oper == tok::TOK_LOGAND){
      // Implementation code-gen for AND      
  
-     std:: string firstAndReg = getAvailableRegister();
-     std:: string secondAndReg = getAvailableRegister();
+     std:: string firstReg = getAvailableRegister();
+     std:: string secondReg = getAvailableRegister();
       
-     *output << "LDRSB "<< firstAndReg /* << "[address where first AND value is stored]" (e.g. [sp])*/ << std::endl; 
-     *output << "LDRSB "<< secondAndReg /* << "[address where second AND value is stored] (e.g. [sp , #1] )" */ << std::endl;
-     *output << "ADD "<< firstAndReg << " " << firstAndReg << " " <<secondAndReg    
+     *output << "LDRSB "<< firstReg /* << "[address where first AND value is stored]" (e.g. [sp])*/ << std::endl; 
+     *output << "LDRSB "<< secondReg /* << "[address where second AND value is stored] (e.g. [sp , #1] )" */ << std::endl;
+     *output << "AND "<< firstReg << " " << firstReg << " " <<secondReg    
              << std:: endl
-             << "MOV R0 " << firstAndReg;
+             << "MOV R0 " << firstReg;
 
-      freeRegister(firstAndReg);
-      freeRegister(secondAndReg);   
+      freeRegister(firstReg);
+      freeRegister(secondReg);   
         
    } else if (oper == tok::TOK_STAR){
         // Implementation code gen for MULTIPLY
