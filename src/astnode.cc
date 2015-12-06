@@ -44,6 +44,10 @@ void FunctionDecList::accept(AstNodeVisitor *visitor) {
   visitor->visit(this);
 }
 
+void Expression::accept(AstNodeVisitor *visitor) {
+  visitor->visit(this);
+}
+
 VariableDeclaration::VariableDeclaration(Type *type, Identifier *id)
     : type(type), id(id) {}
 
@@ -113,6 +117,11 @@ FunctionCall::FunctionCall(Identifier *id)
     : id(id) {
         parameters = new ExpressionList();
         }
+
+void FunctionCall::accept(AstNodeVisitor *visitor) {
+  visitor->visit(this);
+}
+
 
 FunctionCall::~FunctionCall() {
      freePtr(id);
@@ -199,16 +208,39 @@ PrintlnStatement::~PrintlnStatement() {freePtr(expr);}
 
 Number::Number(int value) : value(value) {}
 
+void Number::accept(AstNodeVisitor *visitor) {
+  visitor->visit(this);
+}
+
 Boolean::Boolean(bool value) : value(value) {}
+
+void Boolean::accept(AstNodeVisitor *visitor) {
+  visitor->visit(this);
+}
 
 Char::Char(char value) : value(value) {}
 
+void Char::accept(AstNodeVisitor *visitor) {
+  visitor->visit(this);
+}
+
 String::String(std::string value) : value(value) {}
+
+void String::accept(AstNodeVisitor *visitor) {
+  visitor->visit(this);
+}
+
+void Null::accept(AstNodeVisitor *visitor) {
+  visitor->visit(this);
+}
 
 BinaryOperator::BinaryOperator(Expression *left, int op, Expression *right)
   : left(left), right(right), op(op) { }
 BinaryOperator::~BinaryOperator() {freePtr(left); freePtr(right);}
 
+void BinaryOperator::accept(AstNodeVisitor *visitor) {
+  visitor->visit(this);
+}
 
 ArrayElem::ArrayElem(Identifier *id, ExpressionList *idxs) : id(id), idxs(idxs) {}
 ArrayElem::~ArrayElem() {
@@ -221,6 +253,10 @@ ArrayElem::~ArrayElem() {
 
 std::string ArrayElem::getId() {
   return (id->id);
+}
+
+void ArrayElem::accept(AstNodeVisitor *visitor) {
+  visitor->visit(this);
 }
 
 PairElem::PairElem(bool fst, Expression *expr) : fst(fst), expr(expr) {}
@@ -254,8 +290,16 @@ NewPair::~NewPair() {freePtr(fst); freePtr(snd);}
 UnaryOperator::UnaryOperator(int op, Expression *expr) : op(op), expr(expr) {}
 UnaryOperator::~UnaryOperator() {freePtr(expr);}
 
+void UnaryOperator::accept(AstNodeVisitor *visitor) {
+  visitor->visit(this);
+}
+
 std::string Identifier::getId() {
   return id;
+}
+
+void Identifier::accept(AstNodeVisitor *visitor) {
+  visitor->visit(this);
 }
 
 AssignRhs::AssignRhs(std::string type) {this->type = type; }
