@@ -81,11 +81,11 @@ void CodeGenVisitor::visit(ArrayType *node) {}
 void CodeGenVisitor::visit(PairType *node) {}
 void CodeGenVisitor::visit(VariableDeclaration *node) {
 // simpliest version for implementing variable declaration
-  *output<< "SUB sp, sp, #" << //typeSize << std::endl;
-         << "MOV r0, #" << //the right hand side value << std::endl;
+  *output<< "SUB sp, sp, #" /*<< typeSize*/ << std::endl
+         << "MOV r0, #" /*<< the right hand side value*/ << std::endl
          << "STR r0 [sp]" << std::endl
-         << "ADD sp, sp, #" << //typeSize << std::endl;
-         << "MOV r0 #0" << std::endl
+         << "ADD sp, sp, #" /*<< typeSize*/ << std::endl
+         << "MOV r0 #0" << std::endl;
   
 }
 void CodeGenVisitor::visit(FunctionDeclaration *node) {
