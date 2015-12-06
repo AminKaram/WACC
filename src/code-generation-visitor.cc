@@ -223,7 +223,7 @@ void CodeGenVisitor::visit(Null *node) {}
 void CodeGenVisitor::visit(BinaryOperator *node) {
    int oper = node -> op;
    if (oper == tok::TOK_LOGOR){
-        // Implementation code-gen for OR 
+// ---------------------------------------Implementation code-gen for OR 
      std:: string firstReg = getAvailableRegister();
      std:: string secondReg = getAvailableRegister();
       
@@ -236,13 +236,14 @@ void CodeGenVisitor::visit(BinaryOperator *node) {
       freeRegister(firstReg);
       freeRegister(secondReg);
    } else if (oper == tok::TOK_LOGAND){
-     // Implementation code-gen for AND      
+//---------------------------------------- Implementation code-gen for AND      
  
      std:: string firstReg = getAvailableRegister();
      std:: string secondReg = getAvailableRegister();
       
      *output << "LDRSB "<< firstReg /* << "[address where first AND value is stored]" (e.g. [sp])*/ << std::endl; 
      *output << "LDRSB "<< secondReg /* << "[address where second AND value is stored] (e.g. [sp , #1] )" */ << std::endl;
+
      *output << "AND "<< firstReg << " " << firstReg << " " <<secondReg    
              << std:: endl
              << "MOV R0 " << firstReg;
@@ -251,9 +252,40 @@ void CodeGenVisitor::visit(BinaryOperator *node) {
       freeRegister(secondReg);   
         
    } else if (oper == tok::TOK_STAR){
-        // Implementation code gen for MULTIPLY
+//----------------------- ------------------Implementation code gen for MULTIPLY
+     std:: string firstReg = getAvailableRegister();
+     std:: string secondReg = getAvailableRegister();
+
+     *output << "LDR "<< firstReg /* << "[address where first AND value is stored]" (e.g. [sp])*/ << std::endl; 
+     *output << "LDR "<< secondReg /* << "[address where second AND value is stored] (e.g. [sp , #4] )" */ << std::endl;
+
+     *output << "SMULL "<< firstReg << " " << secondReg << " " <<firstReg << " "
+             << secondReg << std:: endl
+             << "CMP " << secondReg << firstReg << "ASR #31" << std ::endl
+             << "BLNE p_throw_overflow_error" /*need to propagate these error message*/ << std::endl
+             << "MOV R0 " << firstReg;
+
+// Need to add the error code in
+
+      freeRegister(firstReg);
+      freeRegister(secondReg);  
+
    } else if (oper == tok::TOK_SLASH){
-        // Implementation code-gen for DIVIDE 
+
+//---------------------------------------- Implementation code-gen for DIVIDE 
+
+     std:: string firstReg = getAvailableRegister();
+     std:: string secondReg = getAvailableRegister();
+
+     *output << "LDR "<< firstReg /* << "[address where first AND value is stored]" (e.g. [sp])*/ << std::endl; 
+     *output << "LDR "<< secondReg /* << "[address where second AND value is stored] (e.g. [sp , #4] )" */ << std::endl;
+
+// not sure about the following assembly code from here
+// Need to add the error code in
+
+      freeRegister(firstReg);
+      freeRegister(secondReg);  
+
    } else if (oper == tok::TOK_MODULO){
         // Implementation code-gen for MODULO 
    } else if (oper == tok::TOK_PLUS){
