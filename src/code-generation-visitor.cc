@@ -57,7 +57,15 @@ void CodeGenVisitor::visit(CharType *node) {}
 void CodeGenVisitor::visit(StringType *node) {}
 void CodeGenVisitor::visit(ArrayType *node) {}
 void CodeGenVisitor::visit(PairType *node) {}
-void CodeGenVisitor::visit(VariableDeclaration *node) {}
+void CodeGenVisitor::visit(VariableDeclaration *node) {
+// simpliest version for implementing variable declaration
+  *output<< "SUB sp, sp, #" << //typeSize << std::endl;
+         << "MOV r0, #" << //the right hand side value << std::endl;
+         << "STR r0 [sp]" << std::endl
+         << "ADD sp, sp, #" << //typeSize << std::endl;
+         << "MOV r0 #0" << std::endl
+  
+}
 void CodeGenVisitor::visit(FunctionDeclaration *node) {
   *output << node->id->id.append("_").append(node->id->id).append(":")
           << std::endl
@@ -184,6 +192,7 @@ void CodeGenVisitor::visit(BinaryOperator *node) {
         // Implementation code-gen for OR 
    } else if (oper == tok::TOK_LOGAND){
         // Implementation code-gen for AND 
+        
    } else if (oper == tok::TOK_STAR){
         // Implementation code gen for MULTIPLY
    } else if (oper == tok::TOK_SLASH){
