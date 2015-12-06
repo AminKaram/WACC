@@ -1,4 +1,6 @@
 #include "code-generation-visitor.hh"
+#include "parser.hh"
+#define tok yy::parser::token::yytokentype
 
 CodeGenVisitor::CodeGenVisitor(std::ostream* stream) {
   output   = stream;
@@ -11,6 +13,13 @@ void CodeGenVisitor::visit(ASTnode *node) {
 }
 
 void CodeGenVisitor::visit(Program *node) {
+  // when you prin you should add
+  // msg_0:
+  //  .word 13
+  //  .ascii  "Hello World!\n"
+  // msg_1:
+  //  .word 5
+  //  .ascii  "%.*s\0"
   *output << ".text" << std::endl << std:: endl
           << ".global main" << std::endl;
 
@@ -145,31 +154,86 @@ std::string CodeGenVisitor::visitAndPrintReg(Expression *node) {
 }
 
 void CodeGenVisitor::visit(PrintStatement *node) {
-	*output <<  "  PUSH R0" << std::endl <<
-				"  PUSH R1" << std::endl <<
-				"  PUSH R7" << std::endl <<
-				std::endl <<
-				"  MOV R7, #4" << std::endl <<
-		 		"  MOV R0, #1" << std::endl <<
-			 	"  MOV R2, #12" << std::endl;
-
-	*output <<	"  LDR R1, " << visitAndPrintReg(node->expr) << std::endl <<
-				"  SWI 0" << std::endl <<
-				"  MOV R7, #1" << std::endl <<
-				"  SWI 0" << std::endl <<
-				"  POP R7" << std::endl <<
-				"  POP R1" << std::endl <<
-				"  POP R0";
-
+  node->expr->accept(this);
+  //std::string reg1 = getAvailableRegister();
+  //std::string reg2 = getAvailableRegister();
+	*output <<  
+        "p_print_string: " << std::endl <<
+        "  PUSH {lr}" << std::endl <<
+				"  LDR r1, [register where the message was put in main = r0]" << std::endl <<
+				"  ADD r2, r0, #4" << std::endl <<
+				"  LDR r0, =msg_1" << std::endl <<
+		 		"  ADD r0, r0, #4" << std::endl <<
+			 	"  BL printf" << std::endl <<
+        "  MOV r0, #0" << std::endl <<
+        "  BL fflush" << std::endl <<
+        "  POP {pc}" << std::endl;
 }
 
-void CodeGenVisitor::visit(PrintlnStatement *node) {}
+void CodeGenVisitor::visit(PrintlnStatement *node) {
+  node->expr->accept(this);
+  // visit the print node first ant then:
+  *output <<  
+        "p_print_string: " << std::endl <<
+        "  PUSH {lr}" << std::endl <<
+        "  LDR r1, [register where the message was put in main = r0]" << std::endl <<
+        "  ADD r2, r0, #4" << std::endl <<
+        "  LDR r0, =msg_1" << std::endl <<
+        "  ADD r0, r0, #4" << std::endl <<
+        "  BL printf" << std::endl <<
+        "  MOV r0, #0" << std::endl <<
+        "  BL fflush" << std::endl <<
+        "  POP {pc}" << std::endl;
+  *output <<  
+      "p_print_ln: " << std::endl <<
+      "  PUSH {lr}" << std::endl <<
+      "  LDR r0, =msg_2" << std::endl <<
+      "  ADD r0, r0, #4" << std::endl <<
+      "  BL puts" << std::endl <<
+      "  ADD r0, r0, #4" << std::endl <<
+      "  MOV r0, #0" << std::endl <<
+      "  BL fflush" << std::endl <<
+      "  POP {pc}" << std::endl;
+}
 void CodeGenVisitor::visit(Number *node) {}
 void CodeGenVisitor::visit(Boolean *node) {}
 void CodeGenVisitor::visit(Char *node) {}
 void CodeGenVisitor::visit(String *node) {}
 void CodeGenVisitor::visit(Null *node) {}
-void CodeGenVisitor::visit(BinaryOperator *node) {}
+
+void CodeGenVisitor::visit(BinaryOperator *node) {
+   int oper = node -> op;
+   if (oper == tok::TOK_LOGOR){
+        // Implementation code-gen for OR 
+   } else if (oper == tok::TOK_LOGAND){
+        // Implementation code-gen for AND 
+   } else if (oper == tok::TOK_STAR){
+        // Implementation code gen for MULTIPLY
+   } else if (oper == tok::TOK_SLASH){
+        // Implementation code-gen for DIVIDE 
+   } else if (oper == tok::TOK_MODULO){
+        // Implementation code-gen for MODULO 
+   } else if (oper == tok::TOK_PLUS){
+        // Implementation code-gen for PLUS 
+   } else if (oper == tok::TOK_MINUS){
+        // Implementation code-gen for MINUS
+   } else if (oper == tok::TOK_LESS){
+        // Implementation code-gen for LESS 
+   } else if (oper == tok::TOK_LESSEQUALS){
+        // Implementation code-gen for LESSEQUALS 
+   } else if (oper == tok::TOK_GREATER){
+        // Implementation code-gen for GREATER 
+   } else if (oper == tok::TOK_GREATEREQUALS){
+        // Implementation code-gen for GREATEREQUALS 
+   } else if (oper == tok::TOK_EQUALS){
+        // Implementation code-gen for EQUALS 
+   } else if (oper == tok::TOK_NOTEQUALS){
+        // Implementation code-gen for Not EQUAL
+   }
+ 
+
+}
+
 void CodeGenVisitor::visit(Identifier *node) {}
 void CodeGenVisitor::visit(ArrayElem *node) {}
 void CodeGenVisitor::visit(PairElem *node) {}
@@ -198,5 +262,5 @@ std::string CodeGenVisitor::getAvailableRegister() {
 
 void CodeGenVisitor::freeRegister(std::string reg) {
 	regTable->find(reg)->second = true;
-	*output << "  MOV " << reg << ", " << "0" << std::endl;
+	*output << "  MOV " << reg << ", " << "#0" << std::endl;
 }

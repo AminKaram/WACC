@@ -205,6 +205,10 @@ void PrintStatement::accept(AstNodeVisitor *visitor) {
 PrintlnStatement::PrintlnStatement(Expression *expr) : expr(expr) {}
 PrintlnStatement::~PrintlnStatement() {freePtr(expr);}
 
+void PrintlnStatement::accept(AstNodeVisitor *visitor) {
+  visitor->visit(this);
+}
+
 
 Number::Number(int value) : value(value) {}
 
