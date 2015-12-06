@@ -177,6 +177,10 @@ WhileStatement::WhileStatement(Expression *expr, StatSeq *doS)
   : expr(expr), doS(doS) {}
 WhileStatement::~WhileStatement() {freePtr(expr); freePtr(doS); }
 
+void WhileStatement::accept(AstNodeVisitor *visitor) {
+  visitor->visit(this);
+}
+
 
 ReadStatement::ReadStatement(AssignLhs *id) : id(id) {}
 ReadStatement::~ReadStatement() {freePtr(id);}

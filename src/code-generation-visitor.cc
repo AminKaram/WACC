@@ -84,16 +84,33 @@ void CodeGenVisitor::visit(BeginStatement *node) {}
 void CodeGenVisitor::visit(IfStatement *node) {
   node->expr->accept(this);
   *output << "  somehow store result of expr into r4 " << std::endl
-          << " CMP R4, #0" << std::endl
-          << " BEQ L0" << std::endl;
+          << "  CMP R4, #0"                            << std::endl
+          << "  BEQ L" << std::to_string(labelNum)     << std::endl;
+  labelNum++;
   node->thenS->accept(this);
-  *output << "  B L1" << std::endl
-          << "L0:" << std::endl;
+
+  *output << "  B L"  << std::to_string(labelNum)              << std::endl
+          << "L"      << std::to_string(labelNum - 1)   << ":" << std::endl;
+
   node->elseS->accept(this);
-  *output << "L1:" << std::endl;
+
+  *output << "L" << std::to_string(labelNum) << ":"  << std::endl;
+  labelNum--;
 }
 
-void CodeGenVisitor::visit(WhileStatement *node) {}
+void CodeGenVisitor::visit(WhileStatement *node) {
+  node->expr->accept(this);
+
+  *output << "  B L" << std::to_string(labelNum) << std::endl;
+  labelNum++;
+  *output << "L" << std::to_string(labelNum) << ":" << std::endl;
+  node->doS->accept(this);
+  *output << "L" << std::to_string(labelNum - 1) << ": " << std::endl
+          << "  somehow store result of expr into r4 "     << std::endl
+          << "  CMP R4, #1"                                << std::endl
+          << "  BEQ L" << std::to_string(labelNum)         << std::endl;
+}
+
 void CodeGenVisitor::visit(ReadStatement *node) {}
 
 std::string CodeGenVisitor::visitAndPrintReg(Expression *node) {

@@ -58,6 +58,7 @@ public:
 private:
   std::ostream *output;
   std::map<std::string, bool> *regTable;
+  int labelNum = 0;
 };
 
 

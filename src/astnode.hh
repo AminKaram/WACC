@@ -243,6 +243,7 @@ public:
 
   WhileStatement(Expression *expr, StatSeq *doS);
   ~WhileStatement();
+  void accept(AstNodeVisitor * visitor);
 };
 
 class ReadStatement : public Statement {
