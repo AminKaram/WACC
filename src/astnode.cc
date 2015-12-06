@@ -168,6 +168,10 @@ IfStatement::~IfStatement() {
   freePtr(elseS);
 }
 
+void IfStatement::accept(AstNodeVisitor *visitor) {
+  visitor->visit(this);
+}
+
 
 WhileStatement::WhileStatement(Expression *expr, StatSeq *doS)
   : expr(expr), doS(doS) {}

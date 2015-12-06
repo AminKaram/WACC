@@ -233,6 +233,7 @@ public:
   IfStatement(Expression *expr, StatSeq *thenS);
   IfStatement(Expression *expr, StatSeq *thenS, StatSeq *elseS);
   ~IfStatement();
+  void accept(AstNodeVisitor* visitor);
 };
 
 class WhileStatement : public Statement {

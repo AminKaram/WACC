@@ -66,7 +66,7 @@ void CodeGenVisitor::visit(FreeStatement *node) {}
 void CodeGenVisitor::visit(ReturnStatement *node) {
 
   node->expr->accept(this);
-  *output << "  LDR R4, =(The result of evaluating expr goes here)" << std::endl
+  *output << "  somehow store result of expr into r4" << std::endl
           << "  Mov R0, R4" << std::endl;
 
 }
@@ -74,13 +74,25 @@ void CodeGenVisitor::visit(ReturnStatement *node) {
 void CodeGenVisitor::visit(ExitStatement *node) {
   node->expr->accept(this);
 
-  *output  << "  LDR R4, =(The result of evaluating expr goes here`)" << std::endl
+  *output  << "  somehow store result of expr into r4" << std::endl
            << "  MOV R0, R4" << std:: endl
            << "  BL exit"    << std::endl;
 }
 
 void CodeGenVisitor::visit(BeginStatement *node) {}
-void CodeGenVisitor::visit(IfStatement *node) {}
+
+void CodeGenVisitor::visit(IfStatement *node) {
+  node->expr->accept(this);
+  *output << "  somehow store result of expr into r4 " << std::endl
+          << " CMP R4, #0" << std::endl
+          << " BEQ L0" << std::endl;
+  node->thenS->accept(this);
+  *output << "  B L1" << std::endl
+          << "L0:" << std::endl;
+  node->elseS->accept(this);
+  *output << "L1:" << std::endl;
+}
+
 void CodeGenVisitor::visit(WhileStatement *node) {}
 void CodeGenVisitor::visit(ReadStatement *node) {}
 
