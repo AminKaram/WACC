@@ -34,6 +34,7 @@ public:
 class Expression : public AssignRhs { 
 public: 
   virtual ~Expression() {} 
+  void accept(AstNodeVisitor *visitor);
 };
 typedef std::vector<Expression*> ExpressionList;
 
@@ -110,6 +111,7 @@ public:
   Identifier(std::string& id) : id(id){}
   ~Identifier(){}
   std::string getId();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class VariableDeclaration : public Statement { 
@@ -162,6 +164,7 @@ public:
   FunctionCall(Identifier *id);
 
   ~FunctionCall();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class Program : public ASTnode{
@@ -278,6 +281,7 @@ public:
   int value;
   
   Number(int value);
+  void accept(AstNodeVisitor *visitor);
 };
 
 class Boolean : public Expression {
@@ -286,6 +290,7 @@ public:
   bool value;
 
   Boolean(bool value);
+  void accept(AstNodeVisitor *visitor);
 };
 
 class Char : public Expression {
@@ -294,6 +299,7 @@ public:
   char value;
 
   Char(char value);
+  void accept(AstNodeVisitor *visitor);
 };
 
 class String : public Expression {
@@ -301,10 +307,12 @@ public:
   std::string value = "string";
 
   String(std::string value);
+  void accept(AstNodeVisitor *visitor);
 };
 
 class Null : public Expression {
 public:
+  void accept(AstNodeVisitor *visitor);
 };
 
 class BinaryOperator : public Expression {
@@ -315,6 +323,7 @@ public:
 	
   BinaryOperator(Expression *left, int op, Expression *right);
   ~BinaryOperator();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class ArrayElem : public AssignLhs, public Expression {
@@ -325,6 +334,7 @@ public:
   ArrayElem(Identifier *id, ExpressionList *idxs);
   ~ArrayElem();
   std::string getId();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class PairElem : public AssignLhs, public AssignRhs {
@@ -361,6 +371,7 @@ public:
 
 	UnaryOperator(int op, Expression *expr);
     ~UnaryOperator();
+    void accept(AstNodeVisitor *visitor);
 };
 
 #endif // ! ASTNODE_HH

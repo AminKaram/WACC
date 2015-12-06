@@ -38,7 +38,29 @@ void CodeGenVisitor::visit(Program *node) {
 
 void CodeGenVisitor::visit(AssignRhs *node) {}
 void CodeGenVisitor::visit(AssignLhs *node) {}
-void CodeGenVisitor::visit(Expression *node) {}
+void CodeGenVisitor::visit(Expression *node) {
+  Identifier *ident      = dynamic_cast<Identifier*>(node);
+  FunctionCall *funcCall = dynamic_cast<FunctionCall*>(node);
+  Number *number         = dynamic_cast<Number*>(node);
+  Boolean *boolean       = dynamic_cast<Boolean*>(node);
+  Char *charId           = dynamic_cast<Char*>(node);
+  String *stringId       = dynamic_cast<String*>(node);
+  Null *null             = dynamic_cast<Null*>(node);
+  BinaryOperator *binop  = dynamic_cast<BinaryOperator*>(node);
+  ArrayElem *arrayElem   = dynamic_cast<ArrayElem*>(node);
+  UnaryOperator *unop    = dynamic_cast<UnaryOperator*>(node);
+
+  if(ident) ident->accept(this);
+  if(funcCall) funcCall->accept(this);
+  if(number) number->accept(this);
+  if(boolean) boolean->accept(this);
+  if(charId) charId->accept(this);
+  if(stringId) stringId->accept(this);
+  if(null) null->accept(this);
+  if(binop) binop->accept(this);
+  if(arrayElem) arrayElem->accept(this);
+  if(unop) unop->accept(this);
+}
 
 void CodeGenVisitor::visit(StatSeq *node) {
 
@@ -116,14 +138,15 @@ void CodeGenVisitor::visit(IfStatement *node) {
 }
 
 void CodeGenVisitor::visit(WhileStatement *node) {
-  node->expr->accept(this);
+
 
   *output << "  B L" << std::to_string(labelNum) << std::endl;
   labelNum++;
   *output << "L" << std::to_string(labelNum) << ":" << std::endl;
   node->doS->accept(this);
-  *output << "L" << std::to_string(labelNum - 1) << ": " << std::endl
-          << "  somehow store result of expr into r4 "     << std::endl
+  *output << "L" << std::to_string(labelNum - 1) << ": " << std::endl;
+      node->expr->accept(this);
+  *output << "  somehow store result of expr into r4 "     << std::endl
           << "  CMP R4, #1"                                << std::endl
           << "  BEQ L" << std::to_string(labelNum)         << std::endl;
 }
