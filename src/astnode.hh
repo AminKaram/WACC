@@ -269,6 +269,7 @@ public:
 
   PrintlnStatement(Expression *expr);
   ~PrintlnStatement();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class Number : public Expression {
