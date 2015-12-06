@@ -1,0 +1,38 @@
+need a visitor:
+  StatSeq P
+  Identifier P 
+  VariableDeclaration D
+  FunctionDeclaration D
+  FunctionDecList D
+  FunctionCall D
+  Program P
+  Assignment D
+  SkipStatement A
+  FreeStatement D 
+  ReturnStatement A 
+  ExitStatement A 
+  BeginStatement A 
+  IfStatement A 
+  WhileStatement A 
+  ReadStatement A 
+  PrintStatement M
+  PrintlnStatement M
+  Number M
+  Boolean M
+  Char M
+  String M
+  Null M 
+  BinaryOperator P 
+  ArrayElem P
+  PairElem D
+  ArrayLiter P
+  NewPair D
+  UnaryOperator P
+
+Don't need one
+  Expression
+  AssignLhs
+  AssignRhs
+  Statement
+  ASTnode
+
