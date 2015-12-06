@@ -195,7 +195,9 @@ void CodeGenVisitor::visit(PrintlnStatement *node) {
       "  BL fflush" << std::endl <<
       "  POP {pc}" << std::endl;
 }
-void CodeGenVisitor::visit(Number *node) {}
+void CodeGenVisitor::visit(Number *node) {
+  *output << "  LDR R4, =" << node->value << std::endl;
+}
 void CodeGenVisitor::visit(Boolean *node) {}
 void CodeGenVisitor::visit(Char *node) {}
 void CodeGenVisitor::visit(String *node) {}
