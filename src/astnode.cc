@@ -77,6 +77,10 @@ FunctionDeclaration::~FunctionDeclaration() {
     freePtr(block);
 }
 
+void FunctionDeclaration::accept(AstNodeVisitor *visitor) {
+  visitor->visit(this);
+}
+
 Type::Type(std::string name) : name(name) { }
 Type::~Type() { }
 
@@ -132,6 +136,9 @@ FreeStatement::~FreeStatement() { freePtr(expr); }
 ReturnStatement::ReturnStatement(Expression *expr) : expr(expr) {}
 ReturnStatement::~ReturnStatement() { freePtr(expr); }
 
+void ReturnStatement::accept(AstNodeVisitor* visitor) {
+  visitor->visit(this);
+}
 
 ExitStatement::ExitStatement(Expression *expr) : expr(expr) {}
 ExitStatement::~ExitStatement() { freePtr(expr);}

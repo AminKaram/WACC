@@ -139,6 +139,8 @@ public:
       VariableList *parameters, StatSeq *block);
 
   ~FunctionDeclaration(); 
+
+  void accept(AstNodeVisitor *visitor);
 };
 
 typedef std::vector<FunctionDeclaration*> FunctionList;
@@ -201,6 +203,7 @@ public:
 
   ReturnStatement(Expression *expr);
   ~ReturnStatement();
+  void accept(AstNodeVisitor* visitor);
 };
 
 class ExitStatement : public Statement {

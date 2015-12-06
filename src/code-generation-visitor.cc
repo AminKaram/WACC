@@ -15,7 +15,16 @@ void CodeGenVisitor::visit(Program *node) {
           << ".global main" << std::endl;
 
   node->functions->accept(this);
+
+  *output << "main:"       << std::endl
+          << "  PUSH {lr}" << std::endl;
+
+
   node->statements->accept(this);
+  *output << "  LDR R0, =0" << std::endl
+          << "  POP {pc}" << std::endl
+          << "  .ltorg"   << std::endl;
+
 }
 
 void CodeGenVisitor::visit(AssignRhs *node) {}
@@ -24,14 +33,9 @@ void CodeGenVisitor::visit(Expression *node) {}
 
 void CodeGenVisitor::visit(StatSeq *node) {
 
-  *output << "main:"     << std::endl
-          << "PUSH {lr}" << std::endl;
   for(int i = 0; i < node->statements.size(); i++) {
     (node->statements)[i]->accept(this);
   }
-  *output << "POP {pc}" << std::endl
-          << ".ltorg"   << std::endl;
-
 }
 void CodeGenVisitor::visit(FunctionDecList *node) {
   for(int i = 0; i < node->funcs.size(); i++) {
@@ -45,46 +49,66 @@ void CodeGenVisitor::visit(StringType *node) {}
 void CodeGenVisitor::visit(ArrayType *node) {}
 void CodeGenVisitor::visit(PairType *node) {}
 void CodeGenVisitor::visit(VariableDeclaration *node) {}
-void CodeGenVisitor::visit(FunctionDeclaration *node) {}
+void CodeGenVisitor::visit(FunctionDeclaration *node) {
+  *output << node->id->id.append("_").append(node->id->id).append(":")
+          << std::endl
+          << "  PUSH {lr}" << std::endl;
+  node->block->accept(this);
+  *output << "  POP {pc}" << std::endl
+          << "  .ltorg"   << std::endl;
+
+
+}
 void CodeGenVisitor::visit(FunctionCall *node) {}
 void CodeGenVisitor::visit(Assignment *node) {}
 void CodeGenVisitor::visit(FreeStatement *node) {}
-void CodeGenVisitor::visit(ReturnStatement *node) {}
+
+void CodeGenVisitor::visit(ReturnStatement *node) {
+
+  node->expr->accept(this);
+  *output << "  LDR R4, =(The result of evaluating expr goes here)" << std::endl
+          << "  Mov R0, R4" << std::endl;
+
+}
+
 void CodeGenVisitor::visit(ExitStatement *node) {
   node->expr->accept(this);
 
-  *output  << "LDR R4, =(The result of evaluating expr goes here" << std::endl
-           << "MOV R0, R4" << std:: endl
-           << "BL exit"    << std::endl;
+  *output  << "  LDR R4, =(The result of evaluating expr goes here`)" << std::endl
+           << "  MOV R0, R4" << std:: endl
+           << "  BL exit"    << std::endl;
 }
+
 void CodeGenVisitor::visit(BeginStatement *node) {}
 void CodeGenVisitor::visit(IfStatement *node) {}
 void CodeGenVisitor::visit(WhileStatement *node) {}
 void CodeGenVisitor::visit(ReadStatement *node) {}
+
 std::string CodeGenVisitor::visitAndPrintReg(Expression *node) {
-	*output << "MOV R1, \"Hello World\"" << std::endl;
+	*output << "  MOV R1, \"Hello World\"" << std::endl;
 //			    "string:" << std::endl <<
 //				".ascii \"Hello Worldn\" " << std::endl;
-				
+
 	return "R1";
 }
+
 void CodeGenVisitor::visit(PrintStatement *node) {
-	*output <<  "PUSH R0" << std::endl <<
-				"PUSH R1" << std::endl <<
-				"PUSH R7" << std::endl <<
+	*output <<  "  PUSH R0" << std::endl <<
+				"  PUSH R1" << std::endl <<
+				"  PUSH R7" << std::endl <<
 				std::endl <<
-				"MOV R7, #4" << std::endl <<
-		 		"MOV R0, #1" << std::endl <<
-			 	"MOV R2, #12" << std::endl;
-			 				 	
-	*output <<	"LDR R1, " << visitAndPrintReg(node->expr) << std::endl <<
-				"SWI 0" << std::endl <<
-				"MOV R7, #1" << std::endl <<
-				"SWI 0" << std::endl <<
-				"POP R7" << std::endl <<
-				"POP R1" << std::endl <<
-				"POP R0";
-				
+				"  MOV R7, #4" << std::endl <<
+		 		"  MOV R0, #1" << std::endl <<
+			 	"  MOV R2, #12" << std::endl;
+
+	*output <<	"  LDR R1, " << visitAndPrintReg(node->expr) << std::endl <<
+				"  SWI 0" << std::endl <<
+				"  MOV R7, #1" << std::endl <<
+				"  SWI 0" << std::endl <<
+				"  POP R7" << std::endl <<
+				"  POP R1" << std::endl <<
+				"  POP R0";
+
 }
 
 void CodeGenVisitor::visit(PrintlnStatement *node) {}
@@ -105,9 +129,9 @@ void CodeGenVisitor::defineLabel(String label) {}
 
 void CodeGenVisitor::populateRegMap() {
 	for (int i = 0; i < MAX_REG_NUMBER - 1; ++i) {
-		regTable->insert(std::pair <std::string, bool> 
+		regTable->insert(std::pair <std::string, bool>
 										(std::string("R" + i), true));
-	}  
+	}
 }
 
 std::string CodeGenVisitor::getAvailableRegister() {
@@ -122,5 +146,5 @@ std::string CodeGenVisitor::getAvailableRegister() {
 
 void CodeGenVisitor::freeRegister(std::string reg) {
 	regTable->find(reg)->second = true;
-	*output << "MOV " << reg << ", " << "0" << std::endl; 
+	*output << "  MOV " << reg << ", " << "0" << std::endl;
 }
