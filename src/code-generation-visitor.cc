@@ -225,7 +225,19 @@ void CodeGenVisitor::visit(BinaryOperator *node) {
    if (oper == tok::TOK_LOGOR){
         // Implementation code-gen for OR 
    } else if (oper == tok::TOK_LOGAND){
-        // Implementation code-gen for AND 
+     // Implementation code-gen for AND      
+ 
+     std:: string firstAndReg = getAvailableRegister();
+     std:: string secondAndReg = getAvailableRegister();
+      
+     *output << "LDRSB "<< firstAndReg /* << "[address where first AND value is stored]" (e.g. [sp])*/ << std::endl; 
+     *output << "LDRSB "<< secondAndReg /* << "[address where second AND value is stored] (e.g. [sp , #1] )" */ << std::endl;
+     *output << "ADD "<< firstAndReg << " " << firstAndReg << " " <<secondAndReg    
+             << std:: endl
+             << "MOV R0 " << firstAndReg;
+
+      freeRegister(firstAndReg);
+      freeRegister(secondAndReg);   
         
    } else if (oper == tok::TOK_STAR){
         // Implementation code gen for MULTIPLY
