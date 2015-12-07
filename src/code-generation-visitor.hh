@@ -28,7 +28,6 @@ public:
   void visit(IfStatement *node);
   void visit(WhileStatement *node);
   void visit(ReadStatement *node);
-  void print(std::string stringToPrint);
   void printMsg(TypeId *type);
   void printlnMsg();
   void printAssemblyOfPrintString();
@@ -45,8 +44,11 @@ public:
   void visit(Null *node, std::string reg);
   void visit(BinaryOperator *node, std::string reg);
   void visit(Identifier *node, std::string reg);
+  void visit(Identifier *node);
   void visit(ArrayElem *node, std::string reg);
+  void visit(ArrayElem *node);
   void visit(PairElem *node, std::string reg);
+  void visit(PairElem *node);
   void visit(ArrayLiter *node, std::string reg);
   void visit(NewPair *node, std::string reg);
   void visit(UnaryOperator *node, std::string reg);
