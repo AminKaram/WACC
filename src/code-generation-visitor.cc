@@ -10,26 +10,23 @@ CodeGenVisitor::CodeGenVisitor(std::ostream* stream) {
 CodeGenVisitor::~CodeGenVisitor() { }
 
 void CodeGenVisitor::visit(Program *node) {
-  // when you prin you should add
-  // msg_0:
-  //  .word 13
-  //  .ascii  "Hello World!\n"
-  // msg_1:
-  //  .word 5
-  //  .ascii  "%.*s\0"
   middle << ".text" << "\n" << "\n"
           << ".global main" << "\n";
 
   node->functions->accept(this);
-
+ 
+  scopeSize = 0;
+  for (int i = 1; i < node->table->variables->size(); i++) {
+    scopeSize += node->table->variables->operator[](i)->type->size();
+  }
   middle << "main:"       << "\n"
-          << "  PUSH {lr}\n";
-
+         << "  PUSH {lr}\n"
+         << "  SUB, sp, sp, #" << scopeSize << "\n";
 
   node->statements->accept(this);
   middle << "  LDR R0, =0" << "\n"
-          << "  POP {pc}" << "\n"
-          << "  .ltorg"   << "\n";
+         << "  POP {pc}" << "\n"
+         << "  .ltorg"   << "\n";
 
   if (begin.rdbuf()->in_avail() != 0) {
     *file << begin.rdbuf() << "\n" ;
@@ -92,11 +89,18 @@ void CodeGenVisitor::visit(FunctionDecList *node) {
 void CodeGenVisitor::visit(VariableDeclaration *node) {
 // simpliest version for implementing variable declaration
   node->rhs->accept(this, "r4");
+  int sizeSoFar = 0;
+  for (int i = 0; i < node->table->variables->size(); i++) {
+    if(node->table->variables->operator[](i)->id->id.compare(node->id->id) == 0) {
+      break;
+    }
+    sizeSoFar += node->table->variables->operator[](i)->type->size();
+  }
   if (node->type->equals(new BoolTypeId()) || node->type->equals(new CharTypeId())) {
-     middle << "  STRB r4, [sp]" << "\n"; // offset needs to be added to this
+    middle << "  STRB r4 [sp, #" << scopeSize-sizeSoFar << "]\n"; 
   }
   else {
-    middle << "  STR r4, [sp]" << "\n"; // offset needs to be added to this
+    middle << "  STR r4 [sp, #" << scopeSize-sizeSoFar << "]\n"; 
   }
 // effective version of variable dec(USED IN DECLARING MULTIPLE VARIABLE)
 // let x be sum of the memory size of type in each assignment statement for all of 
@@ -414,117 +418,117 @@ void CodeGenVisitor::visit(Null *node, std::string reg) {}
 
 void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
    int oper = node -> op;
-         std:: string firstReg = getAvailableRegister();
+         std:: string firstReg = reg; 
          std:: string secondReg = getAvailableRegister();
 
    if(oper == tok::TOK_LOGOR || oper == tok::TOK_LOGAND){
-         middle << "LDRSB "<< firstReg << ", " /* << "[address where
+         middle << "  LDRSB "<< firstReg << ", " /* << "[address where
          first value is stored]" (e.g. [sp])*/ << "\n";
-         middle << "LDRSB "<< secondReg <<", " /* << "[address where
+         middle << "  LDRSB "<< secondReg <<", " /* << "[address where
          second value is stored] (e.g. [sp , #1] )" */ << "\n";
 
       if (oper == tok::TOK_LOGOR){
       //Implementation code-gen for OR 
           
-         middle << "ORR "<< firstReg << ", " << firstReg << ", "
+         middle << "  ORR "<< firstReg << ", " << firstReg << ", "
                  << secondReg << "\n";
     
        } else if (oper == tok::TOK_LOGAND){
       //Implementation code-gen for AND      
-         middle << "AND "<< firstReg << ", " << firstReg << ", "
+         middle << "  AND "<< firstReg << ", " << firstReg << ", "
                  << secondReg << "\n";
       }      
    } else if (oper >= tok::TOK_STAR && oper <= tok::TOK_MINUS){
    
-             middle << "LDR "<< firstReg << ", " /* << "[address where
+             middle <<  "  LDR "<< firstReg << ", " /* << "[address where
              first operand is stored]" (e.g. [sp])*/ << "\n";
-             middle << "LDR "<< secondReg << ", "/* << "[address where
+             middle << "  LDR "<< secondReg << ", "/* << "[address where
              second operand is stored] (e.g. [sp , #4] )" */ << "\n";
            
            
            if(oper == tok :: TOK_STAR){
               //Implementation code gen for MULTIPLY
 
-             middle << "SMULL "<< firstReg << ", " << secondReg << ", "
+             middle << "  SMULL "<< firstReg << ", " << secondReg << ", "
                      << firstReg << ", " << secondReg << "\n"
                      
-                     << "CMP " << secondReg << ", "<< firstReg << ", "
-                     << "ASR #31" << "\n"
+                     << "  CMP " << secondReg << ", "<< firstReg << ", "
+                     << "  ASR #31" << "\n"
 
-                     << "BLNE p_throw_overflow_error"<< "\n";
+                     << "  BLNE p_throw_overflow_error"<< "\n";
                      p_throw_overflow_error();
                      
 
            } else if (oper == tok::TOK_SLASH){
                //Implementation code gen for DIVIDE
-               middle << "MOV R0, "<< firstReg  << "\n"
-                       << "MOV R1, "<< secondReg << "\n"
-                       << "BL p_checkdivide_by_zero"<< "\n";
+               middle << "  MOV R0, "<< firstReg  << "\n"
+                       << "  MOV R1, "<< secondReg << "\n"
+                       << "  BL p_checkdivide_by_zero"<< "\n";
                p_check_divide_by_zero();
-               middle << "BL __aeabi_idiv"<< "\n";
+               middle << "  BL __aeabi_idiv"<< "\n";
         
 
            } else if (oper == tok::TOK_MODULO){
          //Implementation code-gen for MODULO 
 
-               middle << "MOV R0, "<< firstReg  << "\n"
-                       << "MOV R1, "<< secondReg << "\n"
-                       << "BL p_checkdivide_by_zero"<< "\n";
+               middle << "  MOV R0, "<< firstReg  << "\n"
+                       << "  MOV R1, "<< secondReg << "\n"
+                       << "  BL p_checkdivide_by_zero"<< "\n";
                p_check_divide_by_zero();
-               middle << "BL __aeabi_idivmod"<< "\n";
+               middle << "  BL __aeabi_idivmod"<< "\n";
            } else if (oper == tok::TOK_PLUS){
         // Implementation code-gen for PLUS 
-             middle << "ADDS "<< firstReg <<", "<< firstReg <<", "
+             middle << "  ADDS "<< firstReg <<", "<< firstReg <<", "
              << secondReg << "\n"
             
-             << "BELVS p_throw_overflow_error"<< "\n";
+             << "  BELVS p_throw_overflow_error"<< "\n";
              p_throw_overflow_error();
                      
 
            } else if (oper == tok::TOK_MINUS){
          // Implementation code-gen for MINUS
-             middle << "SUBS "<< firstReg <<", "<< firstReg <<", "
+             middle << "  SUBS "<< firstReg <<", "<< firstReg <<", "
              << secondReg << "\n"
 
-             << "BELVS p_throw_overflow_error"<< "\n";
+             << "  BELVS p_throw_overflow_error"<< "\n";
              p_throw_overflow_error();
            } 
         }else if (oper >= tok::TOK_LESS && oper <= tok::TOK_NOTEQUALS){
             
-            middle << "CMP "<< firstReg <<", "<< secondReg << "\n";
+            middle << "  CMP "<< firstReg <<", "<< secondReg << "\n";
              if (oper == tok::TOK_LESS){
         // Implementation code-gen for LESS 
-            middle << "MOVLT "<< firstReg << ", #1"<< "\n"
-                    << "MOVGE "<< firstReg << ", #0"<< "\n";
+            middle << "  MOVLT "<< firstReg << ", #1"<< "\n"
+                    << "  MOVGE "<< firstReg << ", #0"<< "\n";
 
            } else if (oper == tok::TOK_LESSEQUALS){
         //Implementation code-gen for LESSEQUALS
-            middle << "MOVLE "<< firstReg << ", #1"<< "\n"
-                    << "MOVGT "<< firstReg << ", #0"<< "\n";
+            middle << "  MOVLE "<< firstReg << ", #1"<< "\n"
+                    << "  MOVGT "<< firstReg << ", #0"<< "\n";
                      
            } else if (oper == tok::TOK_GREATER){
         // Implementation code-gen for GREATER 
-            middle << "MOVGT "<< firstReg << ", #1"<< "\n"
-                    << "MOVLE "<< firstReg << ", #1"<< "\n";
+            middle << "  MOVGT "<< firstReg << ", #1"<< "\n"
+                    << "  MOVLE "<< firstReg << ", #1"<< "\n";
  
            } else if (oper == tok::TOK_GREATEREQUALS){
         // Implementation code-gen for GREATEREQUALS 
-            middle << "MOVGE "<< firstReg << ", #1"<< "\n"
-                    << "MOVLT "<< firstReg << ", #0"<< "\n";
+            middle << "  MOVGE "<< firstReg << ", #1"<< "\n"
+                    << "  MOVLT "<< firstReg << ", #0"<< "\n";
  
            } else if (oper == tok::TOK_EQUALS){
          //Implementation code-gen for EQUALS 
-            middle << "MOVEQ "<< firstReg << ", #1"<< "\n"
-                    << "MOVNE "<< firstReg << ", #0"<< "\n";
+            middle << "  MOVEQ "<< firstReg << ", #1"<< "\n"
+                    << "  MOVNE "<< firstReg << ", #0"<< "\n";
  
            } else if (oper == tok::TOK_NOTEQUALS){
         // Implementation code-gen for Not EQUAL
-            middle << "MOVNE "<< firstReg << ", #1"<< "\n"
-                    << "MOVEQ "<< firstReg << ", #1"<< "\n";
+            middle << "  MOVNE "<< firstReg << ", #1"<< "\n"
+                    << "  MOVEQ "<< firstReg << ", #1"<< "\n";
                      
            }
     }
-    middle << "MOV R0, "<< firstReg << "\n";
+    middle << "  MOV R0, "<< firstReg << "\n";
     freeRegister(firstReg);
     freeRegister(secondReg);
 
@@ -540,15 +544,15 @@ void CodeGenVisitor::visit(UnaryOperator *node, std::string reg) {
    int oper = node -> op;
    std:: string freeReg = getAvailableRegister();
    if(oper == tok ::TOK_MINUS){
-        middle << "LDR " << freeReg << ", [sp]"/* need to add offset */<< std::endl
-               << "RSBS "<< freeReg << ", " << freeReg << ", #0"<< std::endl
-               << "BLVS p_throw_overflow_error" << std::endl
-               << "MOV r0, "<< freeReg;
+        middle << "  LDR " << freeReg << ", [sp]"/* need to add offset */<< std::endl
+               << "  RSBS "<< freeReg << ", " << freeReg << ", #0"<< std::endl
+               << "  BLVS p_throw_overflow_error" << std::endl
+               << "  MOV r0, "<< freeReg;
         p_throw_overflow_error();
    }else if(oper == tok::TOK_BANG){
-        middle << "LDRSB " << freeReg << ", [sp]" /*need to add offset*/ << std::endl
-               << "EOR "<< freeReg << ", " << reg << ", #1" << std::endl
-               << "MOV r0, " << freeReg << std::endl;
+        middle << "  LDRSB " << freeReg << ", [sp]" /*need to add offset*/ << std::endl
+               << "  EOR "<< freeReg << ", " << reg << ", #1" << std::endl
+               << "  MOV r0, " << freeReg << std::endl;
    }else if(oper == tok::TOK_LEN){
    //add implementation for len
    }else if(oper == tok::TOK_ORD){
@@ -593,13 +597,13 @@ void CodeGenVisitor::visit(NewPair *node, std::string reg) {
 
 void CodeGenVisitor::p_check_divide_by_zero(void){ 
     if(!p_check_divide_by_zerob){
-        end     << "  p_check_divide_by_zero:"<< "\n"
+        end     << "p_check_divide_by_zero:"<< "\n"
                 << "  PUSH {lr}" << "\n"
                 << "  CMP r1, #0" << "\n"
                 << "  LDREQ r0, =msg_"<<messageNum << "\n"
                 << "  BLEQ p_throw_runtime_error" << "\n"
                 << "  POP {pc}" << "\n";
-        begin   << "  msg_"<< messageNum << ":"<< "\n"
+        begin   << "msg_"<< messageNum << ":"<< "\n"
                 << "  .word 45" << "\n"
                 << "  .ascii \" DivideByZeroError : divide or modulo by zero \\n\\0\""<< "\n";
                 messageNum ++ ; 
@@ -611,11 +615,11 @@ void CodeGenVisitor::p_check_divide_by_zero(void){
 void CodeGenVisitor::p_throw_overflow_error(void){
     if(!p_throw_overflow_errorb){
         end     << "p_throw_overflow_error: " << "\n"
-                << "LDR r0, =msg_"<< messageNum<< "\n"
-                << "BL p_throw_runtime_error" << "\n";
+                << "  LDR r0, =msg_"<< messageNum<< "\n"
+                << "  BL p_throw_runtime_error" << "\n";
         begin   << "msg_"<< messageNum << ":"<<"\n"
-                << ".word 82"<< "\n"
-                << ".ascii \"OverflowError: the result is too small/large to store in a 4 byte signed integer \\n\""<<"\n";
+                << "  .word 82"<< "\n"
+                << "  .ascii \"OverflowError: the result is too small/large to store in a 4 byte signed integer \\n\""<<"\n";
         messageNum ++ ; 
         p_throw_overflow_errorb = true;
 
