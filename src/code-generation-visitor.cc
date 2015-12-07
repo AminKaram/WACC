@@ -176,14 +176,6 @@ void CodeGenVisitor::visit(WhileStatement *node) {
 
 void CodeGenVisitor::visit(ReadStatement *node) {}
 
-std::string CodeGenVisitor::visitAndPrintReg(Expression *node) {
-	*output << "  MOV R1, \"Hello World\"" << std::endl;
-//			    "string:" << std::endl <<
-//				".ascii \"Hello Worldn\" " << std::endl;
-
-	return "R1";
-}
-
 void CodeGenVisitor::printMsg(TypeId *type) {
     IntTypeId *intTypeId       = dynamic_cast<IntTypeId*> (type);
     StringTypeId *stringTypeId = dynamic_cast<StringTypeId*> (type);
@@ -199,24 +191,24 @@ void CodeGenVisitor::printMsg(TypeId *type) {
     if (boolTypeId)   isBool   = true; 	
      
     if(isString) {
-		*output << 
+		begin << 
              "msg_" << messageNum << ":" << std::endl <<
              "  .word 5" << std::endl <<
              "  .ascii  \"%.*s\\0\"" << std::endl;
 		//messageNum++;
 	} else if(isInt) {
-		*output << 
+		begin << 
              "msg_" << messageNum << ":" << std::endl <<
              "  .word 3" << std::endl <<
              "  .ascii  \"%d\\0\"" << std::endl;
 		//messageNum++;
 	} else if(isBool) {
-		*output << 
+		begin << 
              "msg_" << messageNum << ":" << std::endl <<
              "  .word 5" << std::endl <<
              "  .ascii  \"true\\0\"" << std::endl;
 		//messageNum++;
-		*output << 
+		begin << 
              "msg_" << messageNum << ":" << std::endl <<
              "  .word 6" << std::endl <<
              "  .ascii  \"false\\0\"" << std::endl;
@@ -225,7 +217,7 @@ void CodeGenVisitor::printMsg(TypeId *type) {
 }
 
 void CodeGenVisitor::printlnMsg() {
-	*output << 
+	begin << 
 			 "msg_" << messageNum << ":" << std::endl <<
 			 "  .word 1" << std::endl <<
              "  .ascii  \"\\0\"" << std::endl;
@@ -233,7 +225,7 @@ void CodeGenVisitor::printlnMsg() {
 }
 
 void CodeGenVisitor::print(std::string stringToPrint) {
-	*output << 
+	begin << 
 		 "msg_" << actualPrintMessageNum << ":" << std::endl <<
 	     "  .word " << stringToPrint.size() << std::endl <<
 	     "  .ascii " << stringToPrint << std::endl;
@@ -245,11 +237,11 @@ void CodeGenVisitor::visit(PrintStatement *node) {
     std::string stringToPrint;
     TypeId *type = node->expr->type;
 
-	output->seekp(6); // first line .data\n
+	//output->seekp(6); // first line .data\n
 	printMsg(type);
     print(stringToPrint);
     
-    output->seekp(0,std::ios_base::end);
+    //output->seekp(0,std::ios_base::end);
 	
 	middle <<
         "p_print_string: " << "\n" <<
