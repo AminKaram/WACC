@@ -1,8 +1,8 @@
 #ifndef CODE_GENERATION_VISITOR_HH
 #define CODE_GENERATION_VISITOR_HH
-
-#include <sstream>
 #include "astnode.hh"
+#include <sstream>
+#include <cstring>
 
 class CodeGenVisitor {
 public:
@@ -30,6 +30,7 @@ public:
   void visit(ReadStatement *node);
   void print(std::string stringToPrint);
   void printMsg(TypeId *type);
+  void printlnMsg();
   void visit(PrintStatement *node);
   void visit(PrintlnStatement *node);
   void visit(SkipStatement *node);
@@ -62,6 +63,11 @@ private:
   std::map<std::string, bool> *regTable;
   int labelNum   = 0;
   int messageNum = 0;
+  bool p_print_string = false;
+  bool beginInitialisation = false;
+  int stringMessageNum = -1;
+  int newlineMessageNum = -1;
+
   bool p_throw_overflow_errorb = false;
   bool p_throw_runtime_errorb  = false;
   bool p_check_divide_by_zerob = false;
