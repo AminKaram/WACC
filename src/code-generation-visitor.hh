@@ -1,6 +1,7 @@
 #ifndef CODE_GENERATION_VISITOR_HH
 #define CODE_GENERATION_VISITOR_HH
 #include "ast-node-visitor.hh"
+#include <sstream>
 
 class CodeGenVisitor : public AstNodeVisitor {
 public:
@@ -45,14 +46,16 @@ public:
   void visit(UnaryOperator *node);
 
   void defineLabel(String label);
-  
   void populateRegMap();
   std::string getAvailableRegister();
   void freeRegister(std::string reg);
   
 
 private:
-  std::ostream *output;
+  std::ostream *file;
+  std::stringstream begin;
+  std::stringstream middle;
+  std::stringstream end;
   std::map<std::string, bool> *regTable;
   int labelNum   = 0;
   int messageNum = 0;
