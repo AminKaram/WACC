@@ -93,10 +93,10 @@ void CodeGenVisitor::visit(VariableDeclaration *node) {
 // simpliest version for implementing variable declaration
   node->rhs->accept(this, "r4");
   if (node->type->equals(new BoolTypeId()) || node->type->equals(new CharTypeId())) {
-     middle << "  STRB r4 [sp]" << "\n"; // offset needs to be added to this
+     middle << "  STRB r4, [sp]" << "\n"; // offset needs to be added to this
   }
   else {
-    middle << "  STR r4 [sp]" << "\n"; // offset needs to be added to this
+    middle << "  STR r4, [sp]" << "\n"; // offset needs to be added to this
   }
 // effective version of variable dec(USED IN DECLARING MULTIPLE VARIABLE)
 // let x be sum of the memory size of type in each assignment statement for all of 
@@ -466,10 +466,10 @@ void CodeGenVisitor::visit(ArrayLiter *node, std::string reg) {}
 void CodeGenVisitor::visit(NewPair *node, std::string reg) {
   middle << "  LDR r0, =8\n"
          << "  BL malloc\n"
-         << "  MOV r4, r0";
-  node->fst->accept(this, "r4");
+         << "  MOV r4, r0\n";
+  node->fst->accept(this, "r5");
 
-  middle << "  LDR r0, =",node->fst->type->size() << "\n"
+  middle << "  LDR r0, =" << node->fst->type->size() << "\n"
          << "  BL malloc\n";
    if (node->fst->type->equals(new CharTypeId)
          || node->fst->type->equals(new BoolTypeId)) {
@@ -478,10 +478,10 @@ void CodeGenVisitor::visit(NewPair *node, std::string reg) {
    else {
      middle << "  STRB r5, [r0]\n";
    }
-   middle << "  STR r0, [r4]";
-
-   middle << "  LDR r0, =",node->fst->type->size() << "\n"
-        << "  BL malloc\n";
+   middle << "  STR r0, [r4]\n";
+   node->snd->accept(this, "r5");
+   middle << "  LDR r0, =" << node->fst->type->size() << "\n"
+          << "  BL malloc\n";
    if (node->snd->type->equals(new CharTypeId)
         || node->snd->type->equals(new BoolTypeId)) {
      middle << "  STRB r5, [r0]\n";
@@ -489,7 +489,7 @@ void CodeGenVisitor::visit(NewPair *node, std::string reg) {
    else {
      middle << "  STRB r5, [r0]\n";
    }
-   middle << "STR r0, [r4,#4]";
+   middle << "  STR r0, [r4,#4]\n";
 
 
 
