@@ -16,7 +16,7 @@ void CodeGenVisitor::visit(Program *node) {
   node->functions->accept(this);
  
   scopeSize = 0;
-  for (int i = 1; i < node->table->variables->size(); i++) {
+  for (int i = 0; i < node->table->variables->size(); i++) {
     scopeSize += node->table->variables->operator[](i)->type->size();
   }
   middle << "main:"       << "\n"
