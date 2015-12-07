@@ -1,4 +1,5 @@
 #include "symbol-table.hh"
+#include "astnode.hh"
 #include <iostream>
 
 SymbolTable::SymbolTable(SymbolTable *encScope) : encScope(encScope) {
@@ -45,6 +46,7 @@ int SymbolTable::addVariable(VariableDeclaration *var) {
   VariableId *variable = new VariableId(var->type);
   add(var->id->id, *variable);
   variables->push_back(var);
+  var->table = this;
 }
 
 SymbolTable* SymbolTable::getEncScope() {

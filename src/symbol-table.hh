@@ -1,9 +1,10 @@
 #ifndef SYMBOL_TABLE_HH
 #define SYMBOL_TABLE_HH
 #include "semantic-id.hh"
-#include "astnode.hh"
 #include <map>
 #include <string>
+
+class VariableDeclaration;
 
 class SymbolTable {
 public:

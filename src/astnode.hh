@@ -4,8 +4,8 @@
 #include <vector>
 #include <iostream>
 #include "semantic-id.hh"
+#include "symbol-table.hh"
 
-class SymbolTable;
 class SemanticVisitor;
 class CodeGenVisitor;
 
@@ -80,6 +80,7 @@ public:
   TypeId *type = NULL;
   Identifier *id = NULL;
   AssignRhs *rhs = NULL;
+  SymbolTable *table = NULL;
 
   VariableDeclaration(TypeId *type, Identifier *id);
 
