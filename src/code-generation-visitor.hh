@@ -51,7 +51,10 @@ public:
   
 
 private:
-  std::ostream *output;
+  std::ostream *file;
+  std::stringstream begin;
+  std::stringstream middle;
+  std::stringstream end;
   std::map<std::string, bool> *regTable;
   int labelNum   = 0;
   int messageNum = 0;
