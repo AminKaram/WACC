@@ -120,16 +120,14 @@ void CodeGenVisitor::visit(FreeStatement *node) {}
 void CodeGenVisitor::visit(ReturnStatement *node) {
 
   node->expr->accept(this);
-  *output << "  somehow store result of expr into r4" << std::endl
-          << "  Mov R0, R4" << std::endl;
+  *output << "  Mov R0, R4" << std::endl;
 
 }
 
 void CodeGenVisitor::visit(ExitStatement *node) {
   node->expr->accept(this);
 
-  *output  << "  somehow store result of expr into r4" << std::endl
-           << "  MOV R0, R4" << std:: endl
+  *output  << "  MOV R0, R4" << std:: endl
            << "  BL exit"    << std::endl;
 }
 
@@ -137,8 +135,7 @@ void CodeGenVisitor::visit(BeginStatement *node) {}
 
 void CodeGenVisitor::visit(IfStatement *node) {
   node->expr->accept(this);
-  *output << "  somehow store result of expr into r4 " << std::endl
-          << "  CMP R4, #0"                            << std::endl
+  *output << "  CMP R4, #0"                            << std::endl
           << "  BEQ L" << std::to_string(labelNum)     << std::endl;
   labelNum++;
   node->thenS->accept(this);
@@ -161,8 +158,7 @@ void CodeGenVisitor::visit(WhileStatement *node) {
   node->doS->accept(this);
   *output << "L" << std::to_string(labelNum - 1) << ": " << std::endl;
       node->expr->accept(this);
-  *output << "  somehow store result of expr into r4 "     << std::endl
-          << "  CMP R4, #1"                                << std::endl
+  *output << "  CMP R4, #1"                                << std::endl
           << "  BEQ L" << std::to_string(labelNum)         << std::endl;
 }
 
