@@ -484,13 +484,26 @@ void CodeGenVisitor::visit(PairElem*node) {}
 void CodeGenVisitor::visit(ArrayLiter *node, std::string reg) {}
 void CodeGenVisitor::visit(NewPair *node, std::string reg) {}
 void CodeGenVisitor::visit(UnaryOperator *node, std::string reg) {
-   // if(it is a negative operator)
-        std::string reg = getAvailableRegister();
-        middle << "LDR " << reg << ", [sp]"<< std::endl
-               << "RSBS "<< reg << ", " << reg << ", #0"<< std::endl
+   int oper = node -> op;
+   std:: string freeReg = getAvailableRegister();
+   if(oper == tok ::TOK_MINUS){
+        middle << "LDR " << freeReg << ", [sp]"/* need to add offset */<< std::endl
+               << "RSBS "<< freeReg << ", " << freeReg << ", #0"<< std::endl
                << "BLVS p_throw_overflow_error" << std::endl
-               << "MOV r0, "<< reg;
+               << "MOV r0, "<< freeReg;
         p_throw_overflow_error();
+   }else if(oper == tok::TOK_BANG){
+        middle << "LDRSB " << freeReg << ", [sp]" /*need to add offset*/ << std::endl
+               << "EOR "<< freeReg << ", " << reg << ", #1" << std::endl
+               << "MOV r0, " << freeReg << std::endl;
+   }else if(oper == tok::TOK_LEN){
+   //add implementation for len
+   }else if(oper == tok::TOK_ORD){
+   //add implementation for ord
+   }else if(oper == tok::TOK_CHR){
+   //add implementation for chr
+   }
+   freeRegister(freeReg);
 }
 
 void CodeGenVisitor::p_check_divide_by_zero(void){ 
