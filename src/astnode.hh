@@ -4,8 +4,8 @@
 #include <vector>
 #include <iostream>
 #include "semantic-id.hh"
-#include "symbol-table.hh"
 
+class SymbolTable;
 class SemanticVisitor;
 class CodeGenVisitor;
 
@@ -78,7 +78,6 @@ public:
 class VariableDeclaration : public Statement { 
 public:
   TypeId *type = NULL;
-  SymbolTable *scope = NULL;
   Identifier *id = NULL;
   AssignRhs *rhs = NULL;
 
@@ -98,6 +97,7 @@ public:
   Identifier *id = NULL;
   VariableList *parameters = NULL;
   StatSeq *block = NULL;
+  SymbolTable *table = NULL;
   
   FunctionDeclaration(TypeId *type, Identifier *id, StatSeq *block);
 
@@ -138,6 +138,7 @@ class Program : public ASTnode{
 public:  
   FunctionDecList* functions;
   StatSeq* statements;
+  SymbolTable *table = NULL;
   
   Program(FunctionDecList* fs, StatSeq* stats);
   ~Program();
@@ -198,6 +199,8 @@ class BeginStatement : public Statement {
 public:
   
   StatSeq *scope = NULL;
+  SymbolTable *table = NULL;
+
   BeginStatement(StatSeq *scope);
   ~BeginStatement();
   void accept(SemanticVisitor *visitor);

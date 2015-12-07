@@ -3,6 +3,7 @@
 
 SymbolTable::SymbolTable(SymbolTable *encScope) : encScope(encScope) {
   dictionary = new std::map<std::string, SemanticId&>();    
+  variables = new std::vector<VariableDeclaration*>();
 }
 
 SymbolTable::~SymbolTable() {
@@ -38,6 +39,11 @@ int SymbolTable::add(std::string id, SemanticId& val) {
   }
   std::cerr << "semantic error: Redefined variable " << id << std::endl;
   exit(200);
+}
+
+int SymbolTable::addVariable(VariableDeclaration *var) {
+  add(var->id->id, *(var->type));
+  variables->push_back(var);
 }
 
 SymbolTable* SymbolTable::getEncScope() {
