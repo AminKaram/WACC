@@ -353,7 +353,6 @@ void CodeGenVisitor::printAssemblyOfPrintln() {
 		  "  LDR r0, =msg_" << newlineMessageNum << "\n" <<
 		  "  ADD r0, r0, #4" << "\n" <<
 		  "  BL puts" << "\n" <<
-		  "  ADD r0, r0, #4" << "\n" <<
 		  "  MOV r0, #0" << "\n" <<
 		  "  BL fflush" << "\n" <<
 		  "  POP {pc}" << "\n";
@@ -405,7 +404,7 @@ void CodeGenVisitor::visit(String *node, std::string reg) {
 		"  LDR " << reg << ", =msg_" << messageNum << "\n";
   begin  << 
 		"msg_" << messageNum << ":" << "\n" <<
-        "  .word " << node->value.size() << "\n" <<
+        "  .word " << node->value.size() - 2 << "\n" <<
         "  .ascii " << node->value << "\n";
   messageNum++;
          
