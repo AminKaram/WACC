@@ -483,7 +483,15 @@ void CodeGenVisitor::visit(PairElem *node, std::string reg) {}
 void CodeGenVisitor::visit(PairElem*node) {}
 void CodeGenVisitor::visit(ArrayLiter *node, std::string reg) {}
 void CodeGenVisitor::visit(NewPair *node, std::string reg) {}
-void CodeGenVisitor::visit(UnaryOperator *node, std::string reg) {}
+void CodeGenVisitor::visit(UnaryOperator *node, std::string reg) {
+   // if(it is a negative operator)
+        std::string reg = getAvailableRegister();
+        middle << "LDR " << reg << ", [sp]"<< std::endl
+               << "RSBS "<< reg << ", " << reg << ", #0"<< std::endl
+               << "BLVS p_throw_overflow_error" << std::endl
+               << "MOV r0, "<< reg;
+        p_throw_overflow_error();
+}
 
 void CodeGenVisitor::p_check_divide_by_zero(void){ 
     if(!p_check_divide_by_zerob){
