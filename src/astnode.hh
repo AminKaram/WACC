@@ -6,7 +6,8 @@
 #include "semantic-id.hh"
 #include "symbol-table.hh"
 
-class AstNodeVisitor;
+class SemanticVisitor;
+class CodeGenVisitor;
 
 template<class T>
 void freePtr(T *ptr) {
@@ -18,27 +19,28 @@ class ASTnode {
 public:
   TypeId *type = NULL;
   ASTnode() { }
-  virtual ~ASTnode() {  }
-  virtual void accept(AstNodeVisitor *visitor);
+  virtual ~ASTnode();
+  virtual void accept(SemanticVisitor *visitor);
+  virtual void accept(CodeGenVisitor *visitor); 
 };
 
 class AssignLhs : public virtual ASTnode {
 public:
   virtual std::string getId();
-  void accept(AstNodeVisitor *visitor);
+  //void accept(SemanticVisitor *visitor);
 };
 
 class AssignRhs : public virtual ASTnode {
 public: 
   AssignRhs() { }
-  void accept(AstNodeVisitor *visitor);
+  //void accept(SemanticVisitor *visitor);
 };
 
 class Expression : public AssignRhs { 
 public: 
   Expression() { }
   virtual ~Expression() { }; 
-  void accept(AstNodeVisitor *visitor);
+  //void accept(SemanticVisitor *visitor);
 };
 typedef std::vector<Expression*> ExpressionList;
 
@@ -55,7 +57,8 @@ public:
   StatSeq();
   ~StatSeq();
   bool containRet();
-  void accept(AstNodeVisitor *visitor);
+  void accept(SemanticVisitor *visitor);
+  void accept(CodeGenVisitor *visitor);
 };
 
 class Identifier : public Expression, public AssignLhs {
@@ -66,7 +69,8 @@ public:
   Identifier(std::string& id) : id(id){}
   ~Identifier(){}
   std::string getId();
-  void accept(AstNodeVisitor *visitor);
+  void accept(SemanticVisitor *visitor);
+  void accept(CodeGenVisitor *visitor, std::string reg);
 };
 
 class VariableDeclaration : public Statement { 
@@ -81,7 +85,8 @@ public:
   VariableDeclaration(TypeId *type, Identifier *id, AssignRhs *rhs);
 
   ~VariableDeclaration();
-  void accept(AstNodeVisitor *visitor);
+  void accept(SemanticVisitor *visitor);
+  void accept(CodeGenVisitor *visitor);
 };
 typedef std::vector<VariableDeclaration*> VariableList;
 
@@ -99,7 +104,8 @@ public:
 
   ~FunctionDeclaration(); 
 
-  void accept(AstNodeVisitor *visitor);
+  void accept(SemanticVisitor *visitor);
+  void accept(CodeGenVisitor *visitor);
 };
 
 typedef std::vector<FunctionDeclaration*> FunctionList;
@@ -109,7 +115,8 @@ public:
   FunctionList funcs;
   FunctionDecList();
   ~FunctionDecList();
-  void accept(AstNodeVisitor *visitor);
+  void accept(SemanticVisitor *visitor);
+  void accept(CodeGenVisitor *visitor);
 };
 
 class FunctionCall : public Expression {
@@ -121,7 +128,8 @@ public:
   FunctionCall(Identifier *id);
 
   ~FunctionCall();
-  void accept(AstNodeVisitor *visitor);
+  void accept(SemanticVisitor *visitor);
+  void accept(CodeGenVisitor *visitor, std::string reg);
 };
 
 class Program : public ASTnode{
@@ -131,7 +139,8 @@ public:
   
   Program(FunctionDecList* fs, StatSeq* stats);
   ~Program();
-  void accept(AstNodeVisitor *visitor);
+  void accept(SemanticVisitor *visitor);
+  void accept(CodeGenVisitor *visitor);
 };
 
 class Assignment : public Statement {
@@ -141,14 +150,16 @@ public:
 
   Assignment(AssignLhs *lhs, AssignRhs *rhs);
   ~Assignment();
-  void accept(AstNodeVisitor *visitor);
+  void accept(SemanticVisitor *visitor);
+  void accept(CodeGenVisitor *visitor);
 };
 
 class SkipStatement : public Statement {
 public:
   SkipStatement() : Statement() { }
   ~SkipStatement() { }
-  void accept(AstNodeVisitor *visitor);
+  void accept(SemanticVisitor *visitor);
+  void accept(CodeGenVisitor *visitor);
 };
 
 class FreeStatement : public Statement {
@@ -157,7 +168,8 @@ public:
 
   FreeStatement(Expression *expr);
   ~FreeStatement();
-  void accept(AstNodeVisitor *visitor);
+  void accept(SemanticVisitor *visitor);
+  void accept(CodeGenVisitor *visitor);
 };
 
 class ReturnStatement : public Statement {
@@ -166,7 +178,8 @@ public:
 
   ReturnStatement(Expression *expr);
   ~ReturnStatement();
-  void accept(AstNodeVisitor* visitor);
+  void accept(SemanticVisitor* visitor);
+  void accept(CodeGenVisitor *visitor);
 };
 
 class ExitStatement : public Statement {
@@ -175,7 +188,8 @@ public:
 
   ExitStatement(Expression *expr);
   ~ExitStatement();
-  void accept(AstNodeVisitor *visitor);
+  void accept(SemanticVisitor *visitor);
+  void accept(CodeGenVisitor *visitor);
 };
 
 class BeginStatement : public Statement {
@@ -184,7 +198,8 @@ public:
   StatSeq *scope = NULL;
   BeginStatement(StatSeq *scope);
   ~BeginStatement();
-  void accept(AstNodeVisitor *visitor);
+  void accept(SemanticVisitor *visitor);
+  void accept(CodeGenVisitor *visitor);
 };
 
 class IfStatement : public Statement {
@@ -196,7 +211,8 @@ public:
   IfStatement(Expression *expr, StatSeq *thenS);
   IfStatement(Expression *expr, StatSeq *thenS, StatSeq *elseS);
   ~IfStatement();
-  void accept(AstNodeVisitor* visitor);
+  void accept(SemanticVisitor* visitor);
+  void accept(CodeGenVisitor *visitor);
 };
 
 class WhileStatement : public Statement {
@@ -206,7 +222,8 @@ public:
 
   WhileStatement(Expression *expr, StatSeq *doS);
   ~WhileStatement();
-  void accept(AstNodeVisitor * visitor);
+  void accept(SemanticVisitor * visitor);
+  void accept(CodeGenVisitor *visitor);
 };
 
 class ReadStatement : public Statement {
@@ -215,7 +232,8 @@ public:
   
   ReadStatement(AssignLhs *id);
   ~ReadStatement();
-  void accept(AstNodeVisitor *visitor);
+  void accept(SemanticVisitor *visitor);
+  void accept(CodeGenVisitor *visitor);
 };
 
 class PrintStatement : public Statement {
@@ -224,7 +242,8 @@ public:
 
   PrintStatement(Expression *expr);
   ~PrintStatement();
-  void accept(AstNodeVisitor *visitor);
+  void accept(SemanticVisitor *visitor);
+  void accept(CodeGenVisitor *visitor);
 };
 
 class PrintlnStatement : public Statement {
@@ -233,7 +252,8 @@ public:
 
   PrintlnStatement(Expression *expr);
   ~PrintlnStatement();
-  void accept(AstNodeVisitor *visitor);
+  void accept(SemanticVisitor *visitor);
+  void accept(CodeGenVisitor *visitor);
 };
 
 class Number : public Expression {
@@ -241,7 +261,8 @@ public:
   int value;
   
   Number(int value);
-  void accept(AstNodeVisitor *visitor);
+  void accept(SemanticVisitor *visitor);
+  void accept(CodeGenVisitor *visitor, std::string reg);
 };
 
 class Boolean : public Expression {
@@ -249,7 +270,8 @@ public:
   bool value;
 
   Boolean(bool value);
-  void accept(AstNodeVisitor *visitor);
+  void accept(SemanticVisitor *visitor);
+  void accept(CodeGenVisitor *visitor, std::string reg);
 };
 
 class Char : public Expression {
@@ -257,7 +279,8 @@ public:
   char value;
 
   Char(char value);
-  void accept(AstNodeVisitor *visitor);
+  void accept(SemanticVisitor *visitor);
+  void accept(CodeGenVisitor *visitor, std::string reg);
 };
 
 class String : public Expression {
@@ -265,12 +288,14 @@ public:
   std::string value;
 
   String(std::string value);
-  void accept(AstNodeVisitor *visitor);
+  void accept(SemanticVisitor *visitor);
+  void accept(CodeGenVisitor *visitor, std::string reg);
 };
 
 class Null : public Expression {
 public:
-  void accept(AstNodeVisitor *visitor);
+  void accept(SemanticVisitor *visitor);
+  void accept(CodeGenVisitor *visitor, std::string reg);
 };
 
 class BinaryOperator : public Expression {
@@ -281,7 +306,8 @@ public:
 	
   BinaryOperator(Expression *left, int op, Expression *right);
   ~BinaryOperator();
-  void accept(AstNodeVisitor *visitor);
+  void accept(SemanticVisitor *visitor);
+  void accept(CodeGenVisitor *visitor, std::string reg);
 };
 
 class ArrayElem : public AssignLhs, public Expression {
@@ -292,7 +318,8 @@ public:
   ArrayElem(Identifier *id, ExpressionList *idxs);
   ~ArrayElem();
   std::string getId();
-  void accept(AstNodeVisitor *visitor);
+  void accept(SemanticVisitor *visitor);
+  void accept(CodeGenVisitor *visitor, std::string reg);
 };
 
 class PairElem : public AssignLhs, public AssignRhs {
@@ -303,7 +330,8 @@ public:
   PairElem(bool fst, Expression *expr);
   ~PairElem();
   std::string getId();
-  void accept(AstNodeVisitor *visitor);
+  void accept(SemanticVisitor *visitor);
+  void accept(CodeGenVisitor *visitor, std::string reg);
 };
 
 class ArrayLiter : public AssignRhs {
@@ -312,7 +340,8 @@ public:
 
 	ArrayLiter(ExpressionList *elems);
   ~ArrayLiter();
-  void accept(AstNodeVisitor *visitor);
+  void accept(SemanticVisitor *visitor);
+  void accept(CodeGenVisitor *visitor, std::string reg);
 };
 
 class NewPair : public AssignRhs {
@@ -322,7 +351,8 @@ public:
 
   NewPair(Expression *fst, Expression *snd);
   ~NewPair();
-  void accept(AstNodeVisitor *visitor);
+  void accept(SemanticVisitor *visitor);
+  void accept(CodeGenVisitor *visitor, std::string reg);
 };
 
 class UnaryOperator : public Expression	{
@@ -332,7 +362,8 @@ public:
 
 	UnaryOperator(int op, Expression *expr);
   ~UnaryOperator();
-  void accept(AstNodeVisitor *visitor);
+  void accept(SemanticVisitor *visitor);
+  void accept(CodeGenVisitor *visitor, std::string reg);
 };
 
 #endif // ! ASTNODE_HH

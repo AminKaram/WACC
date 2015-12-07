@@ -9,9 +9,6 @@ CodeGenVisitor::CodeGenVisitor(std::ostream* stream) {
 
 CodeGenVisitor::~CodeGenVisitor() { }
 
-void CodeGenVisitor::visit(ASTnode *node) {
-}
-
 void CodeGenVisitor::visit(Program *node) {
   // when you prin you should add
   // msg_0:
@@ -36,41 +33,41 @@ void CodeGenVisitor::visit(Program *node) {
 
 }
 
-void CodeGenVisitor::visit(AssignRhs *node) {
-  ArrayLiter *arrayLiter = dynamic_cast<ArrayLiter*>(node);
-  NewPair *newPair       = dynamic_cast<NewPair*>(node);
-  Expression *expr       = dynamic_cast<Expression*>(node);
-  PairElem *pairElem     = dynamic_cast<PairElem*>(node);
-
-  if(arrayLiter) arrayLiter->accept(this);
-  if(newPair) newPair->accept(this);
-  if(expr) expr->accept(this);
-  if(pairElem) pairElem->accept(this);
-}
-void CodeGenVisitor::visit(AssignLhs *node) {}
-void CodeGenVisitor::visit(Expression *node) {
-  Identifier *ident      = dynamic_cast<Identifier*>(node);
-  FunctionCall *funcCall = dynamic_cast<FunctionCall*>(node);
-  Number *number         = dynamic_cast<Number*>(node);
-  Boolean *boolean       = dynamic_cast<Boolean*>(node);
-  Char *charId           = dynamic_cast<Char*>(node);
-  String *stringId       = dynamic_cast<String*>(node);
-  Null *null             = dynamic_cast<Null*>(node);
-  BinaryOperator *binop  = dynamic_cast<BinaryOperator*>(node);
-  ArrayElem *arrayElem   = dynamic_cast<ArrayElem*>(node);
-  UnaryOperator *unop    = dynamic_cast<UnaryOperator*>(node);
-
-  if(ident) ident->accept(this);
-  if(funcCall) funcCall->accept(this);
-  if(number) number->accept(this);
-  if(boolean) boolean->accept(this);
-  if(charId) charId->accept(this);
-  if(stringId) stringId->accept(this);
-  if(null) null->accept(this);
-  if(binop) binop->accept(this);
-  if(arrayElem) arrayElem->accept(this);
-  if(unop) unop->accept(this);
-}
+//void CodeGenVisitor::visit(AssignRhs *node) {
+//  ArrayLiter *arrayLiter = dynamic_cast<ArrayLiter*>(node);
+//  NewPair *newPair       = dynamic_cast<NewPair*>(node);
+//  Expression *expr       = dynamic_cast<Expression*>(node);
+//  PairElem *pairElem     = dynamic_cast<PairElem*>(node);
+//
+//  if(arrayLiter) arrayLiter->accept(this);
+//  if(newPair) newPair->accept(this);
+//  if(expr) expr->accept(this);
+//  if(pairElem) pairElem->accept(this);
+//}
+//void CodeGenVisitor::visit(AssignLhs *node) {}
+//void CodeGenVisitor::visit(Expression *node) {
+//  Identifier *ident      = dynamic_cast<Identifier*>(node);
+//  FunctionCall *funcCall = dynamic_cast<FunctionCall*>(node);
+//  Number *number         = dynamic_cast<Number*>(node);
+//  Boolean *boolean       = dynamic_cast<Boolean*>(node);
+//  Char *charId           = dynamic_cast<Char*>(node);
+//  String *stringId       = dynamic_cast<String*>(node);
+//  Null *null             = dynamic_cast<Null*>(node);
+//  BinaryOperator *binop  = dynamic_cast<BinaryOperator*>(node);
+//  ArrayElem *arrayElem   = dynamic_cast<ArrayElem*>(node);
+//  UnaryOperator *unop    = dynamic_cast<UnaryOperator*>(node);
+//
+//  if(ident) ident->accept(this);
+//  if(funcCall) funcCall->accept(this);
+//  if(number) number->accept(this);
+//  if(boolean) boolean->accept(this);
+//  if(charId) charId->accept(this);
+//  if(stringId) stringId->accept(this);
+//  if(null) null->accept(this);
+//  if(binop) binop->accept(this);
+//  if(arrayElem) arrayElem->accept(this);
+//  if(unop) unop->accept(this);
+//}
 
 void CodeGenVisitor::visit(StatSeq *node) {
 
@@ -114,8 +111,12 @@ void CodeGenVisitor::visit(FunctionDeclaration *node) {
 
 }
 
-void CodeGenVisitor::visit(FunctionCall *node) {
-  //*output <<     
+void CodeGenVisitor::visit(FunctionCall *node, std::string reg) {
+//    for(int i=0; i < node->parameters->size(); i++) {
+//    Expression *param = node->parameters->operator[](i);
+//    std::string = param->accept(this, );
+//
+//`   }
 }
 
 void CodeGenVisitor::visit(Assignment *node) {}
@@ -172,14 +173,6 @@ void CodeGenVisitor::visit(WhileStatement *node) {
 
 void CodeGenVisitor::visit(ReadStatement *node) {}
 
-std::string CodeGenVisitor::visitAndPrintReg(Expression *node) {
-	*output << "  MOV R1, \"Hello World\"" << std::endl;
-//			    "string:" << std::endl <<
-//				".ascii \"Hello Worldn\" " << std::endl;
-
-	return "R1";
-}
-
 void CodeGenVisitor::visit(PrintStatement *node) {
   node->expr->accept(this);
   //std::string reg1 = getAvailableRegister();
@@ -222,19 +215,22 @@ void CodeGenVisitor::visit(PrintlnStatement *node) {
       "  BL fflush" << std::endl <<
       "  POP {pc}" << std::endl;
 }
-void CodeGenVisitor::visit(Number *node) {
+
+void CodeGenVisitor::visit(SkipStatement *node) { }
+
+void CodeGenVisitor::visit(Number *node, std::string reg) {
   *output << "  LDR R4, =" << node->value << std::endl;
 }
-void CodeGenVisitor::visit(Boolean *node) {
+void CodeGenVisitor::visit(Boolean *node, std::string reg) {
   *output << "  MOV R4, #" << node->value << std::endl;
 }
-void CodeGenVisitor::visit(Char *node) {
+void CodeGenVisitor::visit(Char *node, std::string reg) {
   *output << "  MOV R4, #'" << node->value  << "'" << std::endl;
 }
-void CodeGenVisitor::visit(String *node) {}
-void CodeGenVisitor::visit(Null *node) {}
+void CodeGenVisitor::visit(String *node, std::string reg) {}
+void CodeGenVisitor::visit(Null *node, std::string reg) {}
 
-void CodeGenVisitor::visit(BinaryOperator *node) {
+void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
    int oper = node -> op;
          std:: string firstReg = getAvailableRegister();
          std:: string secondReg = getAvailableRegister();
@@ -352,12 +348,12 @@ void CodeGenVisitor::visit(BinaryOperator *node) {
 
 }
 
-void CodeGenVisitor::visit(Identifier *node) {}
-void CodeGenVisitor::visit(ArrayElem *node) {}
-void CodeGenVisitor::visit(PairElem *node) {}
-void CodeGenVisitor::visit(ArrayLiter *node) {}
-void CodeGenVisitor::visit(NewPair *node) {}
-void CodeGenVisitor::visit(UnaryOperator *node) {}
+void CodeGenVisitor::visit(Identifier *node, std::string reg) {}
+void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {}
+void CodeGenVisitor::visit(PairElem *node, std::string reg) {}
+void CodeGenVisitor::visit(ArrayLiter *node, std::string reg) {}
+void CodeGenVisitor::visit(NewPair *node, std::string reg) {}
+void CodeGenVisitor::visit(UnaryOperator *node, std::string reg) {}
 
 void CodeGenVisitor::p_check_divide_by_zero(void){
     std::streampos originalPos;
@@ -408,7 +404,6 @@ void CodeGenVisitor::p_throw_runtime_error(void){
         output -> std::ostream::seekp(originalPos);
     }
 }
-void CodeGenVisitor::defineLabel(String label) {}
 
 void CodeGenVisitor::populateRegMap() {
 	for (int i = 4; i < MAX_REG_NUMBER - 1; ++i) {
