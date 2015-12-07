@@ -258,9 +258,6 @@ void CodeGenVisitor::visit(BinaryOperator *node) {
              operand is stored] (e.g. [sp , #4] )" */ << std::endl;
            if(oper == tok :: TOK_STAR){
               //Implementation code gen for MULTIPLY
-              std:: string firstReg = getAvailableRegister();
-             std:: string secondReg = getAvailableRegister();
-
 
              *output << "SMULL "<< firstReg << " " << secondReg << " " 
              <<firstReg << " " << secondReg << std:: endl
@@ -286,7 +283,8 @@ void CodeGenVisitor::visit(BinaryOperator *node) {
 
            } else if (oper == tok::TOK_PLUS){
         // Implementation code-gen for PLUS 
-             *output << "ADDS "<< firstReg <<" "<< firstReg <<" "<< secondReg << std::endl
+             *output << "ADDS "<< firstReg <<" "<< firstReg <<" "
+             << secondReg << std::endl
                      //<< "BELVS p_throw_overflow_error"<< std::endl
                      << "MOV R0 "<< firstReg << std::endl;
                      
@@ -294,7 +292,8 @@ void CodeGenVisitor::visit(BinaryOperator *node) {
 
            } else if (oper == tok::TOK_MINUS){
          // Implementation code-gen for MINUS
-             *output << "SUBS "<< firstReg <<" "<< firstReg <<" "<< secondReg << std::endl
+             *output << "SUBS "<< firstReg <<" "<< firstReg <<" "
+             << secondReg << std::endl
                      << "MOV R0 "<< firstReg << std::endl;
                      
         // Need to add the error code in
