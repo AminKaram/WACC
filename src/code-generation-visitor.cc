@@ -29,7 +29,7 @@ void CodeGenVisitor::visit(Program *node) {
          << "  .ltorg"   << "\n";
 
   if (begin.rdbuf()->in_avail() != 0) {
-    *file << begin.rdbuf() ;
+    *file << begin.rdbuf() << "\n" ;
   }
   if (middle.rdbuf()->in_avail() != 0) {
       *file << middle.rdbuf() ;
@@ -145,7 +145,29 @@ void CodeGenVisitor::visit(FunctionCall *node, std::string reg) {
 }
 
 void CodeGenVisitor::visit(Assignment *node) {}
-void CodeGenVisitor::visit(FreeStatement *node) {}
+void CodeGenVisitor::visit(FreeStatement *node) {
+    middle<< "  LDR r4, [sp]" << std::endl // add offset
+          << "  Mov r0, r4\n"
+          << "  BL p_free_pair\n";
+
+    end   << "  PUSH {lr}" << std::endl
+          << "  CMP r0, #0"<< std::endl
+          << "  LDREQ r0, =msg_"<<messageNum << std::endl
+          << "  BEQ p_throw_runtime_error"<< std::endl
+          << "  PUSH {r0}"<< std::endl
+          << "  LDR r0, [r0]"<< std::endl
+          << "  BL free"<< std::endl
+          << "  LDR r0, [sp]"<< std::endl
+          << "  LDR r0, [r0 , #4]"<< std::endl
+          << "  BL free"<< std::endl
+          << "  POP {r0}"<< std::endl
+          << "  BL free"<< std::endl
+          << "  POP {PC}"<< std::endl;
+    p_throw_runtime_error();
+    begin << "msg_"<< messageNum <<":"<<std::endl
+          << "  .word 50"<< std::endl
+          << "  .ascii \"NullReferenceError : dereference a null reference\\n\\0\""<< std::endl;
+}
 
 void CodeGenVisitor::visit(ReturnStatement *node) {
   node->expr->accept(this, "R0");
@@ -196,15 +218,6 @@ void CodeGenVisitor::printMsg(TypeId *type) {
     BoolTypeId *boolTypeId     = dynamic_cast<BoolTypeId*> (type);
     CharTypeId *charTypeId     = dynamic_cast<CharTypeId*> (type);
     
-    bool isInt    = false;
-    bool isString = false;
-    bool isBool   = false;
-    bool isChar   = false;
-    
-    if (intTypeId)    isInt    = true;
-    if (stringTypeId) isString = true;
-    if (boolTypeId)   isBool   = true;
-    if (charTypeId)   isChar   = true;
     
     if (!beginInitialisation) {
 		beginInitialisation = true;
@@ -213,58 +226,108 @@ void CodeGenVisitor::printMsg(TypeId *type) {
 					<< "\n";
     }
     
-    if (isChar) {
+    if (charTypeId) {
 		middle <<
 				"  BL putchar" << "\n";
-	} else if(isString) {
+	} else if(stringTypeId) {
 		middle <<
 				"  BL p_print_string" << "\n";
-		begin << 
-             "msg_" << messageNum << ":" << std::endl <<
-             "  .word 5" << std::endl <<
-             "  .ascii  \"%.*s\\0\"" << std::endl;
+		if (!msgString) {
+			msgString  = true;
+			begin << 
+				 "msg_" << messageNum << ":" << std::endl <<
+				 "  .word 5" << std::endl <<
+				 "  .ascii  \"%.*s\\0\"" << std::endl;
+		 }
              
         stringMessageNum = messageNum;
 		messageNum++;
-	} else if(isInt) {
-		begin << 
-             "msg_" << messageNum << ":" << std::endl <<
-             "  .word 3" << std::endl <<
-             "  .ascii  \"%d\\0\"" << std::endl;
-             
-		messageNum++;
-	} else if(isBool) {
-		begin << 
-             "msg_" << messageNum << ":" << std::endl <<
-             "  .word 5" << std::endl <<
-             "  .ascii  \"true\\0\"" << std::endl;
-		begin << 
-             "msg_" << messageNum << ":" << std::endl <<
-             "  .word 6" << std::endl <<
-             "  .ascii  \"false\\0\"" << std::endl;
-             
-		messageNum++;
+	} else if(intTypeId) {
+		middle <<
+				"  BL p_print_int" << "\n";
+		if (!msgInt) {
+			msgInt = true;
+			begin << 
+				 "msg_" << messageNum << ":" << std::endl <<
+				 "  .word 3" << std::endl <<
+				 "  .ascii  \"%d\\0\"" << std::endl;
+		 }
+		 intMessageNum = messageNum;
+		 messageNum++;
+	} else if(boolTypeId) {
+		middle <<
+				"  BL p_print_bool" << "\n";
+		if (!msgBool) {
+			msgBool = true;
+			begin << 
+				 "msg_" << messageNum << ":" << std::endl <<
+				 "  .word 5" << std::endl <<
+				 "  .ascii \"true\\0\"" << std::endl;
+			begin << 
+				 "msg_" << messageNum + 1 << ":" << std::endl <<
+				 "  .word 6" << std::endl <<
+				 "  .ascii \"false\\0\"" << std::endl;
+		 }
+		 boolMessageNum = messageNum;
+		 messageNum+=2;
 	}
 }
 
 void CodeGenVisitor::printlnMsg() {
 	middle <<
 		  "  BL p_print_ln" << "\n";
-	begin << 
-		 "msg_" << messageNum << ":" << std::endl <<
-		 "  .word 1" << std::endl <<
-         "  .ascii  \"\\0\"" << std::endl;
+	if (!msgNewLine) {
+		msgNewLine = true;
+		begin << 
+			 "msg_" << messageNum << ":" << std::endl <<
+			 "  .word 1" << std::endl <<
+			 "  .ascii  \"\\0\"" << std::endl;
+	 }
              
     newlineMessageNum = messageNum;     
 	messageNum++;
 }
 
-void CodeGenVisitor::print(std::string stringToPrint) {
-	begin << 
-		 "msg_" << messageNum << ":" << std::endl <<
-	     "  .word " << stringToPrint.size() << std::endl <<
-	     "  .ascii " << stringToPrint << std::endl;
-    messageNum++;
+
+void CodeGenVisitor::printAssemblyOfPrintString() {
+	end <<
+		"p_print_string: " << "\n" <<
+		"  PUSH {lr}" << "\n" <<
+		"  LDR r1, [r0]" << "\n" <<
+		"  ADD r2, r0, #4" << "\n" <<
+		"  LDR r0, =msg_" << stringMessageNum << "\n" <<
+		"  ADD r0, r0, #4" << "\n" <<
+		"  BL printf" << "\n" <<
+		"  MOV r0, #0" << "\n" <<
+		"  BL fflush" << "\n" <<
+		"  POP {pc}" << "\n";
+}
+
+void CodeGenVisitor::printAssemblyOfPrintBool() {
+	end <<
+		"p_print_bool: " << "\n" <<
+		"  PUSH {lr}" << "\n" <<
+		"  CMP r0, #0" << "\n" <<
+		"  LDRNE r0, =msg_" << boolMessageNum     << "\n" <<
+		"  LDREQ r0, =msg_" << boolMessageNum + 1 << "\n" <<
+		"  ADD r0, r0, #4" << "\n" <<
+		"  BL printf" << "\n" <<
+		"  MOV r0, #0" << "\n" <<
+		"  BL fflush" << "\n" <<
+		"  POP {pc}" << "\n";
+}
+
+void CodeGenVisitor::printAssemblyOfPrintInt() {
+	end <<
+		"p_print_int: " << "\n" <<
+		"  PUSH {lr}" << "\n" <<
+		"  LDR r1, r0" << "\n" <<
+		"  LDR r0, =msg_" << intMessageNum << "\n" <<
+		"  ADD r0, r0, #4" << "\n" <<
+		"  BL printf" << "\n" <<
+		"  MOV r0, #0" << "\n" <<
+		"  BL fflush" << "\n" <<
+		"  POP {pc}" << "\n";
 }
 
 void CodeGenVisitor::visit(PrintStatement *node) {
@@ -273,52 +336,54 @@ void CodeGenVisitor::visit(PrintStatement *node) {
     TypeId *type = node->expr->type;
 
 	printMsg(type);
-    print(stringToPrint);
-	std::cout<< "Fuck you bitch!!!" << std::endl;
-	if (!p_print_string){
+    
+	if (!p_print_string && type->equals(new StringTypeId())) {
 		p_print_string = true;
-		std::cout<< " in if!!!" << std::endl;
-		
-		end <<
-			"p_print_string: " << "\n" <<
-			"  PUSH {lr}" << "\n" <<
-			"  LDR r1, [r0]" << "\n" <<
-			"  ADD r2, r0, #4" << "\n" <<
-			"  LDR r0, =msg_" << stringMessageNum << "\n" <<
-			"  ADD r0, r0, #4" << "\n" <<
-			"  BL printf" << "\n" <<
-			"  MOV r0, #0" << "\n" <<
-			"  BL fflush" << "\n" <<
-			"  POP {pc}" << "\n";
+		printAssemblyOfPrintString();
+	} else if (!p_print_bool && type->equals(new BoolTypeId())) {
+			p_print_bool = true;
+			printAssemblyOfPrintBool();
+	} else if (!p_print_int && type->equals(new IntTypeId())) {
+			p_print_int = true;
+			printAssemblyOfPrintInt();
 	}
 }
 
-void CodeGenVisitor::visit(PrintlnStatement *node) {
-  node->expr->accept(this, "r0");
 
-  printlnMsg();
-		
-  end <<
-        "p_print_string: " << "\n" <<
-        "  PUSH {lr}" << "\n" <<
-		"  LDR r1, [r0]" << "\n" <<
-		"  ADD r2, r0, #4" << "\n" <<
-		"  LDR r0, =msg_" << stringMessageNum << "\n" <<
-		"  ADD r0, r0, #4" << "\n" <<
-		"  BL printf" << "\n" <<
-        "  MOV r0, #0" << "\n" <<
-        "  BL fflush" << "\n" <<
-        "  POP {pc}" << "\n";
-  end <<
-      "p_print_ln: " << "\n" <<
-      "  PUSH {lr}" << "\n" <<
-      "  LDR r0, =msg_" << newlineMessageNum << "\n" <<
-      "  ADD r0, r0, #4" << "\n" <<
-      "  BL puts" << "\n" <<
-      "  ADD r0, r0, #4" << "\n" <<
-      "  MOV r0, #0" << "\n" <<
-      "  BL fflush" << "\n" <<
-      "  POP {pc}" << "\n";
+void CodeGenVisitor::printAssemblyOfPrintln() {
+	end <<
+		  "p_print_ln: " << "\n" <<
+		  "  PUSH {lr}" << "\n" <<
+		  "  LDR r0, =msg_" << newlineMessageNum << "\n" <<
+		  "  ADD r0, r0, #4" << "\n" <<
+		  "  BL puts" << "\n" <<
+		  "  ADD r0, r0, #4" << "\n" <<
+		  "  MOV r0, #0" << "\n" <<
+		  "  BL fflush" << "\n" <<
+		  "  POP {pc}" << "\n";
+}
+
+void CodeGenVisitor::visit(PrintlnStatement *node) {
+	node->expr->accept(this, "r0");
+	TypeId *type = node->expr->type;
+	
+	printMsg(type);
+	printlnMsg();
+	
+	if(!p_print_ln) {	
+		p_print_ln = true;
+		if (!p_print_string && type->equals(new StringTypeId())) {
+			p_print_string = true;
+			printAssemblyOfPrintString();
+		} else if (!p_print_bool && type->equals(new BoolTypeId())) {
+			p_print_bool = true;
+			printAssemblyOfPrintBool();
+		} else if (!p_print_int && type->equals(new IntTypeId())) {
+			p_print_int = true;
+			printAssemblyOfPrintInt();
+	}
+	 printAssemblyOfPrintln();
+	}
 }
 
 void CodeGenVisitor::visit(SkipStatement *node) { }
@@ -334,153 +399,212 @@ void CodeGenVisitor::visit(Char *node, std::string reg) {
 }
 
 void CodeGenVisitor::visit(String *node, std::string reg) {
-  middle << " LDR " << reg << ", =msg_" << messageNum << "\n";
+  if (!beginInitialisation) {
+		beginInitialisation = true;
+		begin << 
+			".data" << "\n"
+					<< "\n";
+  }
+  middle << "  LDR " << reg << ", =msg_" << messageNum << "\n";
   begin  << "msg_" << messageNum << ":" << "\n"
-         << ".word" << node->  value.length() << "\n"
-         << ".ascii \""<< node-> value << "\""<< "\n";
+         << "  .word" << node->  value.length() << "\n"
+         << "  .ascii " << node-> value << "\n";
+  messageNum++;
+         
 }
 void CodeGenVisitor::visit(Null *node, std::string reg) {}
 
 
 void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
    int oper = node -> op;
-         std:: string firstReg = getAvailableRegister();
+         std:: string firstReg = reg; 
          std:: string secondReg = getAvailableRegister();
 
    if(oper == tok::TOK_LOGOR || oper == tok::TOK_LOGAND){
-         middle << "LDRSB "<< firstReg << ", " /* << "[address where
+         middle << "  LDRSB "<< firstReg << ", " /* << "[address where
          first value is stored]" (e.g. [sp])*/ << "\n";
-         middle << "LDRSB "<< secondReg <<", " /* << "[address where
+         middle << "  LDRSB "<< secondReg <<", " /* << "[address where
          second value is stored] (e.g. [sp , #1] )" */ << "\n";
 
       if (oper == tok::TOK_LOGOR){
       //Implementation code-gen for OR 
           
-         middle << "ORR "<< firstReg << ", " << firstReg << ", "
+         middle << "  ORR "<< firstReg << ", " << firstReg << ", "
                  << secondReg << "\n";
     
        } else if (oper == tok::TOK_LOGAND){
       //Implementation code-gen for AND      
-         middle << "AND "<< firstReg << ", " << firstReg << ", "
+         middle << "  AND "<< firstReg << ", " << firstReg << ", "
                  << secondReg << "\n";
       }      
    } else if (oper >= tok::TOK_STAR && oper <= tok::TOK_MINUS){
    
-             middle << "LDR "<< firstReg << ", " /* << "[address where
+             middle <<  "  LDR "<< firstReg << ", " /* << "[address where
              first operand is stored]" (e.g. [sp])*/ << "\n";
-             middle << "LDR "<< secondReg << ", "/* << "[address where
+             middle << "  LDR "<< secondReg << ", "/* << "[address where
              second operand is stored] (e.g. [sp , #4] )" */ << "\n";
            
            
            if(oper == tok :: TOK_STAR){
               //Implementation code gen for MULTIPLY
 
-             middle << "SMULL "<< firstReg << ", " << secondReg << ", "
+             middle << "  SMULL "<< firstReg << ", " << secondReg << ", "
                      << firstReg << ", " << secondReg << "\n"
                      
-                     << "CMP " << secondReg << ", "<< firstReg << ", "
-                     << "ASR #31" << "\n"
+                     << "  CMP " << secondReg << ", "<< firstReg << ", "
+                     << "  ASR #31" << "\n"
 
-                     << "BLNE p_throw_overflow_error"<< "\n";
+                     << "  BLNE p_throw_overflow_error"<< "\n";
                      p_throw_overflow_error();
                      
 
            } else if (oper == tok::TOK_SLASH){
                //Implementation code gen for DIVIDE
-               middle << "MOV R0, "<< firstReg  << "\n"
-                       << "MOV R1, "<< secondReg << "\n"
-                       << "BL p_checkdivide_by_zero"<< "\n";
+               middle << "  MOV R0, "<< firstReg  << "\n"
+                       << "  MOV R1, "<< secondReg << "\n"
+                       << "  BL p_checkdivide_by_zero"<< "\n";
                p_check_divide_by_zero();
-               middle << "BL __aeabi_idiv"<< "\n";
+               middle << "  BL __aeabi_idiv"<< "\n";
         
 
            } else if (oper == tok::TOK_MODULO){
          //Implementation code-gen for MODULO 
 
-               middle << "MOV R0, "<< firstReg  << "\n"
-                       << "MOV R1, "<< secondReg << "\n"
-                       << "BL p_checkdivide_by_zero"<< "\n";
+               middle << "  MOV R0, "<< firstReg  << "\n"
+                       << "  MOV R1, "<< secondReg << "\n"
+                       << "  BL p_checkdivide_by_zero"<< "\n";
                p_check_divide_by_zero();
-               middle << "BL __aeabi_idivmod"<< "\n";
+               middle << "  BL __aeabi_idivmod"<< "\n";
            } else if (oper == tok::TOK_PLUS){
         // Implementation code-gen for PLUS 
-             middle << "ADDS "<< firstReg <<", "<< firstReg <<", "
+             middle << "  ADDS "<< firstReg <<", "<< firstReg <<", "
              << secondReg << "\n"
             
-             << "BELVS p_throw_overflow_error"<< "\n";
+             << "  BELVS p_throw_overflow_error"<< "\n";
              p_throw_overflow_error();
                      
 
            } else if (oper == tok::TOK_MINUS){
          // Implementation code-gen for MINUS
-             middle << "SUBS "<< firstReg <<", "<< firstReg <<", "
+             middle << "  SUBS "<< firstReg <<", "<< firstReg <<", "
              << secondReg << "\n"
 
-             << "BELVS p_throw_overflow_error"<< "\n";
+             << "  BELVS p_throw_overflow_error"<< "\n";
              p_throw_overflow_error();
            } 
         }else if (oper >= tok::TOK_LESS && oper <= tok::TOK_NOTEQUALS){
             
-            middle << "CMP "<< firstReg <<", "<< secondReg << "\n";
+            middle << "  CMP "<< firstReg <<", "<< secondReg << "\n";
              if (oper == tok::TOK_LESS){
         // Implementation code-gen for LESS 
-            middle << "MOVLT "<< firstReg << ", #1"<< "\n"
-                    << "MOVGE "<< firstReg << ", #0"<< "\n";
+            middle << "  MOVLT "<< firstReg << ", #1"<< "\n"
+                    << "  MOVGE "<< firstReg << ", #0"<< "\n";
 
            } else if (oper == tok::TOK_LESSEQUALS){
         //Implementation code-gen for LESSEQUALS
-            middle << "MOVLE "<< firstReg << ", #1"<< "\n"
-                    << "MOVGT "<< firstReg << ", #0"<< "\n";
+            middle << "  MOVLE "<< firstReg << ", #1"<< "\n"
+                    << "  MOVGT "<< firstReg << ", #0"<< "\n";
                      
            } else if (oper == tok::TOK_GREATER){
         // Implementation code-gen for GREATER 
-            middle << "MOVGT "<< firstReg << ", #1"<< "\n"
-                    << "MOVLE "<< firstReg << ", #1"<< "\n";
+            middle << "  MOVGT "<< firstReg << ", #1"<< "\n"
+                    << "  MOVLE "<< firstReg << ", #1"<< "\n";
  
            } else if (oper == tok::TOK_GREATEREQUALS){
         // Implementation code-gen for GREATEREQUALS 
-            middle << "MOVGE "<< firstReg << ", #1"<< "\n"
-                    << "MOVLT "<< firstReg << ", #0"<< "\n";
+            middle << "  MOVGE "<< firstReg << ", #1"<< "\n"
+                    << "  MOVLT "<< firstReg << ", #0"<< "\n";
  
            } else if (oper == tok::TOK_EQUALS){
          //Implementation code-gen for EQUALS 
-            middle << "MOVEQ "<< firstReg << ", #1"<< "\n"
-                    << "MOVNE "<< firstReg << ", #0"<< "\n";
+            middle << "  MOVEQ "<< firstReg << ", #1"<< "\n"
+                    << "  MOVNE "<< firstReg << ", #0"<< "\n";
  
            } else if (oper == tok::TOK_NOTEQUALS){
         // Implementation code-gen for Not EQUAL
-            middle << "MOVNE "<< firstReg << ", #1"<< "\n"
-                    << "MOVEQ "<< firstReg << ", #1"<< "\n";
+            middle << "  MOVNE "<< firstReg << ", #1"<< "\n"
+                    << "  MOVEQ "<< firstReg << ", #1"<< "\n";
                      
            }
     }
-    middle << "MOV R0, "<< firstReg << "\n";
+    middle << "  MOV R0, "<< firstReg << "\n";
     freeRegister(firstReg);
     freeRegister(secondReg);
 
 }
-
+void CodeGenVisitor::visit(Identifier *node){}
 void CodeGenVisitor::visit(Identifier *node, std::string reg) {}
-void CodeGenVisitor::visit(Identifier *node) {}
+void CodeGenVisitor::visit(ArrayElem *node){}
 void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {}
-void CodeGenVisitor::visit(ArrayElem *node) {}
+void CodeGenVisitor::visit(PairElem *node){}
 void CodeGenVisitor::visit(PairElem *node, std::string reg) {}
-void CodeGenVisitor::visit(PairElem*node) {}
 void CodeGenVisitor::visit(ArrayLiter *node, std::string reg) {}
-void CodeGenVisitor::visit(NewPair *node, std::string reg) {}
-void CodeGenVisitor::visit(UnaryOperator *node, std::string reg) {}
+void CodeGenVisitor::visit(UnaryOperator *node, std::string reg) {
+   int oper = node -> op;
+   std:: string freeReg = getAvailableRegister();
+   if(oper == tok ::TOK_MINUS){
+        middle << "  LDR " << freeReg << ", [sp]"/* need to add offset */<< std::endl
+               << "  RSBS "<< freeReg << ", " << freeReg << ", #0"<< std::endl
+               << "  BLVS p_throw_overflow_error" << std::endl
+               << "  MOV r0, "<< freeReg;
+        p_throw_overflow_error();
+   }else if(oper == tok::TOK_BANG){
+        middle << "  LDRSB " << freeReg << ", [sp]" /*need to add offset*/ << std::endl
+               << "  EOR "<< freeReg << ", " << reg << ", #1" << std::endl
+               << "  MOV r0, " << freeReg << std::endl;
+   }else if(oper == tok::TOK_LEN){
+   //add implementation for len
+   }else if(oper == tok::TOK_ORD){
+   //add implementation for ord
+   }else if(oper == tok::TOK_CHR){
+   //add implementation for chr
+   }
+   freeRegister(freeReg);
+}
+
+void CodeGenVisitor::visit(NewPair *node, std::string reg) {
+  middle << "  LDR r0, =8\n"
+         << "  BL malloc\n"
+         << "  MOV r4, r0\n";
+  node->fst->accept(this, "r5");
+
+  middle << "  LDR r0, =" << node->fst->type->size() << "\n"
+         << "  BL malloc\n";
+   if (node->fst->type->equals(new CharTypeId)
+         || node->fst->type->equals(new BoolTypeId)) {
+     middle << "  STRB r5, [r0]\n";
+   }
+   else {
+     middle << "  STRB r5, [r0]\n";
+   }
+   middle << "  STR r0, [r4]\n";
+   node->snd->accept(this, "r5");
+   middle << "  LDR r0, =" << node->snd->type->size() << "\n"
+          << "  BL malloc\n";
+   if (node->snd->type->equals(new CharTypeId)
+        || node->snd->type->equals(new BoolTypeId)) {
+     middle << "  STRB r5, [r0]\n";
+   }
+   else {
+     middle << "  STR r5, [r0]\n";
+   }
+   middle << "  STR r0, [r4, #4]\n";
+
+
+
+}
 
 void CodeGenVisitor::p_check_divide_by_zero(void){ 
     if(!p_check_divide_by_zerob){
         end     << "p_check_divide_by_zero:"<< "\n"
-                << "PUSH {lr}" << "\n"
-                << "CMP r1, #0" << "\n"
-                << "LDREQ r0, =msg_"<<messageNum << "\n"
-                << "BLEQ p_throw_runtime_error" << "\n"
-                << "POP {pc}" << "\n";
+                << "  PUSH {lr}" << "\n"
+                << "  CMP r1, #0" << "\n"
+                << "  LDREQ r0, =msg_"<<messageNum << "\n"
+                << "  BLEQ p_throw_runtime_error" << "\n"
+                << "  POP {pc}" << "\n";
         begin   << "msg_"<< messageNum << ":"<< "\n"
-                << ".word 45" << "\n"
-                << ".ascii \" DivideByZeroError : divide or modulo by zero \\n\\0\""<< "\n";
+                << "  .word 45" << "\n"
+                << "  .ascii \" DivideByZeroError : divide or modulo by zero \\n\\0\""<< "\n";
                 messageNum ++ ; 
         p_check_divide_by_zerob = true;
        p_throw_runtime_error();
@@ -490,11 +614,11 @@ void CodeGenVisitor::p_check_divide_by_zero(void){
 void CodeGenVisitor::p_throw_overflow_error(void){
     if(!p_throw_overflow_errorb){
         end     << "p_throw_overflow_error: " << "\n"
-                << "LDR r0, =msg_"<< messageNum<< "\n"
-                << "BL p_throw_runtime_error" << "\n";
+                << "  LDR r0, =msg_"<< messageNum<< "\n"
+                << "  BL p_throw_runtime_error" << "\n";
         begin   << "msg_"<< messageNum << ":"<<"\n"
-                << ".word 82"<< "\n"
-                << ".ascii \"OverflowError: the result is too small/large to store in a 4 byte signed integer \\n\""<<"\n";
+                << "  .word 82"<< "\n"
+                << "  .ascii \"OverflowError: the result is too small/large to store in a 4 byte signed integer \\n\""<<"\n";
         messageNum ++ ; 
         p_throw_overflow_errorb = true;
 
@@ -505,9 +629,9 @@ void CodeGenVisitor::p_throw_overflow_error(void){
 void CodeGenVisitor::p_throw_runtime_error(void){
     if(!p_throw_runtime_errorb){
          end    << "p_throw_run_time_error:" << "\n"
-                << "BL p_print_string"<< "\n"
-                << "MOV r0, #-1" << "\n"
-                << "BL exit"<< "\n";
+                << "  BL p_print_string"<< "\n"
+                << "  MOV r0, #-1" << "\n"
+                << "  BL exit"<< "\n";
         p_throw_runtime_errorb = true; 
     }
 }

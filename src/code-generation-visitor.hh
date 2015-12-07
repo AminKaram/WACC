@@ -29,10 +29,13 @@ public:
   void visit(IfStatement *node);
   void visit(WhileStatement *node);
   void visit(ReadStatement *node);
-  void print(std::string stringToPrint);
   void printMsg(TypeId *type);
   void printlnMsg();
+  void printAssemblyOfPrintString();
+  void printAssemblyOfPrintBool();
+  void printAssemblyOfPrintInt();
   void visit(PrintStatement *node);
+  void printAssemblyOfPrintln();
   void visit(PrintlnStatement *node);
   void visit(SkipStatement *node);
   void visit(Number *node, std::string reg);
@@ -64,14 +67,29 @@ private:
   std::map<std::string, bool> *regTable;
   int labelNum   = 0;
   int messageNum = 0;
+  
   bool p_print_string = false;
+  bool p_print_bool   = false;
+  bool p_print_int    = false;
+  bool p_print_ln     = false;
+  
   bool beginInitialisation = false;
-  int stringMessageNum = -1;
+  
+  int stringMessageNum  = -1;
+  int boolMessageNum    = -1;
   int newlineMessageNum = -1;
+  int intMessageNum     = -1;
+  
+  bool msgInt     = false;
+  bool msgString  = false;
+  bool msgBool    = false;
+  bool msgChar    = false;
+  bool msgNewLine = false;
 
   bool p_throw_overflow_errorb = false;
   bool p_throw_runtime_errorb  = false;
   bool p_check_divide_by_zerob = false;
+  
   void p_throw_runtime_error(void);
   void p_throw_overflow_error(void);
   void p_check_divide_by_zero(void);
