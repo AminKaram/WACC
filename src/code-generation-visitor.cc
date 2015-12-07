@@ -97,10 +97,10 @@ void CodeGenVisitor::visit(VariableDeclaration *node) {
     sizeSoFar += node->table->variables->operator[](i)->type->size();
   }
   if (node->type->equals(new BoolTypeId()) || node->type->equals(new CharTypeId())) {
-    middle << "  STRB r4 [sp, #" << scopeSize-sizeSoFar << "]\n"; 
+    middle << "  STRB r4, [sp, #" << scopeSize-sizeSoFar << "]\n"; 
   }
   else {
-    middle << "  STR r4 [sp, #" << scopeSize-sizeSoFar << "]\n"; 
+    middle << "  STR r4, [sp, #" << scopeSize-sizeSoFar << "]\n"; 
   }
 // effective version of variable dec(USED IN DECLARING MULTIPLE VARIABLE)
 // let x be sum of the memory size of type in each assignment statement for all of 
