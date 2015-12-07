@@ -232,39 +232,47 @@ void CodeGenVisitor::visit(BinaryOperator *node) {
          std:: string secondReg = getAvailableRegister();
 
    if(oper == tok::TOK_LOGOR || oper == tok::TOK_LOGAND){
-         *output << "LDRSB "<< firstReg /* << "[address where first value
-         is stored]" (e.g. [sp])*/ << std::endl; 
-         *output << "LDRSB "<< secondReg /* << "[address where second 
-         value is stored] (e.g. [sp , #1] )" */ << std::endl;
+         *output << "LDRSB "<< firstReg << ", " /* << "[address where
+         first value is stored]" (e.g. [sp])*/ << std::endl; 
+         *output << "LDRSB "<< secondReg <<", " /* << "[address where
+         second value is stored] (e.g. [sp , #1] )" */ << std::endl;
 
       if (oper == tok::TOK_LOGOR){
       //Implementation code-gen for OR 
           
-         *output << "ORR "<< firstReg << " " << firstReg << " " <<secondReg    
+         *output << "ORR "<< firstReg << ", " << firstReg << ", " <<secondReg    
                  << std:: endl
-                 << "MOV R0 " << firstReg;
+                 << "MOV R0, " << firstReg;
     
        } else if (oper == tok::TOK_LOGAND){
       //Implementation code-gen for AND      
-         *output << "AND "<< firstReg << " " << firstReg << " " <<secondReg    
+         *output << "AND "<< firstReg << ", " << firstReg << ", " <<secondReg    
                  << std:: endl
-                 << "MOV R0 " << firstReg;
+                 << "MOV R0, " << firstReg;
       }      
    } else if (oper >= tok::TOK_STAR && oper <= tok::TOK_NOTEQUALS){
    
-             *output << "LDR "<< firstReg /* << "[address where first
-             operand is stored]" (e.g. [sp])*/ << std::endl; 
-             *output << "LDR "<< secondReg /* << "[address where second
-             operand is stored] (e.g. [sp , #4] )" */ << std::endl;
+             *output << "LDR "<< firstReg << ", " /* << "[address where
+             first operand is stored]" (e.g. [sp])*/ << std::endl; 
+             *output << "LDR "<< secondReg << ", "/* << "[address where
+             second operand is stored] (e.g. [sp , #4] )" */ << std::endl;
+           
+           
            if(oper == tok :: TOK_STAR){
               //Implementation code gen for MULTIPLY
 
-             *output << "SMULL "<< firstReg << " " << secondReg << " " 
-             <<firstReg << " " << secondReg << std:: endl
+             *output << "SMULL "<< firstReg << ", " << secondReg << ", " 
+                     << firstReg << ", " << secondReg << std:: endl
                      
-            << "MOV R0 " << firstReg;
+                     << "CMP " << secondReg << ", "<< firstReg << ", "
+                     << "ASR #31" << std::endl
 
-        // Need to add the error code in
+                     << "BLNE p_throw_overflow_error"<< std::endl;
+                     p_throw_overflow_error();
+                     
+             *output << "MOV R0, " << firstReg<<std::endl;
+
+        // Need to add the error code in at the end of the code and put a msg_0 at the start of the code to print the error message
 
 
            } else if (oper == tok::TOK_SLASH){
@@ -362,6 +370,37 @@ void CodeGenVisitor::visit(ArrayLiter *node) {}
 void CodeGenVisitor::visit(NewPair *node) {}
 void CodeGenVisitor::visit(UnaryOperator *node) {}
 
+void CodeGenVisitor::p_throw_overflow_error(void){
+    std::streampos originalPos; 
+    if(!p_throw_overflow_errorb){
+         originalPos = output -> std::ostream::tellp();
+         output -> seekp(0,std::ios_base::end);
+        *output << "p_throw_overflow_error: " << std::endl
+                << "LDR r0, =msg_"<< messageNum<< std::endl
+                << "BL p_throw_runtime_error" << std::endl;
+         output -> seekp(0,std::ios_base::beg);
+        *output << "msg_"<< messageNum++ << ":"<<std::endl
+                << ".word 82"<< std::endl
+                << ".ascii \"OverflowError: the result is too small/large to store in a 4 byte signed integer \""<<std::endl;
+        output -> seekp(originalPos);
+        p_throw_overflow_errorb = true;
+
+        p_throw_runtime_error();
+    }
+}
+
+void CodeGenVisitor::p_throw_runtime_error(void){
+    std::streampos originalPos;
+    if(!p_throw_runtime_errorb){
+         originalPos = output->std::ostream::tellp();
+         output -> std::ostream::seekp(0,std::ios_base::end);
+         *output<< "BL p_print_string"<< std::endl
+                << "MOV r0, #-1" << std::endl
+                << "BL exit"<< std::endl;
+        p_throw_runtime_errorb = true; 
+        output -> std::ostream::seekp(originalPos);
+    }
+}
 void CodeGenVisitor::defineLabel(String label) {}
 
 void CodeGenVisitor::populateRegMap() {
