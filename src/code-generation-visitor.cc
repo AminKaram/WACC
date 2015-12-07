@@ -10,14 +10,7 @@ CodeGenVisitor::CodeGenVisitor(std::ostream* stream) {
 CodeGenVisitor::~CodeGenVisitor() { }
 
 void CodeGenVisitor::visit(Program *node) {
-  // when you prin you should add
-  // msg_0:
-  //  .word 13
-  //  .ascii  "Hello World!\n"
-  // msg_1:
-  //  .word 5
-  //  .ascii  "%.*s\0"
-  middle << ".text" << "\n" << "\n"
+  middle  << ".text" << "\n" << "\n"
           << ".global main" << "\n";
 
   node->functions->accept(this);
@@ -317,7 +310,7 @@ void CodeGenVisitor::printAssemblyOfPrintInt() {
 	end <<
 		"p_print_int: " << "\n" <<
 		"  PUSH {lr}" << "\n" <<
-		"  LDR r1, r0" << "\n" <<
+		"  MOV r1, r0" << "\n" <<
 		"  LDR r0, =msg_" << intMessageNum << "\n" <<
 		"  ADD r0, r0, #4" << "\n" <<
 		"  BL printf" << "\n" <<
