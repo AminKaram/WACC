@@ -33,6 +33,9 @@ public:
   void visit(WhileStatement *node);
   void visit(ReadStatement *node);
   std::string visitAndPrintReg(Expression *node);
+  void CodeGenVisitor::print(IntTypeId type);
+  void CodeGenVisitor::print(StringTypeId type);
+  void CodeGenVisitor::print(CharTypeId type);
   void visit(PrintStatement *node);
   void visit(PrintlnStatement *node);
   void visit(Number *node);
