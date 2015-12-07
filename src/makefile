@@ -22,7 +22,7 @@ front-end.o: front-end.cc front-end.hh parser.o semantic-visitor.o
 astnode.o: astnode.cc astnode.hh
 	g++ -c -g $(CPPFLAGS) -o $@ $<
 
-parsing-driver.o: parsing-driver.cc parsing-driver.hh parser.o
+parsing-driver.o: parsing-driver.cc parsing-driver.hh parser.o 
 	g++ -c -g $(CPPFLAGS) -o $@ $<
 
 semantic-visitor.o: semantic-visitor.cc ast-node-visitor.hh astnode.o semantic-id.o symbol-table.o parser.hh

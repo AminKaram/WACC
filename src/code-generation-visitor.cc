@@ -73,12 +73,6 @@ void CodeGenVisitor::visit(FunctionDecList *node) {
     (node->funcs)[i]->accept(this);
   }
 }
-void CodeGenVisitor::visit(IntegerType *node) {}
-void CodeGenVisitor::visit(BoolType *node) {}
-void CodeGenVisitor::visit(CharType *node) {}
-void CodeGenVisitor::visit(StringType *node) {}
-void CodeGenVisitor::visit(ArrayType *node) {}
-void CodeGenVisitor::visit(PairType *node) {}
 void CodeGenVisitor::visit(VariableDeclaration *node) {
 // simpliest version for implementing variable declaration
   *output<< "SUB sp, sp, #" /*<< typeSize*/ << std::endl

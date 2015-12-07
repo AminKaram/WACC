@@ -61,7 +61,7 @@
 %token <int> INTEGER
 
 
-%type <Type*>                 type base_type array_type pair_type pair_elem_type
+%type <TypeId*>               type base_type array_type pair_type pair_elem_type
 %type <Identifier*>           ident
 %type <StatSeq*>  		        statement_seq	
 %type <Statement *>  		      statement 
@@ -194,7 +194,7 @@ assign_lhs:
 assign_rhs:
     expr
 		{ 
-      $$ = dynamic_cast<AssignRhs*>($1); } 
+      $$ = $1; } 
   | array_liter
 		{ 
       $$ = $1; } 
@@ -251,26 +251,26 @@ type:
 base_type:
     INT
 		{ 
-      $$ = new IntegerType(); }
+      $$ = new IntTypeId(); }
   | BOOL
 		{ 
-      $$ = new BoolType(); }
+      $$ = new BoolTypeId(); }
   | CHAR
 		{ 
-      $$ = new CharType(); }
+      $$ = new CharTypeId(); }
   | STRING
 		{ 
-      $$ = new StringType(); }
+      $$ = new StringTypeId(); }
     ;
 array_type:
   type LSQUARE RSQUARE
 	{ 
-    $$ = new ArrayType($1); }
+    $$ = new ArrayId($1); }
     ;
 pair_type:
   PAIR LPAREN pair_elem_type COMMA pair_elem_type RPAREN
 	{ 
-    $$ = new PairType($3, $5); }
+    $$ = new PairId($3, $5); }
     ;
 pair_elem_type:
     base_type
@@ -281,7 +281,7 @@ pair_elem_type:
       $$ = $1; }
   | PAIR
 		{ 
-       $$ = new PairKeyword(); }
+       $$ = new PairKeyId(); }
     ;
 /* shift/reduce conflict at the ident and array_elem_exp, but handled by default
 shifting */
@@ -403,8 +403,9 @@ array_index:
     ;
 int_liter:
 		int_sign INTEGER
-		 { 
-       $$ = new Number($1 * $2); }
+		 { Number *res  = new Number($1 * $2);
+       res->type = new IntTypeId();
+       $$ = res; }
     ;
 int_sign:
 		/* empty */
@@ -414,26 +415,29 @@ int_sign:
     ;
 bool_liter:
 		TRUE		
-		{ 
-      $$ = new Boolean(true); }
+		{ Boolean *res = new Boolean(true);
+      res->type = new BoolTypeId();
+      $$ = res; }
 	| FALSE
-		{ 
-      $$ = new Boolean(false); }
+		{ Boolean *res = new Boolean(false);
+      res->type = new BoolTypeId();
+      $$ = res; }
     ;
 char_liter:
 		CHARLIT
-		{ 
-      $$ = new Char($1);}
+		{ Char *res = new Char($1);
+      res->type = new CharTypeId();
+      $$ = res; }
     ;
 str_liter:
 		STRINGLIT
-		{ 
-      $$ = new String($1); }
+		{ String *res = new String($1);
+      res->type = new StringTypeId();
+      $$ =res; }
     ;
 array_liter:
 	LSQUARE expr_list RSQUARE
-	{ 
-    $$ = new ArrayLiter($2); }
+	{ $$ = new ArrayLiter($2); }
     ;
 expr_list:
     /* Empty rule for empty list */
@@ -451,8 +455,9 @@ expr_list:
     ;
 pair_liter:
 		NULLTOKEN 
-		{ 
-      $$ = new Null(); }
+		{ Null *res = new Null(); 
+      res->type = new NullId();
+      $$ = res; }
     ;
 %%
 

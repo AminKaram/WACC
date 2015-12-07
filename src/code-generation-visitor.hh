@@ -15,12 +15,6 @@ public:
   void visit(Expression *node);
   void visit(StatSeq *node);
   void visit(FunctionDecList *node);
-  void visit(IntegerType *node);
-  void visit(BoolType *node);
-  void visit(CharType *node);
-  void visit(StringType *node);
-  void visit(ArrayType *node);
-  void visit(PairType *node);
   void visit(VariableDeclaration *node);
   void visit(FunctionDeclaration *node);
   void visit(FunctionCall *node);

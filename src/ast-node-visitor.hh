@@ -16,12 +16,6 @@ public:
   virtual void visit(Expression *node) = 0;
   virtual void visit(StatSeq *node) = 0;
   virtual void visit(FunctionDecList *node) = 0;
-  virtual void visit(IntegerType *node) = 0;
-  virtual void visit(BoolType *node) = 0;
-  virtual void visit(CharType *node) = 0;
-  virtual void visit(StringType *node) = 0;
-  virtual void visit(ArrayType *node) = 0;
-  virtual void visit(PairType *node) = 0;
   virtual void visit(VariableDeclaration *node) = 0;
   virtual void visit(FunctionDeclaration *node) = 0;
   virtual void visit(FunctionCall *node) = 0;

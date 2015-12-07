@@ -1,4 +1,5 @@
 #include "symbol-table.hh"
+#include <iostream>
 
 SymbolTable::SymbolTable(SymbolTable *encScope) : encScope(encScope) {
   dictionary = new std::map<std::string, SemanticId&>();    
@@ -35,7 +36,7 @@ int SymbolTable::add(std::string id, SemanticId& val) {
   if(ret.second) {
     return 0;
   }
-  std::cerr << "semantic error: Redefined variable." << id << std::endl;
+  std::cerr << "semantic error: Redefined variable " << id << std::endl;
   exit(200);
 }
 
