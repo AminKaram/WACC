@@ -93,10 +93,10 @@ void CodeGenVisitor::visit(VariableDeclaration *node) {
 // simpliest version for implementing variable declaration
   node->rhs->accept(this, "r4");
   if (node->type->equals(new BoolTypeId()) || node->type->equals(new CharTypeId())) {
-     middle << "  STRB r4 [sp]" << "\n"; // offset needs to be added to this
+     middle << "  STRB r4, [sp]" << "\n"; // offset needs to be added to this
   }
   else {
-    middle << "  STR r4 [sp]" << "\n"; // offset needs to be added to this
+    middle << "  STR r4, [sp]" << "\n"; // offset needs to be added to this
   }
 // effective version of variable dec(USED IN DECLARING MULTIPLE VARIABLE)
 // let x be sum of the memory size of type in each assignment statement for all of 
@@ -474,15 +474,13 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
     freeRegister(secondReg);
 
 }
-
+void CodeGenVisitor::visit(Identifier *node){}
 void CodeGenVisitor::visit(Identifier *node, std::string reg) {}
-void CodeGenVisitor::visit(Identifier *node) {}
+void CodeGenVisitor::visit(ArrayElem *node){}
 void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {}
-void CodeGenVisitor::visit(ArrayElem *node) {}
+void CodeGenVisitor::visit(PairElem *node){}
 void CodeGenVisitor::visit(PairElem *node, std::string reg) {}
-void CodeGenVisitor::visit(PairElem*node) {}
 void CodeGenVisitor::visit(ArrayLiter *node, std::string reg) {}
-void CodeGenVisitor::visit(NewPair *node, std::string reg) {}
 void CodeGenVisitor::visit(UnaryOperator *node, std::string reg) {
    int oper = node -> op;
    std:: string freeReg = getAvailableRegister();
@@ -504,6 +502,38 @@ void CodeGenVisitor::visit(UnaryOperator *node, std::string reg) {
    //add implementation for chr
    }
    freeRegister(freeReg);
+}
+
+void CodeGenVisitor::visit(NewPair *node, std::string reg) {
+  middle << "  LDR r0, =8\n"
+         << "  BL malloc\n"
+         << "  MOV r4, r0\n";
+  node->fst->accept(this, "r5");
+
+  middle << "  LDR r0, =" << node->fst->type->size() << "\n"
+         << "  BL malloc\n";
+   if (node->fst->type->equals(new CharTypeId)
+         || node->fst->type->equals(new BoolTypeId)) {
+     middle << "  STRB r5, [r0]\n";
+   }
+   else {
+     middle << "  STRB r5, [r0]\n";
+   }
+   middle << "  STR r0, [r4]\n";
+   node->snd->accept(this, "r5");
+   middle << "  LDR r0, =" << node->fst->type->size() << "\n"
+          << "  BL malloc\n";
+   if (node->snd->type->equals(new CharTypeId)
+        || node->snd->type->equals(new BoolTypeId)) {
+     middle << "  STRB r5, [r0]\n";
+   }
+   else {
+     middle << "  STRB r5, [r0]\n";
+   }
+   middle << "  STR r0, [r4,#4]\n";
+
+
+
 }
 
 void CodeGenVisitor::p_check_divide_by_zero(void){ 
