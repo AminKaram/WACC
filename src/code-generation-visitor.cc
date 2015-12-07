@@ -91,10 +91,13 @@ void CodeGenVisitor::visit(FunctionDecList *node) {
 }
 void CodeGenVisitor::visit(VariableDeclaration *node) {
 // simpliest version for implementing variable declaration
-  middle << "MOV r0, #" << "\n";
   node->rhs->accept(this);
-  middle << "STR r0 [sp]" << "\n";
-
+  if (node->type->equals(new BoolTypeId()) || node->type->equals(new CharTypeId())) {
+     middle << "  STRB r4 [sp]" << "\n"; // offset needs to be added to this
+  }
+  else {
+    middle << "  STR r4 [sp]" << "\n"; // offset needs to be added to this
+  }
 // effective version of variable dec(USED IN DECLARING MULTIPLE VARIABLE)
 // let x be sum of the memory size of type in each assignment statement for all of 
 // the statement
@@ -319,8 +322,14 @@ void CodeGenVisitor::visit(Char *node, std::string reg) {
   middle << "  MOV R4, #'" << node->value  << "'" << std::endl;
 }
 
-void CodeGenVisitor::visit(String *node, std::string reg) {}
+void CodeGenVisitor::visit(String *node, std::string reg) {
+  middle << " LDR R4, =msg_" << messageNum << "\n";
+  begin  << "msg_" << messageNum << ":" << "\n"
+         << ".word" << node->  value.length() << "\n"
+         << ".ascii \""<< node-> value << "\""<< "\n";
+}
 void CodeGenVisitor::visit(Null *node, std::string reg) {}
+
 
 void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
    int oper = node -> op;
