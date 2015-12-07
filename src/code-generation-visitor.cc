@@ -107,8 +107,8 @@ void CodeGenVisitor::visit(VariableDeclaration *node) {
 
   
 }
-void CodeGenVisitor::visit(FunctionDeclaration *node) {
-  middle << node->id->id.append("_").append(node->id->id).append(":")
+void CodeGenVisitor::visit(  FunctionDeclaration *node) {
+  middle  << "f_"<< node->id->id << ":"
           << "\n"
           << "  PUSH {lr}" << "\n";
   node->block->accept(this);
@@ -293,13 +293,13 @@ void CodeGenVisitor::visit(PrintlnStatement *node) {
 void CodeGenVisitor::visit(SkipStatement *node) { }
 
 void CodeGenVisitor::visit(Number *node, std::string reg) {
-  *output << "  LDR R4, =" << node->value << std::endl;
+  middle << "  LDR R4, =" << node->value << std::endl;
 }
 void CodeGenVisitor::visit(Boolean *node, std::string reg) {
-  *output << "  MOV R4, #" << node->value << std::endl;
+  middle << "  MOV R4, #" << node->value << std::endl;
 }
 void CodeGenVisitor::visit(Char *node, std::string reg) {
-  *output << "  MOV R4, #'" << node->value  << "'" << std::endl;
+  middle << "  MOV R4, #'" << node->value  << "'" << std::endl;
 }
 
 void CodeGenVisitor::visit(String *node, std::string reg) {}
