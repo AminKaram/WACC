@@ -8,6 +8,9 @@ int main(int argc, char **argv) {
   int res = 0;
   FrontEnd *frontEnd = new FrontEnd();
   res = frontEnd->run(argv[1]);
+  if(res != 0) {
+    return res;
+  }
 
   std::ofstream assemblyOutput;
   std::string argAsString (argv[1]);
@@ -18,8 +21,8 @@ int main(int argc, char **argv) {
 
   BackEnd* backEnd = new BackEnd(&assemblyOutput);
   backEnd->generateCode(frontEnd->getProgram());
-  delete frontEnd;
   assemblyOutput.close();
+  delete frontEnd;
   delete backEnd;
   return res;
 }

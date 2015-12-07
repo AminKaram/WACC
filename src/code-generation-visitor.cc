@@ -113,7 +113,11 @@ void CodeGenVisitor::visit(FunctionDeclaration *node) {
 
 
 }
-void CodeGenVisitor::visit(FunctionCall *node) {}
+
+void CodeGenVisitor::visit(FunctionCall *node) {
+  //*output <<     
+}
+
 void CodeGenVisitor::visit(Assignment *node) {}
 void CodeGenVisitor::visit(FreeStatement *node) {}
 
@@ -430,6 +434,7 @@ std::string CodeGenVisitor::getAvailableRegister() {
 		}
 	}
 	std::cerr << "ERROR. There are no available registers";
+  return "R4";
 }
 
 void CodeGenVisitor::freeRegister(std::string reg) {

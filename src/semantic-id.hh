@@ -15,6 +15,7 @@ public:
   virtual ~TypeId() = 0;
   bool virtual equals(TypeId *other) = 0;
   std::string virtual name() = 0; 
+  int virtual size() = 0;
 };
 
 class IntTypeId : public TypeId {
@@ -22,6 +23,7 @@ public:
   IntTypeId();
   bool equals(TypeId *other);
   std::string name(); 
+  int virtual size();
 };
 
 class BoolTypeId : public TypeId {
@@ -29,6 +31,7 @@ public:
   BoolTypeId();
   bool equals(TypeId *other);
   std::string name(); 
+  int virtual size();
 };
 
 class CharTypeId : public TypeId {
@@ -36,6 +39,7 @@ public:
   CharTypeId();
   bool equals(TypeId *other);
   std::string name(); 
+  int virtual size();
 };
 
 class StringTypeId : public TypeId {
@@ -43,6 +47,7 @@ public:
   StringTypeId();
   bool equals(TypeId *other);
   std::string name(); 
+  int virtual size();
 };
 
 class VariableId : public SemanticId {
@@ -63,6 +68,7 @@ public:
   ArrayId(TypeId *elementType);
   bool equals(TypeId *other);
   std::string name(); 
+  int virtual size();
 };
 
 class PairId : public TypeId {
@@ -72,6 +78,7 @@ public:
   PairId(TypeId *fst, TypeId *snd);
   bool equals(TypeId *other);
   std::string name(); 
+  int virtual size();
 };
 
 class PairKeyId : public PairId {
@@ -79,6 +86,7 @@ public:
   PairKeyId();
   bool equals(TypeId *other);
   std::string name(); 
+  int virtual size();
 };
 
 class FunctionId : public SemanticId {
@@ -93,6 +101,7 @@ public:
   NullId();
   bool equals(TypeId *other);
   std::string name(); 
+  int virtual size();
 };
 
 #endif // ! SEMANTIC_ID_HH
