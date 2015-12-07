@@ -1,86 +1,98 @@
 #ifndef SEMANTIC_ID_HH
 #define SEMANTIC_ID_HH
-
-#include "astnode.hh"
-
-class ASTnode;
+#include <string>
+#include <vector>
 
 class SemanticId {
 public:
-  ASTnode* astnode;
-  SemanticId(ASTnode* astnode);
-  virtual ~SemanticId() {}
+  SemanticId();
+  virtual ~SemanticId() { }
 };
 
 class TypeId : public SemanticId {
 public:
-  std::string name = "type";
-  TypeId(ASTnode* astnode);
-  bool equals(TypeId *other);
+  TypeId();
+  virtual ~TypeId() = 0;
+  bool virtual equals(TypeId *other) = 0;
+  std::string virtual name() = 0; 
 };
 
 class IntTypeId : public TypeId {
 public:
-  IntTypeId(ASTnode* astnode);
+  IntTypeId();
+  bool equals(TypeId *other);
+  std::string name(); 
 };
 
 class BoolTypeId : public TypeId {
 public:
-  BoolTypeId(ASTnode* astnode) : TypeId(astnode) {}
+  BoolTypeId();
+  bool equals(TypeId *other);
+  std::string name(); 
 };
 
 class CharTypeId : public TypeId {
 public:
-  CharTypeId(ASTnode* astnode);
+  CharTypeId();
+  bool equals(TypeId *other);
+  std::string name(); 
 };
 
 class StringTypeId : public TypeId {
 public:
-  StringTypeId(ASTnode* astnode);
+  StringTypeId();
+  bool equals(TypeId *other);
+  std::string name(); 
 };
 
 class VariableId : public SemanticId {
 public:
   TypeId *type;
-  VariableId(ASTnode* astnode, TypeId *type);
+  VariableId(TypeId *type);
 };
 
 class ParamId : public SemanticId {
 public:
   TypeId *type;
-  ParamId(ASTnode* astnode, TypeId *type);
+  ParamId(TypeId *type);
 };
 
 class ArrayId : public TypeId {
 public:
-  TypeId *elementType = new TypeId(NULL);
-  ArrayId(ASTnode* astnode, TypeId *elementType);
-  bool equals(ArrayId *other);
+  TypeId *elementType;
+  ArrayId(TypeId *elementType);
+  bool equals(TypeId *other);
+  std::string name(); 
 };
 
 class PairId : public TypeId {
 public:
   TypeId *fst;
   TypeId *snd;
-  PairId(ASTnode* astnode, TypeId *fst, TypeId *snd);
-  bool equals(PairId *other);
+  PairId(TypeId *fst, TypeId *snd);
+  bool equals(TypeId *other);
+  std::string name(); 
 };
 
-class PairKeyId : public TypeId {
+class PairKeyId : public PairId {
 public:
-  PairKeyId(ASTnode *astnode);
+  PairKeyId();
+  bool equals(TypeId *other);
+  std::string name(); 
 };
 
 class FunctionId : public SemanticId {
 public:
   TypeId *returnType;
   std::vector<ParamId> params;
-  FunctionId(ASTnode* astnode, TypeId *ret, std::vector<ParamId> params);
+  FunctionId(TypeId *ret, std::vector<ParamId> params);
 };
 
 class NullId : public PairId {
 public:
   NullId();
+  bool equals(TypeId *other);
+  std::string name(); 
 };
 
 #endif // ! SEMANTIC_ID_HH
