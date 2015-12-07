@@ -3,6 +3,7 @@
 #include "astnode.hh"
 #include <sstream>
 #include <cstring>
+#include <map>
 
 class CodeGenVisitor {
 public:

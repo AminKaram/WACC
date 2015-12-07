@@ -42,7 +42,8 @@ int SymbolTable::add(std::string id, SemanticId& val) {
 }
 
 int SymbolTable::addVariable(VariableDeclaration *var) {
-  add(var->id->id, *(var->type));
+  VariableId *variable = new VariableId(var->type);
+  add(var->id->id, *variable);
   variables->push_back(var);
 }
 

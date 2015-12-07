@@ -15,11 +15,11 @@ public:
   int add(std::string, SemanticId&);
   int addVariable(VariableDeclaration*);
   SymbolTable* getEncScope();
+  std::vector<VariableDeclaration*> *variables = NULL;
 
 private:
   SymbolTable *encScope = NULL;
   std::map<std::string, SemanticId&> *dictionary = NULL;
-  std::vector<VariableDeclaration*> *variables = NULL;
 };
 
 #endif
