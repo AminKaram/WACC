@@ -2,6 +2,7 @@
 #define CODE_GENERATION_VISITOR_HH
 #include "ast-node-visitor.hh"
 #include <sstream>
+#include <cstring>
 
 class CodeGenVisitor : public AstNodeVisitor {
 public:

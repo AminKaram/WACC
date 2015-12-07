@@ -204,7 +204,12 @@ void CodeGenVisitor::visit(Boolean *node) {
 void CodeGenVisitor::visit(Char *node) {
   middle << "  MOV R4, #'" << node->value  << "'" << "\n";
 }
-void CodeGenVisitor::visit(String *node) {}
+void CodeGenVisitor::visit(String *node) {
+  middle << " LDR R4, =msg_" << messageNum << "\n";
+  begin  << "msg_" << messageNum << ":" << "\n"
+         << ".word" << node->  value.length() << "\n"
+         << ".ascii \""<< node-> value << "\""<< "\n";
+}
 void CodeGenVisitor::visit(Null *node) {}
 
 void CodeGenVisitor::visit(BinaryOperator *node) {
