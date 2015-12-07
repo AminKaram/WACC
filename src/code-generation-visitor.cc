@@ -386,7 +386,7 @@ void CodeGenVisitor::p_throw_runtime_error_overflow(void){
 void CodeGenVisitor::defineLabel(String label) {}
 
 void CodeGenVisitor::populateRegMap() {
-	for (int i = 0; i < MAX_REG_NUMBER - 1; ++i) {
+	for (int i = 4; i < MAX_REG_NUMBER - 1; ++i) {
 		regTable->insert(std::pair <std::string, bool>
 										(std::string("R" + i), true));
 	}
