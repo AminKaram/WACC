@@ -428,7 +428,37 @@ void CodeGenVisitor::visit(Identifier *node, std::string reg) {}
 void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {}
 void CodeGenVisitor::visit(PairElem *node, std::string reg) {}
 void CodeGenVisitor::visit(ArrayLiter *node, std::string reg) {}
-void CodeGenVisitor::visit(NewPair *node, std::string reg) {}
+void CodeGenVisitor::visit(NewPair *node, std::string reg) {
+  middle << "  LDR r0, =8\n"
+         << "  BL malloc\n"
+         << "  MOV r4, r0";
+  node->fst->accept(this, "r4");
+
+  middle << "  LDR r0, =",node->fst->type->size() << "\n"
+         << "  BL malloc\n";
+   if (node->fst->type->equals(new CharTypeId)
+         || node->fst->type->equals(new BoolTypeId)) {
+     middle << "  STRB r5, [r0]\n";
+   }
+   else {
+     middle << "  STRB r5, [r0]\n";
+   }
+   middle << "  STR r0, [r4]";
+
+   middle << "  LDR r0, =",node->fst->type->size() << "\n"
+        << "  BL malloc\n";
+   if (node->snd->type->equals(new CharTypeId)
+        || node->snd->type->equals(new BoolTypeId)) {
+     middle << "  STRB r5, [r0]\n";
+   }
+   else {
+     middle << "  STRB r5, [r0]\n";
+   }
+   middle << "STR r0, [r4,#4]";
+
+
+
+}
 void CodeGenVisitor::visit(UnaryOperator *node, std::string reg) {}
 
 void CodeGenVisitor::p_check_divide_by_zero(void){ 
