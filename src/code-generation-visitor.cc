@@ -113,7 +113,11 @@ void CodeGenVisitor::visit(FunctionDeclaration *node) {
 
 
 }
-void CodeGenVisitor::visit(FunctionCall *node) {}
+
+void CodeGenVisitor::visit(FunctionCall *node) {
+  //*output <<     
+}
+
 void CodeGenVisitor::visit(Assignment *node) {}
 void CodeGenVisitor::visit(FreeStatement *node) {}
 
@@ -270,19 +274,22 @@ void CodeGenVisitor::visit(BinaryOperator *node) {
                      
 
            } else if (oper == tok::TOK_SLASH){
-                
-
+               //Implementation code gen for DIVIDE
+               *output << "MOV R0, "<< firstReg  << std::endl
+                       << "MOV R1, "<< secondReg << std::endl
+                       << "BL p_checkdivide_by_zero"<< std::endl;
+               p_check_divide_by_zero();
+               *output << "BL __aeabi_idiv"<< std::endl;
         
-
-        // not sure about the following assembly code from here
-        // Need to add the error code in
-
 
            } else if (oper == tok::TOK_MODULO){
          //Implementation code-gen for MODULO 
-        // not sure about the following assembly code from here
-        // Need to add the error code in
 
+               *output << "MOV R0, "<< firstReg  << std::endl
+                       << "MOV R1, "<< secondReg << std::endl
+                       << "BL p_checkdivide_by_zero"<< std::endl;
+               p_check_divide_by_zero();
+               *output << "BL __aeabi_idivmod"<< std::endl;
            } else if (oper == tok::TOK_PLUS){
         // Implementation code-gen for PLUS 
              *output << "ADDS "<< firstReg <<", "<< firstReg <<", "
@@ -348,6 +355,24 @@ void CodeGenVisitor::visit(ArrayLiter *node) {}
 void CodeGenVisitor::visit(NewPair *node) {}
 void CodeGenVisitor::visit(UnaryOperator *node) {}
 
+void CodeGenVisitor::p_check_divide_by_zero(void){
+    std::streampos originalPos;
+    if(!p_check_divide_by_zerob){
+        originalPos = output -> std::ostream::tellp();
+        *output << "PUSH {lr}" << std::endl
+                << "CMP r1, #0" << std::endl
+                << "LDREQ r0, =msg_"<<messageNum << std::endl;
+        output -> seekp(6,std::ios_base::beg);
+        *output << "msg_"<< messageNum << ":"<< std::endl
+                << ".word 45" << std::endl
+                << ".ascii \" DivideByZeroError : divide or modulo by zero \\n\\0\""<< std::endl;
+        output -> seekp(originalPos); 
+        *output << "BLEQ p_throw_runtime_error" << std::endl;
+        p_throw_runtime_error();
+        *output << "POP {pc}" << std::endl;
+    }
+}
+
 void CodeGenVisitor::p_throw_overflow_error(void){
     std::streampos originalPos; 
     if(!p_throw_overflow_errorb){
@@ -359,15 +384,15 @@ void CodeGenVisitor::p_throw_overflow_error(void){
          output -> seekp(6,std::ios_base::beg);
         *output << "msg_"<< messageNum++ << ":"<<std::endl
                 << ".word 82"<< std::endl
-                << ".ascii \"OverflowError: the result is too small/large to store in a 4 byte signed integer \""<<std::endl;
+                << ".ascii \"OverflowError: the result is too small/large to store in a 4 byte signed integer \\n\""<<std::endl;
         output -> seekp(originalPos);
         p_throw_overflow_errorb = true;
 
-        p_throw_runtime_error_overflow();
+        p_throw_runtime_error();
     }
 }
 
-void CodeGenVisitor::p_throw_runtime_error_overflow(void){
+void CodeGenVisitor::p_throw_runtime_error(void){
     std::streampos originalPos;
     if(!p_throw_runtime_errorb){
          originalPos = output->std::ostream::tellp();
@@ -396,6 +421,7 @@ std::string CodeGenVisitor::getAvailableRegister() {
 		}
 	}
 	std::cerr << "ERROR. There are no available registers";
+  return "R4";
 }
 
 void CodeGenVisitor::freeRegister(std::string reg) {
