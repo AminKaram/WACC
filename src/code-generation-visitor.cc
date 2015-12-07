@@ -214,15 +214,6 @@ void CodeGenVisitor::printMsg(TypeId *type) {
     BoolTypeId *boolTypeId     = dynamic_cast<BoolTypeId*> (type);
     CharTypeId *charTypeId     = dynamic_cast<CharTypeId*> (type);
     
-    bool isInt    = false;
-    bool isString = false;
-    bool isBool   = false;
-    bool isChar   = false;
-    
-    if (intTypeId)    isInt    = true;
-    if (stringTypeId) isString = true;
-    if (boolTypeId)   isBool   = true;
-    if (charTypeId)   isChar   = true;
     
     if (!beginInitialisation) {
 		beginInitialisation = true;
@@ -231,58 +222,108 @@ void CodeGenVisitor::printMsg(TypeId *type) {
 					<< "\n";
     }
     
-    if (isChar) {
+    if (charTypeId) {
 		middle <<
 				"  BL putchar" << "\n";
-	} else if(isString) {
+	} else if(stringTypeId) {
 		middle <<
 				"  BL p_print_string" << "\n";
-		begin << 
-             "msg_" << messageNum << ":" << std::endl <<
-             "  .word 5" << std::endl <<
-             "  .ascii  \"%.*s\\0\"" << std::endl;
+		if (!msgString) {
+			msgString  = true;
+			begin << 
+				 "msg_" << messageNum << ":" << std::endl <<
+				 "  .word 5" << std::endl <<
+				 "  .ascii  \"%.*s\\0\"" << std::endl;
+		 }
              
         stringMessageNum = messageNum;
 		messageNum++;
-	} else if(isInt) {
-		begin << 
-             "msg_" << messageNum << ":" << std::endl <<
-             "  .word 3" << std::endl <<
-             "  .ascii  \"%d\\0\"" << std::endl;
-             
-		messageNum++;
-	} else if(isBool) {
-		begin << 
-             "msg_" << messageNum << ":" << std::endl <<
-             "  .word 5" << std::endl <<
-             "  .ascii  \"true\\0\"" << std::endl;
-		begin << 
-             "msg_" << messageNum << ":" << std::endl <<
-             "  .word 6" << std::endl <<
-             "  .ascii  \"false\\0\"" << std::endl;
-             
-		messageNum++;
+	} else if(intTypeId) {
+		middle <<
+				"  BL p_print_int" << "\n";
+		if (!msgInt) {
+			msgInt = true;
+			begin << 
+				 "msg_" << messageNum << ":" << std::endl <<
+				 "  .word 3" << std::endl <<
+				 "  .ascii  \"%d\\0\"" << std::endl;
+		 }
+		 intMessageNum = messageNum;
+		 messageNum++;
+	} else if(boolTypeId) {
+		middle <<
+				"  BL p_print_bool" << "\n";
+		if (!msgBool) {
+			msgBool = true;
+			begin << 
+				 "msg_" << messageNum << ":" << std::endl <<
+				 "  .word 5" << std::endl <<
+				 "  .ascii \"true\\0\"" << std::endl;
+			begin << 
+				 "msg_" << messageNum + 1 << ":" << std::endl <<
+				 "  .word 6" << std::endl <<
+				 "  .ascii \"false\\0\"" << std::endl;
+		 }
+		 boolMessageNum = messageNum;
+		 messageNum+=2;
 	}
 }
 
 void CodeGenVisitor::printlnMsg() {
 	middle <<
 		  "  BL p_print_ln" << "\n";
-	begin << 
-		 "msg_" << messageNum << ":" << std::endl <<
-		 "  .word 1" << std::endl <<
-         "  .ascii  \"\\0\"" << std::endl;
+	if (!msgNewLine) {
+		msgNewLine = true;
+		begin << 
+			 "msg_" << messageNum << ":" << std::endl <<
+			 "  .word 1" << std::endl <<
+			 "  .ascii  \"\\0\"" << std::endl;
+	 }
              
     newlineMessageNum = messageNum;     
 	messageNum++;
 }
 
-void CodeGenVisitor::print(std::string stringToPrint) {
-	begin << 
-		 "msg_" << messageNum << ":" << std::endl <<
-	     "  .word " << stringToPrint.size() << std::endl <<
-	     "  .ascii " << stringToPrint << std::endl;
-    messageNum++;
+
+void CodeGenVisitor::printAssemblyOfPrintString() {
+	end <<
+		"p_print_string: " << "\n" <<
+		"  PUSH {lr}" << "\n" <<
+		"  LDR r1, [r0]" << "\n" <<
+		"  ADD r2, r0, #4" << "\n" <<
+		"  LDR r0, =msg_" << stringMessageNum << "\n" <<
+		"  ADD r0, r0, #4" << "\n" <<
+		"  BL printf" << "\n" <<
+		"  MOV r0, #0" << "\n" <<
+		"  BL fflush" << "\n" <<
+		"  POP {pc}" << "\n";
+}
+
+void CodeGenVisitor::printAssemblyOfPrintBool() {
+	end <<
+		"p_print_bool: " << "\n" <<
+		"  PUSH {lr}" << "\n" <<
+		"  CMP r0, #0" << "\n" <<
+		"  LDRNE r0, =msg_" << boolMessageNum     << "\n" <<
+		"  LDREQ r0, =msg_" << boolMessageNum + 1 << "\n" <<
+		"  ADD r0, r0, #4" << "\n" <<
+		"  BL printf" << "\n" <<
+		"  MOV r0, #0" << "\n" <<
+		"  BL fflush" << "\n" <<
+		"  POP {pc}" << "\n";
+}
+
+void CodeGenVisitor::printAssemblyOfPrintInt() {
+	end <<
+		"p_print_int: " << "\n" <<
+		"  PUSH {lr}" << "\n" <<
+		"  LDR r1, r0" << "\n" <<
+		"  LDR r0, =msg_" << intMessageNum << "\n" <<
+		"  ADD r0, r0, #4" << "\n" <<
+		"  BL printf" << "\n" <<
+		"  MOV r0, #0" << "\n" <<
+		"  BL fflush" << "\n" <<
+		"  POP {pc}" << "\n";
 }
 
 void CodeGenVisitor::visit(PrintStatement *node) {
@@ -291,52 +332,54 @@ void CodeGenVisitor::visit(PrintStatement *node) {
     TypeId *type = node->expr->type;
 
 	printMsg(type);
-    print(stringToPrint);
-	std::cout<< "Fuck you bitch!!!" << std::endl;
-	if (!p_print_string){
+    
+	if (!p_print_string && type->equals(new StringTypeId())) {
 		p_print_string = true;
-		std::cout<< " in if!!!" << std::endl;
-		
-		end <<
-			"p_print_string: " << "\n" <<
-			"  PUSH {lr}" << "\n" <<
-			"  LDR r1, [r0]" << "\n" <<
-			"  ADD r2, r0, #4" << "\n" <<
-			"  LDR r0, =msg_" << stringMessageNum << "\n" <<
-			"  ADD r0, r0, #4" << "\n" <<
-			"  BL printf" << "\n" <<
-			"  MOV r0, #0" << "\n" <<
-			"  BL fflush" << "\n" <<
-			"  POP {pc}" << "\n";
+		printAssemblyOfPrintString();
+	} else if (!p_print_bool && type->equals(new BoolTypeId())) {
+			p_print_bool = true;
+			printAssemblyOfPrintBool();
+	} else if (!p_print_int && type->equals(new IntTypeId())) {
+			p_print_int = true;
+			printAssemblyOfPrintInt();
 	}
 }
 
-void CodeGenVisitor::visit(PrintlnStatement *node) {
-  node->expr->accept(this, "r0");
 
-  printlnMsg();
-		
-  end <<
-        "p_print_string: " << "\n" <<
-        "  PUSH {lr}" << "\n" <<
-		"  LDR r1, [r0]" << "\n" <<
-		"  ADD r2, r0, #4" << "\n" <<
-		"  LDR r0, =msg_" << stringMessageNum << "\n" <<
-		"  ADD r0, r0, #4" << "\n" <<
-		"  BL printf" << "\n" <<
-        "  MOV r0, #0" << "\n" <<
-        "  BL fflush" << "\n" <<
-        "  POP {pc}" << "\n";
-  end <<
-      "p_print_ln: " << "\n" <<
-      "  PUSH {lr}" << "\n" <<
-      "  LDR r0, =msg_" << newlineMessageNum << "\n" <<
-      "  ADD r0, r0, #4" << "\n" <<
-      "  BL puts" << "\n" <<
-      "  ADD r0, r0, #4" << "\n" <<
-      "  MOV r0, #0" << "\n" <<
-      "  BL fflush" << "\n" <<
-      "  POP {pc}" << "\n";
+void CodeGenVisitor::printAssemblyOfPrintln() {
+	end <<
+		  "p_print_ln: " << "\n" <<
+		  "  PUSH {lr}" << "\n" <<
+		  "  LDR r0, =msg_" << newlineMessageNum << "\n" <<
+		  "  ADD r0, r0, #4" << "\n" <<
+		  "  BL puts" << "\n" <<
+		  "  ADD r0, r0, #4" << "\n" <<
+		  "  MOV r0, #0" << "\n" <<
+		  "  BL fflush" << "\n" <<
+		  "  POP {pc}" << "\n";
+}
+
+void CodeGenVisitor::visit(PrintlnStatement *node) {
+	node->expr->accept(this, "r0");
+	TypeId *type = node->expr->type;
+	
+	printMsg(type);
+	printlnMsg();
+	
+	if(!p_print_ln) {	
+		p_print_ln = true;
+		if (!p_print_string && type->equals(new StringTypeId())) {
+			p_print_string = true;
+			printAssemblyOfPrintString();
+		} else if (!p_print_bool && type->equals(new BoolTypeId())) {
+			p_print_bool = true;
+			printAssemblyOfPrintBool();
+		} else if (!p_print_int && type->equals(new IntTypeId())) {
+			p_print_int = true;
+			printAssemblyOfPrintInt();
+	}
+	 printAssemblyOfPrintln();
+	}
 }
 
 void CodeGenVisitor::visit(SkipStatement *node) { }
@@ -352,10 +395,18 @@ void CodeGenVisitor::visit(Char *node, std::string reg) {
 }
 
 void CodeGenVisitor::visit(String *node, std::string reg) {
-  middle << " LDR " << reg << ", =msg_" << messageNum << "\n";
+  if (!beginInitialisation) {
+		beginInitialisation = true;
+		begin << 
+			".data" << "\n"
+					<< "\n";
+  }
+  middle << "  LDR " << reg << ", =msg_" << messageNum << "\n";
   begin  << "msg_" << messageNum << ":" << "\n"
-         << ".word" << node->  value.length() << "\n"
-         << ".ascii \""<< node-> value << "\""<< "\n";
+         << "  .word" << node->  value.length() << "\n"
+         << "  .ascii " << node-> value << "\n";
+  messageNum++;
+         
 }
 void CodeGenVisitor::visit(Null *node, std::string reg) {}
 
