@@ -21,7 +21,7 @@ void CodeGenVisitor::visit(Program *node) {
   }
   middle << "main:"       << "\n"
          << "  PUSH {lr}\n"
-         << "  SUB, sp, sp, #" << scopeSize << "\n";
+         << "  SUB sp, sp, #" << scopeSize << "\n";
 
   node->statements->accept(this);
   middle << "  LDR R0, =0" << "\n"
