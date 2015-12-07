@@ -332,55 +332,47 @@ void CodeGenVisitor::visit(ArrayLiter *node) {}
 void CodeGenVisitor::visit(NewPair *node) {}
 void CodeGenVisitor::visit(UnaryOperator *node) {}
 
-void CodeGenVisitor::p_check_divide_by_zero(void){ }/*
-    std::streampos originalPos;
+void CodeGenVisitor::p_check_divide_by_zero(void){ 
     if(!p_check_divide_by_zerob){
-        originalPos = middle -> std::ostream::tellp();
-        middle << "PUSH {lr}" << "\n"
+        end     << "p_check_divide_by_zero:"<< "\n"
+                << "PUSH {lr}" << "\n"
                 << "CMP r1, #0" << "\n"
-                << "LDREQ r0, =msg_"<<messageNum << "\n";
-        middle -> seekp(6,std::ios_base::beg);
-        middle << "msg_"<< messageNum << ":"<< "\n"
+                << "LDREQ r0, =msg_"<<messageNum << "\n"
+                << "BLEQ p_throw_runtime_error" << "\n"
+                << "POP {pc}" << "\n";
+        begin   << "msg_"<< messageNum << ":"<< "\n"
                 << ".word 45" << "\n"
                 << ".ascii \" DivideByZeroError : divide or modulo by zero \\n\\0\""<< "\n";
-        middle -> seekp(originalPos);
-        middle << "BLEQ p_throw_runtime_error" << "\n";
-        p_throw_runtime_error();
-        middle << "POP {pc}" << "\n";
+                messageNum ++ ; 
+        p_check_divide_by_zerob = true;
+       p_throw_runtime_error();
     }
-}*/
+}
 
-void CodeGenVisitor::p_throw_overflow_error(void){}
-   /* std::streampos originalPos;
+void CodeGenVisitor::p_throw_overflow_error(void){
     if(!p_throw_overflow_errorb){
-         originalPos = middle -> std::ostream::tellp();
-         middle -> seekp(0,std::ios_base::end);
-        middle << "p_throw_overflow_error: " << "\n"
+        end     << "p_throw_overflow_error: " << "\n"
                 << "LDR r0, =msg_"<< messageNum<< "\n"
                 << "BL p_throw_runtime_error" << "\n";
-         middle -> seekp(6,std::ios_base::beg);
-        middle << "msg_"<< messageNum++ << ":"<<"\n"
+        begin   << "msg_"<< messageNum << ":"<<"\n"
                 << ".word 82"<< "\n"
                 << ".ascii \"OverflowError: the result is too small/large to store in a 4 byte signed integer \\n\""<<"\n";
-        middle -> seekp(originalPos);
+        messageNum ++ ; 
         p_throw_overflow_errorb = true;
 
-        p_throw_runtime_error();*/
-  //  }
-//}
+        p_throw_runtime_error();
+    }
+}
 
-void CodeGenVisitor::p_throw_runtime_error(void){}
-    /*std::streampos originalPos;
+void CodeGenVisitor::p_throw_runtime_error(void){
     if(!p_throw_runtime_errorb){
-         originalPos = middle->std::ostream::tellp();
-         middle -> std::ostream::seekp(0,std::ios_base::end);
-         middle<< "BL p_print_string"<< "\n"
+         end    << "p_throw_run_time_error:" << "\n"
+                << "BL p_print_string"<< "\n"
                 << "MOV r0, #-1" << "\n"
                 << "BL exit"<< "\n";
         p_throw_runtime_errorb = true; 
-        middle -> std::ostream::seekp(originalPos);
     }
-}*/
+}
 void CodeGenVisitor::defineLabel(String label) {}
 
 void CodeGenVisitor::populateRegMap() {
