@@ -1,5 +1,10 @@
 #include "astnode.hh"
-#include "ast-node-visitor.hh"
+#include "semantic-visitor.hh"
+#include "code-generation-visitor.hh"
+
+ASTnode::~ASTnode() { };
+void ASTnode::accept(SemanticVisitor *visitor) { };
+void ASTnode::accept(CodeGenVisitor *visitor) { };
 
 Program::Program(FunctionDecList* fs, StatSeq* stats) : functions(fs), statements(stats) { }
 Program::~Program() { freePtr(functions); freePtr(statements); }
@@ -195,37 +200,66 @@ std::string AssignLhs::getId() {
  return NULL;
 }
 
-void ASTnode::accept(AstNodeVisitor *visitor) { visitor->visit(this); }
-void Program::accept(AstNodeVisitor *visitor) { visitor->visit(this); }
-void AssignRhs::accept(AstNodeVisitor *visitor) { visitor->visit(this); }
-void AssignLhs::accept(AstNodeVisitor *visitor) { visitor->visit(this); }
-void Expression::accept(AstNodeVisitor *visitor) { visitor->visit(this); }
-void StatSeq::accept(AstNodeVisitor *visitor) { visitor->visit(this); }
-void FunctionDecList::accept(AstNodeVisitor *visitor) { visitor->visit(this); }
-void VariableDeclaration::accept(AstNodeVisitor *visitor) { visitor->visit(this); }
-void FunctionDeclaration::accept(AstNodeVisitor *visitor) { visitor->visit(this); }
-void FunctionCall::accept(AstNodeVisitor *visitor) { visitor->visit(this); }
-void Assignment::accept(AstNodeVisitor *visitor) { visitor->visit(this); }
-void FreeStatement::accept(AstNodeVisitor *visitor) { visitor->visit(this); }
-void ReturnStatement::accept(AstNodeVisitor *visitor) { visitor->visit(this); }
-void ExitStatement::accept(AstNodeVisitor *visitor) { visitor->visit(this); }
-void BeginStatement::accept(AstNodeVisitor *visitor) { visitor->visit(this); }
-void IfStatement::accept(AstNodeVisitor *visitor) { visitor->visit(this); }
-void WhileStatement::accept(AstNodeVisitor *visitor) { visitor->visit(this); }
-void ReadStatement::accept(AstNodeVisitor *visitor) { visitor->visit(this); }
-void PrintStatement::accept(AstNodeVisitor *visitor) { visitor->visit(this); }
-void PrintlnStatement::accept(AstNodeVisitor *visitor) { visitor->visit(this); }
-void Number::accept(AstNodeVisitor *visitor) { visitor->visit(this); }
-void Boolean::accept(AstNodeVisitor *visitor) { visitor->visit(this); }
-void Char::accept(AstNodeVisitor *visitor) { visitor->visit(this); }
-void String::accept(AstNodeVisitor *visitor) { visitor->visit(this); }
-void Null::accept(AstNodeVisitor *visitor) { visitor->visit(this); }
-void BinaryOperator::accept(AstNodeVisitor *visitor) { visitor->visit(this); }
-void Identifier::accept(AstNodeVisitor *visitor) { visitor->visit(this); }
-void ArrayElem::accept(AstNodeVisitor *visitor) { visitor->visit(this); }
-void PairElem::accept(AstNodeVisitor *visitor) { visitor->visit(this); }
-void ArrayLiter::accept(AstNodeVisitor *visitor) { visitor->visit(this); }
-void NewPair::accept(AstNodeVisitor *visitor) { visitor->visit(this); }
-void UnaryOperator::accept(AstNodeVisitor *visitor) { visitor->visit(this); }
-void SkipStatement::accept(AstNodeVisitor *visitor) { visitor->visit(this); }
+//void ASTnode::accept(SemanticVisitor *visitor) { visitor->visit(this); }
+void Program::accept(SemanticVisitor *visitor) { visitor->visit(this); }
+void Program::accept(CodeGenVisitor *visitor) { visitor->visit(this); }
+//void AssignRhs::accept(SemanticVisitor *visitor) { visitor->visit(this); }
+//void AssignLhs::accept(SemanticVisitor *visitor) { visitor->visit(this); }
+//void Expression::accept(SemanticVisitor *visitor) { visitor->visit(this); }
+void StatSeq::accept(SemanticVisitor *visitor) { visitor->visit(this); }
+void StatSeq::accept(CodeGenVisitor *visitor) { visitor->visit(this); }
+void FunctionDecList::accept(SemanticVisitor *visitor) { visitor->visit(this); }
+void FunctionDecList::accept(CodeGenVisitor *visitor) { visitor->visit(this); }
+void VariableDeclaration::accept(SemanticVisitor *visitor) { visitor->visit(this); }
+void VariableDeclaration::accept(CodeGenVisitor *visitor) { visitor->visit(this); }
+void FunctionDeclaration::accept(SemanticVisitor *visitor) { visitor->visit(this); }
+void FunctionDeclaration::accept(CodeGenVisitor *visitor) { visitor->visit(this); }
+void FunctionCall::accept(SemanticVisitor *visitor) { visitor->visit(this); }
+void FunctionCall::accept(CodeGenVisitor *visitor, std::string reg) { visitor->visit(this, reg); }
+void Assignment::accept(SemanticVisitor *visitor) { visitor->visit(this); }
+void Assignment::accept(CodeGenVisitor *visitor) { visitor->visit(this); }
+void FreeStatement::accept(SemanticVisitor *visitor) { visitor->visit(this); }
+void FreeStatement::accept(CodeGenVisitor *visitor) { visitor->visit(this); }
+void ReturnStatement::accept(SemanticVisitor *visitor) { visitor->visit(this); }
+void ReturnStatement::accept(CodeGenVisitor *visitor) { visitor->visit(this); }
+void ExitStatement::accept(SemanticVisitor *visitor) { visitor->visit(this); }
+void ExitStatement::accept(CodeGenVisitor *visitor) { visitor->visit(this); }
+void BeginStatement::accept(SemanticVisitor *visitor) { visitor->visit(this); }
+void BeginStatement::accept(CodeGenVisitor *visitor) { visitor->visit(this); }
+void IfStatement::accept(SemanticVisitor *visitor) { visitor->visit(this); }
+void IfStatement::accept(CodeGenVisitor *visitor) { visitor->visit(this); }
+void WhileStatement::accept(SemanticVisitor *visitor) { visitor->visit(this); }
+void WhileStatement::accept(CodeGenVisitor *visitor) { visitor->visit(this); }
+void ReadStatement::accept(SemanticVisitor *visitor) { visitor->visit(this); }
+void ReadStatement::accept(CodeGenVisitor *visitor) { visitor->visit(this); }
+void PrintStatement::accept(SemanticVisitor *visitor) { visitor->visit(this); }
+void PrintStatement::accept(CodeGenVisitor *visitor) { visitor->visit(this); }
+void PrintlnStatement::accept(SemanticVisitor *visitor) { visitor->visit(this); }
+void PrintlnStatement::accept(CodeGenVisitor *visitor) { visitor->visit(this); }
+void Number::accept(SemanticVisitor *visitor) { visitor->visit(this); }
+void Number::accept(CodeGenVisitor *visitor, std::string reg) { visitor->visit(this, reg); }
+void Boolean::accept(SemanticVisitor *visitor) { visitor->visit(this); }
+void Boolean::accept(CodeGenVisitor *visitor, std::string reg) { visitor->visit(this, reg); }
+void Char::accept(SemanticVisitor *visitor) { visitor->visit(this); }
+void Char::accept(CodeGenVisitor *visitor, std::string reg) { visitor->visit(this, reg); }
+void String::accept(SemanticVisitor *visitor) { visitor->visit(this); }
+void String::accept(CodeGenVisitor *visitor, std::string reg) { visitor->visit(this, reg); }
+void Null::accept(SemanticVisitor *visitor) { visitor->visit(this); }
+void Null::accept(CodeGenVisitor *visitor, std::string reg) { visitor->visit(this, reg); }
+void BinaryOperator::accept(SemanticVisitor *visitor) { visitor->visit(this); }
+void BinaryOperator::accept(CodeGenVisitor *visitor, std::string reg) { visitor->visit(this, reg); }
+void Identifier::accept(SemanticVisitor *visitor) { visitor->visit(this); }
+void Identifier::accept(CodeGenVisitor *visitor, std::string reg) { visitor->visit(this, reg); }
+void ArrayElem::accept(SemanticVisitor *visitor) { visitor->visit(this); }
+void ArrayElem::accept(CodeGenVisitor *visitor, std::string reg) { visitor->visit(this, reg); }
+void PairElem::accept(SemanticVisitor *visitor) { visitor->visit(this); }
+void PairElem::accept(CodeGenVisitor *visitor, std::string reg) { visitor->visit(this, reg); }
+void ArrayLiter::accept(SemanticVisitor *visitor) { visitor->visit(this); }
+void ArrayLiter::accept(CodeGenVisitor *visitor, std::string reg) { visitor->visit(this, reg); }
+void NewPair::accept(SemanticVisitor *visitor) { visitor->visit(this); }
+void NewPair::accept(CodeGenVisitor *visitor, std::string reg) { visitor->visit(this, reg); }
+void UnaryOperator::accept(SemanticVisitor *visitor) { visitor->visit(this); }
+void UnaryOperator::accept(CodeGenVisitor *visitor, std::string reg) { visitor->visit(this, reg); }
+void SkipStatement::accept(SemanticVisitor *visitor) { visitor->visit(this); }
+void SkipStatement::accept(CodeGenVisitor *visitor) { visitor->visit(this); }
 

@@ -13,6 +13,9 @@ bool IntTypeId::equals(TypeId *other) {
 std::string IntTypeId::name() {
   return std::string("int");
 }
+int IntTypeId::size() {
+  return 4;
+}
 
 BoolTypeId::BoolTypeId() : TypeId() {}
 bool BoolTypeId::equals(TypeId *other) {
@@ -22,6 +25,9 @@ bool BoolTypeId::equals(TypeId *other) {
 std::string BoolTypeId::name() {
   return std::string("bool");
 }
+int BoolTypeId::size() {
+  return 1;
+}
 
 CharTypeId::CharTypeId() : TypeId() {}
 bool CharTypeId::equals(TypeId *other) {
@@ -30,6 +36,9 @@ bool CharTypeId::equals(TypeId *other) {
 }
 std::string CharTypeId::name() {
   return std::string("char");
+}
+int CharTypeId::size() {
+  return 1;
 }
 
 StringTypeId::StringTypeId() : TypeId() {}
@@ -45,6 +54,9 @@ bool StringTypeId::equals(TypeId *other) {
 }
 std::string StringTypeId::name() {
   return std::string("string");
+}
+int StringTypeId::size() {
+  return 4;
 }
 
 VariableId::VariableId(TypeId *type) : SemanticId(), type(type){}
@@ -66,6 +78,9 @@ bool ArrayId::equals(TypeId *other) {
 std::string ArrayId::name() {
   return std::string (elementType->name() + "[]");
 }
+int ArrayId::size() {
+  return 4;
+}
 
 PairId::PairId(TypeId *fst, TypeId *snd) : TypeId(), fst(fst), snd(snd) {}
 bool PairId::equals(TypeId *other) {
@@ -83,6 +98,9 @@ bool PairId::equals(TypeId *other) {
 std::string PairId::name() {
   return std::string("(" + fst->name() + ", " + snd->name() + ")");
 }
+int PairId::size() {
+  return 4;
+}
 
 PairKeyId::PairKeyId() : PairId(NULL, NULL) { }
 bool PairKeyId::equals(TypeId *other) {
@@ -91,6 +109,9 @@ bool PairKeyId::equals(TypeId *other) {
 }
 std::string PairKeyId::name() {
   return std::string("pair");
+}
+int PairKeyId::size() {
+  return 4;
 }
 
 FunctionId::FunctionId(TypeId *ret, std::vector<ParamId> params)
@@ -103,4 +124,7 @@ bool NullId::equals(TypeId* other) {
 }
 std::string NullId::name() {
   return std::string("null");
+}
+int NullId::size() {
+  return 4;
 }
