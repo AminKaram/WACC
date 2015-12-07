@@ -94,8 +94,8 @@ public:
   
   FunctionDeclaration(TypeId *type, Identifier *id, StatSeq *block);
 
-  FunctionDeclaration(TypeId *type, Identifier *id, 
-      VariableList *parameters, StatSeq *block);
+  FunctionDeclaration(TypeId *type, Identifier *id, VariableList *parameters,
+                      StatSeq *block);
 
   ~FunctionDeclaration(); 
 

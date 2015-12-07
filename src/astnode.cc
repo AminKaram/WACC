@@ -184,7 +184,6 @@ std::string Identifier::getId() {
   return id;
 }
 
-
 std::string AssignLhs::getId() {
  ArrayElem *arr = dynamic_cast<ArrayElem*>(this);
  Identifier *ident = dynamic_cast<Identifier*>(this);
