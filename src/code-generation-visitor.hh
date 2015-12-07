@@ -58,8 +58,10 @@ private:
   int messageNum = 0;
   bool p_throw_overflow_errorb = false;
   bool p_throw_runtime_errorb  = false;
+  bool p_check_divide_by_zerob = false;
   void p_throw_runtime_error(void);
   void p_throw_overflow_error(void);
+  void p_check_divide_by_zero(void);
 };
 
 
