@@ -36,7 +36,17 @@ void CodeGenVisitor::visit(Program *node) {
 
 }
 
-void CodeGenVisitor::visit(AssignRhs *node) {}
+void CodeGenVisitor::visit(AssignRhs *node) {
+  ArrayLiter *arrayLiter = dynamic_cast<ArrayLiter*>(node);
+  NewPair *newPair       = dynamic_cast<NewPair*>(node);
+  Expression *expr       = dynamic_cast<Expression*>(node);
+  PairElem *pairElem     = dynamic_cast<PairElem*>(node);
+
+  if(arrayLiter) arrayLiter->accept(this);
+  if(newPair) newPair->accept(this);
+  if(expr) expr->accept(this);
+  if(pairElem) pairElem->accept(this);
+}
 void CodeGenVisitor::visit(AssignLhs *node) {}
 void CodeGenVisitor::visit(Expression *node) {
   Identifier *ident      = dynamic_cast<Identifier*>(node);
