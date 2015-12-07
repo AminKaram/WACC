@@ -78,9 +78,9 @@ public:
 class VariableDeclaration : public Statement { 
 public:
   TypeId *type = NULL;
-  SymbolTable *scope = NULL;
   Identifier *id = NULL;
   AssignRhs *rhs = NULL;
+  SymbolTable *table = NULL;
 
   VariableDeclaration(TypeId *type, Identifier *id);
 
@@ -98,6 +98,7 @@ public:
   Identifier *id = NULL;
   VariableList *parameters = NULL;
   StatSeq *block = NULL;
+  SymbolTable *table = NULL;
   
   FunctionDeclaration(TypeId *type, Identifier *id, StatSeq *block);
 
@@ -138,6 +139,7 @@ class Program : public ASTnode{
 public:  
   FunctionDecList* functions;
   StatSeq* statements;
+  SymbolTable *table = NULL;
   
   Program(FunctionDecList* fs, StatSeq* stats);
   ~Program();
@@ -198,6 +200,8 @@ class BeginStatement : public Statement {
 public:
   
   StatSeq *scope = NULL;
+  SymbolTable *table = NULL;
+
   BeginStatement(StatSeq *scope);
   ~BeginStatement();
   void accept(SemanticVisitor *visitor);

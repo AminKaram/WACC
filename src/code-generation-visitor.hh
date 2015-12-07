@@ -3,6 +3,7 @@
 #include "astnode.hh"
 #include <sstream>
 #include <cstring>
+#include <map>
 
 class CodeGenVisitor {
 public:
@@ -33,6 +34,7 @@ public:
   void printAssemblyOfPrintString();
   void printAssemblyOfPrintBool();
   void printAssemblyOfPrintInt();
+  void printStatement(TypeId *type);
   void visit(PrintStatement *node);
   void printAssemblyOfPrintln();
   void visit(PrintlnStatement *node);
@@ -92,6 +94,7 @@ private:
   void p_throw_runtime_error(void);
   void p_throw_overflow_error(void);
   void p_check_divide_by_zero(void);
+  int scopeSize = 0;
 };
 
 

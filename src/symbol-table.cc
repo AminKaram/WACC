@@ -1,8 +1,10 @@
 #include "symbol-table.hh"
+#include "astnode.hh"
 #include <iostream>
 
 SymbolTable::SymbolTable(SymbolTable *encScope) : encScope(encScope) {
   dictionary = new std::map<std::string, SemanticId&>();    
+  variables = new std::vector<VariableDeclaration*>();
 }
 
 SymbolTable::~SymbolTable() {
@@ -38,6 +40,13 @@ int SymbolTable::add(std::string id, SemanticId& val) {
   }
   std::cerr << "semantic error: Redefined variable " << id << std::endl;
   exit(200);
+}
+
+int SymbolTable::addVariable(VariableDeclaration *var) {
+  VariableId *variable = new VariableId(var->type);
+  add(var->id->id, *variable);
+  variables->push_back(var);
+  var->table = this;
 }
 
 SymbolTable* SymbolTable::getEncScope() {

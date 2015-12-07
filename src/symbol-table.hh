@@ -4,6 +4,8 @@
 #include <map>
 #include <string>
 
+class VariableDeclaration;
+
 class SymbolTable {
 public:
   SymbolTable(SymbolTable*);
@@ -12,7 +14,9 @@ public:
   SemanticId* lookUp(std::string);
   SemanticId* lookUpAll(std::string);
   int add(std::string, SemanticId&);
+  int addVariable(VariableDeclaration*);
   SymbolTable* getEncScope();
+  std::vector<VariableDeclaration*> *variables = NULL;
 
 private:
   SymbolTable *encScope = NULL;
