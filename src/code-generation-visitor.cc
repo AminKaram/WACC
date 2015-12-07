@@ -276,13 +276,10 @@ void CodeGenVisitor::visit(BinaryOperator *node) {
                      
              *output << "MOV R0, " << firstReg<<std::endl;
 
-        // Need to add the error code in at the end of the code and put a msg_0 at the start of the code to print the error message
-
-
            } else if (oper == tok::TOK_SLASH){
+                
 
-        //Implementation code-gen for DIVIDE 
-
+        
 
         // not sure about the following assembly code from here
         // Need to add the error code in
@@ -295,20 +292,23 @@ void CodeGenVisitor::visit(BinaryOperator *node) {
 
            } else if (oper == tok::TOK_PLUS){
         // Implementation code-gen for PLUS 
-             *output << "ADDS "<< firstReg <<" "<< firstReg <<" "
+             *output << "ADDS "<< firstReg <<", "<< firstReg <<", "
              << secondReg << std::endl
-                     //<< "BELVS p_throw_overflow_error"<< std::endl
-                     << "MOV R0 "<< firstReg << std::endl;
+            
+             << "BELVS p_throw_overflow_error"<< std::endl;
+             p_throw_overflow_error();
+             *output << "MOV R0, "<< firstReg << std::endl;
                      
-        // Need to add the error code in
 
            } else if (oper == tok::TOK_MINUS){
          // Implementation code-gen for MINUS
-             *output << "SUBS "<< firstReg <<" "<< firstReg <<" "
+             *output << "SUBS "<< firstReg <<", "<< firstReg <<", "
              << secondReg << std::endl
-                     << "MOV R0 "<< firstReg << std::endl;
+
+             << "BELVS p_throw_overflow_error"<< std::endl;
+             p_throw_overflow_error();
+             *output<< "MOV R0, "<< firstReg << std::endl;
                      
-        // Need to add the error code in
 
            } else if (oper == tok::TOK_LESS){
         // Implementation code-gen for LESS 
@@ -389,11 +389,11 @@ void CodeGenVisitor::p_throw_overflow_error(void){
         output -> seekp(originalPos);
         p_throw_overflow_errorb = true;
 
-        p_throw_runtime_error();
+        p_throw_runtime_error_overflow();
     }
 }
 
-void CodeGenVisitor::p_throw_runtime_error(void){
+void CodeGenVisitor::p_throw_runtime_error_overflow(void){
     std::streampos originalPos;
     if(!p_throw_runtime_errorb){
          originalPos = output->std::ostream::tellp();
