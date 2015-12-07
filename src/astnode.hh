@@ -27,20 +27,21 @@ public:
 class AssignLhs : public virtual ASTnode {
 public:
   virtual std::string getId();
-  //void accept(SemanticVisitor *visitor);
+  void accept(SemanticVisitor *visitor) = 0;
+  void accept(CodeGenVisitor *visitor) = 0;
 };
 
 class AssignRhs : public virtual ASTnode {
 public: 
   AssignRhs() { }
-  //void accept(SemanticVisitor *visitor);
+  void accept(SemanticVisitor *visitor) = 0;
+  virtual void accept(CodeGenVisitor *visitor, std::string reg) = 0;
 };
 
 class Expression : public AssignRhs { 
 public: 
   Expression() { }
-  virtual ~Expression() { }; 
-  //void accept(SemanticVisitor *visitor);
+  virtual ~Expression() = 0; 
 };
 typedef std::vector<Expression*> ExpressionList;
 
@@ -70,6 +71,7 @@ public:
   ~Identifier(){}
   std::string getId();
   void accept(SemanticVisitor *visitor);
+  void accept(CodeGenVisitor *visitor);
   void accept(CodeGenVisitor *visitor, std::string reg);
 };
 
@@ -319,6 +321,7 @@ public:
   ~ArrayElem();
   std::string getId();
   void accept(SemanticVisitor *visitor);
+  void accept(CodeGenVisitor *visitor);
   void accept(CodeGenVisitor *visitor, std::string reg);
 };
 
@@ -331,6 +334,7 @@ public:
   ~PairElem();
   std::string getId();
   void accept(SemanticVisitor *visitor);
+  void accept(CodeGenVisitor *visitor);
   void accept(CodeGenVisitor *visitor, std::string reg);
 };
 

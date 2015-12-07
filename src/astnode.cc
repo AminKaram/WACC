@@ -9,6 +9,8 @@ void ASTnode::accept(CodeGenVisitor *visitor) { };
 Program::Program(FunctionDecList* fs, StatSeq* stats) : functions(fs), statements(stats) { }
 Program::~Program() { freePtr(functions); freePtr(statements); }
 
+Expression::~Expression() { }
+
 StatSeq::StatSeq() { };
 StatSeq:: ~StatSeq() {
   for(int i = 0; i < statements.size(); i++ ) {
@@ -249,10 +251,13 @@ void Null::accept(CodeGenVisitor *visitor, std::string reg) { visitor->visit(thi
 void BinaryOperator::accept(SemanticVisitor *visitor) { visitor->visit(this); }
 void BinaryOperator::accept(CodeGenVisitor *visitor, std::string reg) { visitor->visit(this, reg); }
 void Identifier::accept(SemanticVisitor *visitor) { visitor->visit(this); }
+void Identifier::accept(CodeGenVisitor *visitor) { visitor->visit(this); }
 void Identifier::accept(CodeGenVisitor *visitor, std::string reg) { visitor->visit(this, reg); }
 void ArrayElem::accept(SemanticVisitor *visitor) { visitor->visit(this); }
+void ArrayElem::accept(CodeGenVisitor *visitor) { visitor->visit(this); }
 void ArrayElem::accept(CodeGenVisitor *visitor, std::string reg) { visitor->visit(this, reg); }
 void PairElem::accept(SemanticVisitor *visitor) { visitor->visit(this); }
+void PairElem::accept(CodeGenVisitor *visitor) { visitor->visit(this); }
 void PairElem::accept(CodeGenVisitor *visitor, std::string reg) { visitor->visit(this, reg); }
 void ArrayLiter::accept(SemanticVisitor *visitor) { visitor->visit(this); }
 void ArrayLiter::accept(CodeGenVisitor *visitor, std::string reg) { visitor->visit(this, reg); }

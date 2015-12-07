@@ -41,8 +41,11 @@ public:
   void visit(Null *node, std::string reg);
   void visit(BinaryOperator *node, std::string reg);
   void visit(Identifier *node, std::string reg);
+  void visit(Identifier *node);
   void visit(ArrayElem *node, std::string reg);
+  void visit(ArrayElem *node);
   void visit(PairElem *node, std::string reg);
+  void visit(PairElem *node);
   void visit(ArrayLiter *node, std::string reg);
   void visit(NewPair *node, std::string reg);
   void visit(UnaryOperator *node, std::string reg);
@@ -60,7 +63,11 @@ private:
   std::map<std::string, bool> *regTable;
   int labelNum   = 0;
   int messageNum = 0;
-  int actualPrintMessageNum = 0;
+  bool p_print_string = false;
+  bool beginInitialisation = false;
+  int stringMessageNum = -1;
+  int newlineMessageNum = -1;
+
   bool p_throw_overflow_errorb = false;
   bool p_throw_runtime_errorb  = false;
   bool p_check_divide_by_zerob = false;
