@@ -60,12 +60,12 @@ VariableDeclaration::~VariableDeclaration() {
     freePtr(rhs);
 }
 
-FunctionDeclaration::FunctionDeclaration(Type *type, Identifier *id, StatSeq *block) 
+FunctionDeclaration::FunctionDeclaration(Type *type, Identifier *id, StatSeq *block)
     : type(type), id(id), block(block) {
         parameters = new VariableList();
         }
 
-FunctionDeclaration::FunctionDeclaration(Type *type, Identifier *id, 
+FunctionDeclaration::FunctionDeclaration(Type *type, Identifier *id,
       VariableList *parameters, StatSeq *block) 
     : type(type), id(id), parameters(parameters), block(block) {}
 
@@ -307,6 +307,9 @@ void Identifier::accept(AstNodeVisitor *visitor) {
 }
 
 AssignRhs::AssignRhs(std::string type) {this->type = type; }
+void AssignRhs::accept(AstNodeVisitor *visitor) {
+  visitor->visit(this);
+}
 
 std::string AssignLhs::getId() {
  ArrayElem *arr = dynamic_cast<ArrayElem*>(this);

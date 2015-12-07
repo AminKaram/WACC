@@ -29,6 +29,8 @@ class AssignRhs : public virtual ASTnode {
 public: 
   AssignRhs() { }
   AssignRhs(std::string type);
+  void accept(AstNodeVisitor *visitor);
+
 };
 
 class Expression : public AssignRhs { 
@@ -83,8 +85,8 @@ public:
 class ArrayType : public Type {
 public:
 	Type *type = NULL;
-	
-  ArrayType(Type *type); 
+
+  ArrayType(Type *type);
   ~ArrayType();
 };
 
@@ -137,7 +139,7 @@ public:
   
   FunctionDeclaration(Type *type, Identifier *id, StatSeq *block);
 
-  FunctionDeclaration(Type *type, Identifier *id, 
+  FunctionDeclaration(Type *type, Identifier *id,
       VariableList *parameters, StatSeq *block);
 
   ~FunctionDeclaration(); 
