@@ -15,12 +15,6 @@ public:
   void visit(Expression *node);
   void visit(StatSeq *node);
   void visit(FunctionDecList *node);
-  void visit(IntegerType *node);
-  void visit(BoolType *node);
-  void visit(CharType *node);
-  void visit(StringType *node);
-  void visit(ArrayType *node);
-  void visit(PairType *node);
   void visit(VariableDeclaration *node);
   void visit(FunctionDeclaration *node);
   void visit(FunctionCall *node);
@@ -63,6 +57,10 @@ private:
   std::map<std::string, bool> *regTable;
   int labelNum   = 0;
   int messageNum = 0;
+  bool p_throw_overflow_errorb = false;
+  bool p_throw_runtime_errorb  = false;
+  void p_throw_runtime_error(void);
+  void p_throw_overflow_error(void);
 };
 
 

@@ -3,6 +3,8 @@
 
 #include <vector>
 #include <iostream>
+#include "semantic-id.hh"
+#include "symbol-table.hh"
 
 class AstNodeVisitor;
 
@@ -14,7 +16,7 @@ void freePtr(T *ptr) {
 
 class ASTnode {
 public:
-  std::string type;
+  TypeId *type = NULL;
   ASTnode() { }
   virtual ~ASTnode() {  }
   virtual void accept(AstNodeVisitor *visitor);
@@ -23,26 +25,27 @@ public:
 class AssignLhs : public virtual ASTnode {
 public:
   virtual std::string getId();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class AssignRhs : public virtual ASTnode {
 public: 
   AssignRhs() { }
-  AssignRhs(std::string type);
   void accept(AstNodeVisitor *visitor);
-
 };
 
 class Expression : public AssignRhs { 
 public: 
-  virtual ~Expression() {} 
+  Expression() { }
+  virtual ~Expression() { }; 
   void accept(AstNodeVisitor *visitor);
 };
 typedef std::vector<Expression*> ExpressionList;
 
 class Statement : public ASTnode { 
 public: 
-  virtual ~Statement() {}
+  Statement() { }
+  virtual ~Statement();  
 };
 typedef std::vector<Statement*> StatementList;
 
@@ -53,56 +56,6 @@ public:
   ~StatSeq();
   bool containRet();
   void accept(AstNodeVisitor *visitor);
-};
-
-class Type : public ASTnode {
-public:
-  std::string name;
-  Type(std::string name);
-  ~Type();
-};
-
-class IntegerType : public Type {
-public:
-  IntegerType();
-};
-
-class BoolType : public Type {
-public:
-  BoolType();
-};
-
-class CharType : public Type {
-public:
-  CharType();
-};
-
-class StringType : public Type {
-public:
-  StringType ();
-};
-
-class ArrayType : public Type {
-public:
-	Type *type = NULL;
-
-  ArrayType(Type *type);
-  ~ArrayType();
-};
-
-class PairKeyword : public Type {
-public:
-  PairKeyword();
-  ~PairKeyword();
-};
-
-class PairType : public Type {
-public:
-  Type *fst;
-  Type *snd;
-
-  PairType(Type *fst, Type *snd);
-  ~PairType();
 };
 
 class Identifier : public Expression, public AssignLhs {
@@ -118,29 +71,31 @@ public:
 
 class VariableDeclaration : public Statement { 
 public:
-  Type *type = NULL;
+  TypeId *type = NULL;
+  SymbolTable *scope = NULL;
   Identifier *id = NULL;
   AssignRhs *rhs = NULL;
 
-  VariableDeclaration(Type *type, Identifier *id);
+  VariableDeclaration(TypeId *type, Identifier *id);
 
-  VariableDeclaration(Type *type, Identifier *id, AssignRhs *rhs);
+  VariableDeclaration(TypeId *type, Identifier *id, AssignRhs *rhs);
 
   ~VariableDeclaration();
+  void accept(AstNodeVisitor *visitor);
 };
 typedef std::vector<VariableDeclaration*> VariableList;
 
 class FunctionDeclaration : public Statement {
 public:
-  Type *type = NULL;
+  TypeId *type = NULL;
   Identifier *id = NULL;
   VariableList *parameters = NULL;
   StatSeq *block = NULL;
   
-  FunctionDeclaration(Type *type, Identifier *id, StatSeq *block);
+  FunctionDeclaration(TypeId *type, Identifier *id, StatSeq *block);
 
-  FunctionDeclaration(Type *type, Identifier *id,
-      VariableList *parameters, StatSeq *block);
+  FunctionDeclaration(TypeId *type, Identifier *id, VariableList *parameters,
+                      StatSeq *block);
 
   ~FunctionDeclaration(); 
 
@@ -186,12 +141,14 @@ public:
 
   Assignment(AssignLhs *lhs, AssignRhs *rhs);
   ~Assignment();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class SkipStatement : public Statement {
 public:
-  SkipStatement();
-  ~SkipStatement();
+  SkipStatement() : Statement() { }
+  ~SkipStatement() { }
+  void accept(AstNodeVisitor *visitor);
 };
 
 class FreeStatement : public Statement {
@@ -200,6 +157,7 @@ public:
 
   FreeStatement(Expression *expr);
   ~FreeStatement();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class ReturnStatement : public Statement {
@@ -257,6 +215,7 @@ public:
   
   ReadStatement(AssignLhs *id);
   ~ReadStatement();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class PrintStatement : public Statement {
@@ -279,7 +238,6 @@ public:
 
 class Number : public Expression {
 public:
-  std::string type = "number";
   int value;
   
   Number(int value);
@@ -288,7 +246,6 @@ public:
 
 class Boolean : public Expression {
 public:
-  std::string type = "bool";
   bool value;
 
   Boolean(bool value);
@@ -297,7 +254,6 @@ public:
 
 class Char : public Expression {
 public:
-  std::string type = "char";
   char value;
 
   Char(char value);
@@ -306,7 +262,7 @@ public:
 
 class String : public Expression {
 public:
-  std::string value = "string";
+  std::string value;
 
   String(std::string value);
   void accept(AstNodeVisitor *visitor);
@@ -347,6 +303,7 @@ public:
   PairElem(bool fst, Expression *expr);
   ~PairElem();
   std::string getId();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class ArrayLiter : public AssignRhs {
@@ -355,6 +312,7 @@ public:
 
 	ArrayLiter(ExpressionList *elems);
   ~ArrayLiter();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class NewPair : public AssignRhs {
@@ -364,6 +322,7 @@ public:
 
   NewPair(Expression *fst, Expression *snd);
   ~NewPair();
+  void accept(AstNodeVisitor *visitor);
 };
 
 class UnaryOperator : public Expression	{
@@ -372,8 +331,8 @@ public:
 	Expression *expr;
 
 	UnaryOperator(int op, Expression *expr);
-    ~UnaryOperator();
-    void accept(AstNodeVisitor *visitor);
+  ~UnaryOperator();
+  void accept(AstNodeVisitor *visitor);
 };
 
 #endif // ! ASTNODE_HH
