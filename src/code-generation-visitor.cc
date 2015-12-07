@@ -244,15 +244,13 @@ void CodeGenVisitor::visit(BinaryOperator *node) {
       if (oper == tok::TOK_LOGOR){
       //Implementation code-gen for OR 
           
-         *output << "ORR "<< firstReg << ", " << firstReg << ", " <<secondReg    
-                 << std:: endl
-                 << "MOV R0, " << firstReg;
+         *output << "ORR "<< firstReg << ", " << firstReg << ", "
+                 << secondReg << std:: endl;
     
        } else if (oper == tok::TOK_LOGAND){
       //Implementation code-gen for AND      
-         *output << "AND "<< firstReg << ", " << firstReg << ", " <<secondReg    
-                 << std:: endl
-                 << "MOV R0, " << firstReg;
+         *output << "AND "<< firstReg << ", " << firstReg << ", "
+                 << secondReg << std:: endl;
       }      
    } else if (oper >= tok::TOK_STAR && oper <= tok::TOK_MINUS){
    
@@ -274,7 +272,6 @@ void CodeGenVisitor::visit(BinaryOperator *node) {
                      << "BLNE p_throw_overflow_error"<< std::endl;
                      p_throw_overflow_error();
                      
-             *output << "MOV R0, " << firstReg<<std::endl;
 
            } else if (oper == tok::TOK_SLASH){
                 
@@ -297,7 +294,6 @@ void CodeGenVisitor::visit(BinaryOperator *node) {
             
              << "BELVS p_throw_overflow_error"<< std::endl;
              p_throw_overflow_error();
-             *output << "MOV R0, "<< firstReg << std::endl;
                      
 
            } else if (oper == tok::TOK_MINUS){
@@ -307,7 +303,6 @@ void CodeGenVisitor::visit(BinaryOperator *node) {
 
              << "BELVS p_throw_overflow_error"<< std::endl;
              p_throw_overflow_error();
-             *output<< "MOV R0, "<< firstReg << std::endl;
            } 
         }else if (oper >= tok::TOK_LESS && oper <= tok::TOK_NOTEQUALS){
             
@@ -315,42 +310,36 @@ void CodeGenVisitor::visit(BinaryOperator *node) {
              if (oper == tok::TOK_LESS){
         // Implementation code-gen for LESS 
             *output << "MOVLT "<< firstReg << ", #1"<< std::endl
-                    << "MOVGE "<< firstReg << ", #0"<< std::endl
-                    << "MOV R0 "<< firstReg << std::endl;
-                     
+                    << "MOVGE "<< firstReg << ", #0"<< std::endl;
 
            } else if (oper == tok::TOK_LESSEQUALS){
         //Implementation code-gen for LESSEQUALS
             *output << "MOVLE "<< firstReg << ", #1"<< std::endl
-                    << "MOVGT "<< firstReg << ", #0"<< std::endl
-                    << "MOV R0 "<< firstReg << std::endl;
+                    << "MOVGT "<< firstReg << ", #0"<< std::endl;
                      
            } else if (oper == tok::TOK_GREATER){
         // Implementation code-gen for GREATER 
             *output << "MOVGT "<< firstReg << ", #1"<< std::endl
-                    << "MOVLE "<< firstReg << ", #0"<< std::endl
-                    << "MOV R0 "<< firstReg << std::endl;
+                    << "MOVLE "<< firstReg << ", #1"<< std::endl;
  
            } else if (oper == tok::TOK_GREATEREQUALS){
         // Implementation code-gen for GREATEREQUALS 
             *output << "MOVGE "<< firstReg << ", #1"<< std::endl
-                    << "MOVLT "<< firstReg << ", #0"<< std::endl
-                    << "MOV R0 "<< firstReg << std::endl;
+                    << "MOVLT "<< firstReg << ", #0"<< std::endl;
  
            } else if (oper == tok::TOK_EQUALS){
          //Implementation code-gen for EQUALS 
             *output << "MOVEQ "<< firstReg << ", #1"<< std::endl
-                    << "MOVNE "<< firstReg << ", #0"<< std::endl
-                    << "MOV R0 "<< firstReg << std::endl;
+                    << "MOVNE "<< firstReg << ", #0"<< std::endl;
  
            } else if (oper == tok::TOK_NOTEQUALS){
         // Implementation code-gen for Not EQUAL
             *output << "MOVNE "<< firstReg << ", #1"<< std::endl
-                    << "MOVEQ "<< firstReg << ", #0"<< std::endl
-                    << "MOV R0 "<< firstReg << std::endl;
+                    << "MOVEQ "<< firstReg << ", #1"<< std::endl;
                      
            }
-    } 
+    }
+    *output << "MOV R0, "<< firstReg << std::endl;
     freeRegister(firstReg);
     freeRegister(secondReg);
 
@@ -371,7 +360,7 @@ void CodeGenVisitor::p_throw_overflow_error(void){
         *output << "p_throw_overflow_error: " << std::endl
                 << "LDR r0, =msg_"<< messageNum<< std::endl
                 << "BL p_throw_runtime_error" << std::endl;
-         output -> seekp(0,std::ios_base::beg);
+         output -> seekp(6,std::ios_base::beg);
         *output << "msg_"<< messageNum++ << ":"<<std::endl
                 << ".word 82"<< std::endl
                 << ".ascii \"OverflowError: the result is too small/large to store in a 4 byte signed integer \""<<std::endl;
