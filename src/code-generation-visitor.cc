@@ -13,13 +13,6 @@ void CodeGenVisitor::visit(ASTnode *node) {
 }
 
 void CodeGenVisitor::visit(Program *node) {
-  // when you prin you should add
-  // msg_0:
-  //  .word 13
-  //  .ascii  "Hello World!\n"
-  // msg_1:
-  //  .word 5
-  //  .ascii  "%.*s\0"
   *output << ".text" << std::endl << std:: endl
           << ".global main" << std::endl;
 
@@ -174,12 +167,46 @@ std::string CodeGenVisitor::visitAndPrintReg(Expression *node) {
 
 void CodeGenVisitor::visit(PrintStatement *node) {
   node->expr->accept(this);
+  std::string stringToPrint;
+  
+  TypeId *type = node->expr->type;
+  
+  Number *number         = dynamic_cast<Number*>(node->expr);
+  Boolean *boolean       = dynamic_cast<Boolean*>(node->expr);
+  Char *charId           = dynamic_cast<Char*>(node->expr);
+  String *stringId       = dynamic_cast<String*>(node->expr);
+  Null *null             = dynamic_cast<Null*>(node->expr);
+  
+  if(number) number->
+  if(boolean) boolean->accept(this);
+  if(charId) charId->accept(this);
+  if(stringId) stringId->accept(this);
+  
+  print(IntTypeId type){
+	*output << "msg_0:" << std::endl <<
+             "  .word 13" << std::endl <<
+             "  .ascii " << stringToPrint << std::endl <<
+             "msg_1:" << std::endl <<
+             "  .word 5" << std::endl <<
+             "  .ascii  \"%.*s\0\"";
+  }
+  
   //std::string reg1 = getAvailableRegister();
   //std::string reg2 = getAvailableRegister();
+  
+	output.seekp(0 + 6); // first line .data\n
+	
+  *output << "msg_0:" << std::endl <<
+             "  .word 13" << std::endl <<
+             "  .ascii " << stringToPrint << std::endl <<
+             "msg_1:" << std::endl <<
+             "  .word 5" << std::endl <<
+             "  .ascii  \"%.*s\0\"";
+	
 	*output <<  
         "p_print_string: " << std::endl <<
         "  PUSH {lr}" << std::endl <<
-				"  LDR r1, [register where the message was put in main = r0]" << std::endl <<
+			  "  LDR r1, [r0]" << std::endl <<
 				"  ADD r2, r0, #4" << std::endl <<
 				"  LDR r0, =msg_1" << std::endl <<
 		 		"  ADD r0, r0, #4" << std::endl <<
@@ -195,7 +222,7 @@ void CodeGenVisitor::visit(PrintlnStatement *node) {
   *output <<  
         "p_print_string: " << std::endl <<
         "  PUSH {lr}" << std::endl <<
-        "  LDR r1, [register where the message was put in main = r0]" << std::endl <<
+        "  LDR r1, [r0]" << std::endl <<
         "  ADD r2, r0, #4" << std::endl <<
         "  LDR r0, =msg_1" << std::endl <<
         "  ADD r0, r0, #4" << std::endl <<
