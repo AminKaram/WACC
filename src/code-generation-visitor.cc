@@ -141,7 +141,26 @@ void CodeGenVisitor::visit(FunctionCall *node, std::string reg) {
 }
 
 void CodeGenVisitor::visit(Assignment *node) {}
-void CodeGenVisitor::visit(FreeStatement *node) {}
+void CodeGenVisitor::visit(FreeStatement *node) {
+    middle<< "BL p_free_pair" << std::endl;
+    end   << "PUSH {lr}" << std::endl
+          << "CMP r0, #0"<< std::endl
+          << "LDREQ r0, =msg_"<<messageNum << std::endl
+          << "BEQ p_throw_runtime_error"<< std::endl
+          << "PUSH {r0}"<< std::endl
+          << "LDR r0, [r0]"<< std::endl
+          << "BL free"<< std::endl
+          << "LDR r0, [sp]"<< std::endl
+          << "LDR r0, [r0 , #4]"<< std::endl
+          << "BL free"<< std::endl
+          << "POP {r0}"<< std::endl
+          << "BL free"<< std::endl
+          << "POP {PC}"<< std::endl;
+    p_throw_runtime_error();
+    begin << "msg_"<< messageNum <<":"<<std::endl
+          << ".word 50"<< std::endl
+          << ".ascii \"NullReferenceError : dereference a null reference \\n\\0\""<< std::endl;
+}
 
 void CodeGenVisitor::visit(ReturnStatement *node) {
   node->expr->accept(this, "R0");
