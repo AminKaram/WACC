@@ -1,6 +1,7 @@
 #ifndef CODE_GENERATION_VISITOR_HH
 #define CODE_GENERATION_VISITOR_HH
 
+#include <sstream>
 #include "astnode.hh"
 
 class CodeGenVisitor {
@@ -39,8 +40,11 @@ public:
   void visit(Null *node, std::string reg);
   void visit(BinaryOperator *node, std::string reg);
   void visit(Identifier *node, std::string reg);
+  void visit(Identifier *node);
   void visit(ArrayElem *node, std::string reg);
+  void visit(ArrayElem *node);
   void visit(PairElem *node, std::string reg);
+  void visit(PairElem *node);
   void visit(ArrayLiter *node, std::string reg);
   void visit(NewPair *node, std::string reg);
   void visit(UnaryOperator *node, std::string reg);

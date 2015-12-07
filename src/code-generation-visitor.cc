@@ -91,9 +91,9 @@ void CodeGenVisitor::visit(FunctionDecList *node) {
 }
 void CodeGenVisitor::visit(VariableDeclaration *node) {
 // simpliest version for implementing variable declaration
-  middle << "MOV r0, #" << "\n";
-  node->rhs->accept(this);
-  middle << "STR r0 [sp]" << "\n";
+//  middle << "MOV r0, #" << "\n";
+//  node->rhs->accept(this, "R4");
+//  middle << "STR r0 [sp]" << "\n";
 
 // effective version of variable dec(USED IN DECLARING MULTIPLE VARIABLE)
 // let x be sum of the memory size of type in each assignment statement for all of 
@@ -108,45 +108,50 @@ void CodeGenVisitor::visit(VariableDeclaration *node) {
   
 }
 void CodeGenVisitor::visit(FunctionDeclaration *node) {
-  middle << node->id->id.append("_").append(node->id->id).append(":")
-          << "\n"
+  middle << "f_" << node->id->id << ":\n"
           << "  PUSH {lr}" << "\n";
   node->block->accept(this);
   middle << "  POP {pc}" << "\n"
-          << "  .ltorg"   << "\n";
+         << "  .ltorg"   << "\n";
 
 
 }
 
 void CodeGenVisitor::visit(FunctionCall *node, std::string reg) {
-//    for(int i=0; i < node->parameters->size(); i++) {
-//    Expression *param = node->parameters->operator[](i);
-//    std::string = param->accept(this, );
-//
-//`   }
+    int sizeParam = 0; 
+    for(int i = node->parameters->size() - 1; i >= 0; i--) {
+      node->parameters->operator[](i)->accept(this, reg);
+      if(node->parameters->operator[](i)->type->size() > 1) {
+        middle << "  STR " << reg << ", [sp, #" <<  node->parameters->operator[](i)->type->size() 
+               << "]!\n";
+      } else {
+        middle << "  STRB " << reg << ", [sp, #" <<  node->parameters->operator[](i)->type->size() 
+               << "]!\n";
+      }
+      sizeParam += node->parameters->operator[](i)->type->size();
+    }
+
+    middle << "BL " << "f_" << node->id->id << "\n"; 
+    middle << "ADD sp, sp, #" << sizeParam << "\n";
 }
 
 void CodeGenVisitor::visit(Assignment *node) {}
 void CodeGenVisitor::visit(FreeStatement *node) {}
 
 void CodeGenVisitor::visit(ReturnStatement *node) {
-
-  node->expr->accept(this);
-  middle << "  Mov R0, R4" << "\n";
-
+  node->expr->accept(this, "R0");
 }
 
 void CodeGenVisitor::visit(ExitStatement *node) {
-  node->expr->accept(this);
+  node->expr->accept(this, "R0");
 
-  middle  << "  MOV R0, R4" << "\n"
-           << "  BL exit"    << "\n";
+  middle << "  BL exit"    << "\n";
 }
 
 void CodeGenVisitor::visit(BeginStatement *node) {}
 
 void CodeGenVisitor::visit(IfStatement *node) {
-  node->expr->accept(this);
+  node->expr->accept(this, "R4");
   middle << "  CMP R4, #0"                            << "\n"
           << "  BEQ L" << std::to_string(labelNum)     << "\n";
   labelNum++;
@@ -169,7 +174,7 @@ void CodeGenVisitor::visit(WhileStatement *node) {
   middle << "L" << std::to_string(labelNum) << ":" << "\n";
   node->doS->accept(this);
   middle << "L" << std::to_string(labelNum - 1) << ": " << "\n";
-      node->expr->accept(this);
+      node->expr->accept(this, "R4");
   middle << "  CMP R4, #1"                                << "\n"
           << "  BEQ L" << std::to_string(labelNum)         << "\n";
 }
@@ -177,10 +182,10 @@ void CodeGenVisitor::visit(WhileStatement *node) {
 void CodeGenVisitor::visit(ReadStatement *node) {}
 
 void CodeGenVisitor::visit(PrintStatement *node) {
-  node->expr->accept(this);
+  node->expr->accept(this, "R0");
   //std::string reg1 = getAvailableRegister();
   //std::string reg2 = getAvailableRegister();
-	middle <<
+	end <<
         "p_print_string: " << "\n" <<
         "  PUSH {lr}" << "\n" <<
 				"  LDR r1, [register where the message was put in main = r0]" << "\n" <<
@@ -194,9 +199,9 @@ void CodeGenVisitor::visit(PrintStatement *node) {
 }
 
 void CodeGenVisitor::visit(PrintlnStatement *node) {
-  node->expr->accept(this);
+  node->expr->accept(this, "R0");
   // visit the print node first ant then:
-  middle <<
+  end <<
         "p_print_string: " << "\n" <<
         "  PUSH {lr}" << "\n" <<
         "  LDR r1, [register where the message was put in main = r0]" << "\n" <<
@@ -222,13 +227,13 @@ void CodeGenVisitor::visit(PrintlnStatement *node) {
 void CodeGenVisitor::visit(SkipStatement *node) { }
 
 void CodeGenVisitor::visit(Number *node, std::string reg) {
-  *output << "  LDR R4, =" << node->value << std::endl;
+  middle << "  LDR R4, =" << node->value << "\n";
 }
 void CodeGenVisitor::visit(Boolean *node, std::string reg) {
-  *output << "  MOV R4, #" << node->value << std::endl;
+  middle << "  MOV R4, #" << node->value << "\n";
 }
 void CodeGenVisitor::visit(Char *node, std::string reg) {
-  *output << "  MOV R4, #'" << node->value  << "'" << std::endl;
+  middle << "  MOV R4, #'" << node->value  << "'" << "\n";
 }
 
 void CodeGenVisitor::visit(String *node, std::string reg) {}
@@ -353,8 +358,11 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
 }
 
 void CodeGenVisitor::visit(Identifier *node, std::string reg) {}
+void CodeGenVisitor::visit(Identifier *node) {}
 void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {}
+void CodeGenVisitor::visit(ArrayElem *node) {}
 void CodeGenVisitor::visit(PairElem *node, std::string reg) {}
+void CodeGenVisitor::visit(PairElem*node) {}
 void CodeGenVisitor::visit(ArrayLiter *node, std::string reg) {}
 void CodeGenVisitor::visit(NewPair *node, std::string reg) {}
 void CodeGenVisitor::visit(UnaryOperator *node, std::string reg) {}
