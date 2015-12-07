@@ -59,7 +59,11 @@ private:
   std::map<std::string, bool> *regTable;
   int labelNum   = 0;
   int messageNum = 0;
-  int actualPrintMessageNum = 0;
+  bool p_print_string = false;
+  bool beginInitialisation = false;
+  int stringMessageNum = -1;
+  int newlineMessageNum = -1;
+
   bool p_throw_overflow_errorb = false;
   bool p_throw_runtime_errorb  = false;
   bool p_check_divide_by_zerob = false;
