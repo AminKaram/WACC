@@ -169,34 +169,36 @@ std::string CodeGenVisitor::visitAndPrintReg(Expression *node) {
 	return "R1";
 }
 
-void CodeGenVisitor::print(IntTypeId type) {
-	*output << 
-             "msg_" << messageNum << ":" << std::endl <<
-             "  .word 3" << std::endl <<
-             "  .ascii  \"%d\0\"" << std::endl;
-     messageNum++;
-}
-void CodeGenVisitor::print(StringTypeId type) {
-	*output << 
+void CodeGenVisitor::printMsg(TypeId *type) {
+    IntTypeId *intTypeId = dynamic_cast<IntTypeId*> (type);
+    StringTypeId *stringTypeId = dynamic_cast<StringTypeId*> (type);
+    CharTypeId *charTypeId = dynamic_cast<CharTypeId*> (type);
+    if(charTypeId) {
+		*output << 
+			 "msg_" << messageNum << ":" << std::endl <<
+			 "  .word 1" << std::endl <<
+             "  .ascii  \"\0\"" << std::endl;
+		messageNum++;
+	} else if(stringTypeId) {
+		*output << 
              "msg_" << messageNum << ":" << std::endl <<
              "  .word 5" << std::endl <<
              "  .ascii  \"%.*s\0\"" << std::endl;
-    messageNum++;
-}
-  
-void CodeGenVisitor::print(CharTypeId type) {
-	*output << 
+		messageNum++;
+	} else if(intTypeId) {
+		*output << 
              "msg_" << messageNum << ":" << std::endl <<
-             "  .word 1" << std::endl <<
-             "  .ascii  \"\0\"" << std::endl;
-    messageNum++;
+             "  .word 3" << std::endl <<
+             "  .ascii  \"%d\0\"" << std::endl;
+		messageNum++;
+	}
 }
 
 void CodeGenVisitor::print(std::string stringToPrint) {
 	*output << 
 		 "msg_" << messageNum << ":" << std::endl <<
-		 "  .word 13" << std::endl <<
-		 "  .ascii " << stringToPrint << std::endl;
+	     "  .word " << stringToPrint.size() << std::endl <<
+	     "  .ascii " << stringToPrint << std::endl;
     messageNum++;
 }
 
@@ -204,10 +206,11 @@ void CodeGenVisitor::visit(PrintStatement *node) {
     node->expr->accept(this);
     std::string stringToPrint;
     TypeId *type = node->expr->type;
+    
   
-	output.seekp(0 + 6); // first line .data\n
+	output->seekp(0 + 6); // first line .data\n
+	printMsg(type);
     print(stringToPrint);     
-    print(type);
   
 	
 	*output <<  
