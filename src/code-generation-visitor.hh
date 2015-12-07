@@ -29,6 +29,7 @@ public:
   std::string visitAndPrintReg(Expression *node);
   void print(std::string stringToPrint);
   void printMsg(TypeId *type);
+  void printlnMsg();
   void visit(PrintStatement *node);
   void visit(PrintlnStatement *node);
   void visit(Number *node);
@@ -56,6 +57,7 @@ private:
   std::map<std::string, bool> *regTable;
   int labelNum   = 0;
   int messageNum = 0;
+  int actualPrintMessageNum = 0;
   bool p_throw_overflow_errorb = false;
   bool p_throw_runtime_errorb  = false;
   void p_throw_runtime_error(void);

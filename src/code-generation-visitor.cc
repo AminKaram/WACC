@@ -170,60 +170,84 @@ std::string CodeGenVisitor::visitAndPrintReg(Expression *node) {
 }
 
 void CodeGenVisitor::printMsg(TypeId *type) {
-    IntTypeId *intTypeId = dynamic_cast<IntTypeId*> (type);
+    IntTypeId *intTypeId       = dynamic_cast<IntTypeId*> (type);
     StringTypeId *stringTypeId = dynamic_cast<StringTypeId*> (type);
-    CharTypeId *charTypeId = dynamic_cast<CharTypeId*> (type);
-    if(charTypeId) {
-		*output << 
-			 "msg_" << messageNum << ":" << std::endl <<
-			 "  .word 1" << std::endl <<
-             "  .ascii  \"\0\"" << std::endl;
-		messageNum++;
-	} else if(stringTypeId) {
+    BoolTypeId *boolTypeId     = dynamic_cast<BoolTypeId*> (type);
+    
+    bool isInt    = false;
+    bool isString = false;
+    bool isChar   = false;
+    bool isBool   = false;
+    
+    if (intTypeId)    isInt    = true;
+    if (stringTypeId) isString = true;
+    if (boolTypeId)   isBool   = true; 	
+     
+    if(isString) {
 		*output << 
              "msg_" << messageNum << ":" << std::endl <<
              "  .word 5" << std::endl <<
-             "  .ascii  \"%.*s\0\"" << std::endl;
-		messageNum++;
-	} else if(intTypeId) {
+             "  .ascii  \"%.*s\\0\"" << std::endl;
+		//messageNum++;
+	} else if(isInt) {
 		*output << 
              "msg_" << messageNum << ":" << std::endl <<
              "  .word 3" << std::endl <<
-             "  .ascii  \"%d\0\"" << std::endl;
-		messageNum++;
+             "  .ascii  \"%d\\0\"" << std::endl;
+		//messageNum++;
+	} else if(isBool) {
+		*output << 
+             "msg_" << messageNum << ":" << std::endl <<
+             "  .word 5" << std::endl <<
+             "  .ascii  \"true\\0\"" << std::endl;
+		//messageNum++;
+		*output << 
+             "msg_" << messageNum << ":" << std::endl <<
+             "  .word 6" << std::endl <<
+             "  .ascii  \"false\\0\"" << std::endl;
+		//messageNum++;
 	}
+}
+
+void CodeGenVisitor::printlnMsg() {
+	*output << 
+			 "msg_" << messageNum << ":" << std::endl <<
+			 "  .word 1" << std::endl <<
+             "  .ascii  \"\\0\"" << std::endl;
+		//messageNum++;
 }
 
 void CodeGenVisitor::print(std::string stringToPrint) {
 	*output << 
-		 "msg_" << messageNum << ":" << std::endl <<
+		 "msg_" << actualPrintMessageNum << ":" << std::endl <<
 	     "  .word " << stringToPrint.size() << std::endl <<
 	     "  .ascii " << stringToPrint << std::endl;
-    messageNum++;
+    actualPrintMessageNum++;
 }
 
 void CodeGenVisitor::visit(PrintStatement *node) {
     node->expr->accept(this);
     std::string stringToPrint;
     TypeId *type = node->expr->type;
-    
-  
-	output->seekp(0 + 6); // first line .data\n
+
+	output->seekp(6); // first line .data\n
 	printMsg(type);
-    print(stringToPrint);     
-  
+    print(stringToPrint);
+    
+    output->seekp(0,std::ios_base::end);
 	
 	*output <<  
 		"p_print_string: " << std::endl <<
 		"  PUSH {lr}" << std::endl <<
 	    "  LDR r1, [r0]" << std::endl <<
 		"  ADD r2, r0, #4" << std::endl <<
-		"  LDR r0, =msg_1" << std::endl <<
+		"  LDR r0, =msg_" << actualPrintMessageNum - 1 << std::endl <<
 		"  ADD r0, r0, #4" << std::endl <<
 		"  BL printf" << std::endl <<
 		"  MOV r0, #0" << std::endl <<
 		"  BL fflush" << std::endl <<
 		"  POP {pc}" << std::endl;
+	
 }
 
 void CodeGenVisitor::visit(PrintlnStatement *node) {
@@ -234,7 +258,7 @@ void CodeGenVisitor::visit(PrintlnStatement *node) {
         "  PUSH {lr}" << std::endl <<
         "  LDR r1, [r0]" << std::endl <<
         "  ADD r2, r0, #4" << std::endl <<
-        "  LDR r0, =msg_1" << std::endl <<
+        "  LDR r0, =msg_" << actualPrintMessageNum - 1 << std::endl <<
         "  ADD r0, r0, #4" << std::endl <<
         "  BL printf" << std::endl <<
         "  MOV r0, #0" << std::endl <<
