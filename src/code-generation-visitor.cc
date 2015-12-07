@@ -32,7 +32,7 @@ void CodeGenVisitor::visit(Program *node) {
           << "  .ltorg"   << "\n";
 
   if (begin.rdbuf()->in_avail() != 0) {
-    *file << begin.rdbuf() ;
+    *file << begin.rdbuf() << "\n" ;
   }
   if (middle.rdbuf()->in_avail() != 0) {
       *file << middle.rdbuf() ;
@@ -142,24 +142,27 @@ void CodeGenVisitor::visit(FunctionCall *node, std::string reg) {
 
 void CodeGenVisitor::visit(Assignment *node) {}
 void CodeGenVisitor::visit(FreeStatement *node) {
-    middle<< "BL p_free_pair" << std::endl;
-    end   << "PUSH {lr}" << std::endl
-          << "CMP r0, #0"<< std::endl
-          << "LDREQ r0, =msg_"<<messageNum << std::endl
-          << "BEQ p_throw_runtime_error"<< std::endl
-          << "PUSH {r0}"<< std::endl
-          << "LDR r0, [r0]"<< std::endl
-          << "BL free"<< std::endl
-          << "LDR r0, [sp]"<< std::endl
-          << "LDR r0, [r0 , #4]"<< std::endl
-          << "BL free"<< std::endl
-          << "POP {r0}"<< std::endl
-          << "BL free"<< std::endl
-          << "POP {PC}"<< std::endl;
+    middle<< "  LDR r4, [sp]" << std::endl // add offset
+          << "  Mov r0, r4\n"
+          << "  BL p_free_pair\n";
+
+    end   << "  PUSH {lr}" << std::endl
+          << "  CMP r0, #0"<< std::endl
+          << "  LDREQ r0, =msg_"<<messageNum << std::endl
+          << "  BEQ p_throw_runtime_error"<< std::endl
+          << "  PUSH {r0}"<< std::endl
+          << "  LDR r0, [r0]"<< std::endl
+          << "  BL free"<< std::endl
+          << "  LDR r0, [sp]"<< std::endl
+          << "  LDR r0, [r0 , #4]"<< std::endl
+          << "  BL free"<< std::endl
+          << "  POP {r0}"<< std::endl
+          << "  BL free"<< std::endl
+          << "  POP {PC}"<< std::endl;
     p_throw_runtime_error();
     begin << "msg_"<< messageNum <<":"<<std::endl
-          << ".word 50"<< std::endl
-          << ".ascii \"NullReferenceError : dereference a null reference \\n\\0\""<< std::endl;
+          << "  .word 50"<< std::endl
+          << "  .ascii \"NullReferenceError : dereference a null reference\\n\\0\""<< std::endl;
 }
 
 void CodeGenVisitor::visit(ReturnStatement *node) {
@@ -525,14 +528,36 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
     freeRegister(secondReg);
 
 }
-
+void CodeGenVisitor::visit(Identifier *node){}
 void CodeGenVisitor::visit(Identifier *node, std::string reg) {}
-void CodeGenVisitor::visit(Identifier *node) {}
+void CodeGenVisitor::visit(ArrayElem *node){}
 void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {}
-void CodeGenVisitor::visit(ArrayElem *node) {}
+void CodeGenVisitor::visit(PairElem *node){}
 void CodeGenVisitor::visit(PairElem *node, std::string reg) {}
-void CodeGenVisitor::visit(PairElem*node) {}
 void CodeGenVisitor::visit(ArrayLiter *node, std::string reg) {}
+void CodeGenVisitor::visit(UnaryOperator *node, std::string reg) {
+   int oper = node -> op;
+   std:: string freeReg = getAvailableRegister();
+   if(oper == tok ::TOK_MINUS){
+        middle << "LDR " << freeReg << ", [sp]"/* need to add offset */<< std::endl
+               << "RSBS "<< freeReg << ", " << freeReg << ", #0"<< std::endl
+               << "BLVS p_throw_overflow_error" << std::endl
+               << "MOV r0, "<< freeReg;
+        p_throw_overflow_error();
+   }else if(oper == tok::TOK_BANG){
+        middle << "LDRSB " << freeReg << ", [sp]" /*need to add offset*/ << std::endl
+               << "EOR "<< freeReg << ", " << reg << ", #1" << std::endl
+               << "MOV r0, " << freeReg << std::endl;
+   }else if(oper == tok::TOK_LEN){
+   //add implementation for len
+   }else if(oper == tok::TOK_ORD){
+   //add implementation for ord
+   }else if(oper == tok::TOK_CHR){
+   //add implementation for chr
+   }
+   freeRegister(freeReg);
+}
+
 void CodeGenVisitor::visit(NewPair *node, std::string reg) {
   middle << "  LDR r0, =8\n"
          << "  BL malloc\n"
@@ -550,33 +575,32 @@ void CodeGenVisitor::visit(NewPair *node, std::string reg) {
    }
    middle << "  STR r0, [r4]\n";
    node->snd->accept(this, "r5");
-   middle << "  LDR r0, =" << node->fst->type->size() << "\n"
+   middle << "  LDR r0, =" << node->snd->type->size() << "\n"
           << "  BL malloc\n";
    if (node->snd->type->equals(new CharTypeId)
         || node->snd->type->equals(new BoolTypeId)) {
      middle << "  STRB r5, [r0]\n";
    }
    else {
-     middle << "  STRB r5, [r0]\n";
+     middle << "  STR r5, [r0]\n";
    }
-   middle << "  STR r0, [r4,#4]\n";
+   middle << "  STR r0, [r4, #4]\n";
 
 
 
 }
-void CodeGenVisitor::visit(UnaryOperator *node, std::string reg) {}
 
 void CodeGenVisitor::p_check_divide_by_zero(void){ 
     if(!p_check_divide_by_zerob){
-        end     << "p_check_divide_by_zero:"<< "\n"
-                << "PUSH {lr}" << "\n"
-                << "CMP r1, #0" << "\n"
-                << "LDREQ r0, =msg_"<<messageNum << "\n"
-                << "BLEQ p_throw_runtime_error" << "\n"
-                << "POP {pc}" << "\n";
-        begin   << "msg_"<< messageNum << ":"<< "\n"
-                << ".word 45" << "\n"
-                << ".ascii \" DivideByZeroError : divide or modulo by zero \\n\\0\""<< "\n";
+        end     << "  p_check_divide_by_zero:"<< "\n"
+                << "  PUSH {lr}" << "\n"
+                << "  CMP r1, #0" << "\n"
+                << "  LDREQ r0, =msg_"<<messageNum << "\n"
+                << "  BLEQ p_throw_runtime_error" << "\n"
+                << "  POP {pc}" << "\n";
+        begin   << "  msg_"<< messageNum << ":"<< "\n"
+                << "  .word 45" << "\n"
+                << "  .ascii \" DivideByZeroError : divide or modulo by zero \\n\\0\""<< "\n";
                 messageNum ++ ; 
         p_check_divide_by_zerob = true;
        p_throw_runtime_error();
@@ -601,9 +625,9 @@ void CodeGenVisitor::p_throw_overflow_error(void){
 void CodeGenVisitor::p_throw_runtime_error(void){
     if(!p_throw_runtime_errorb){
          end    << "p_throw_run_time_error:" << "\n"
-                << "BL p_print_string"<< "\n"
-                << "MOV r0, #-1" << "\n"
-                << "BL exit"<< "\n";
+                << "  BL p_print_string"<< "\n"
+                << "  MOV r0, #-1" << "\n"
+                << "  BL exit"<< "\n";
         p_throw_runtime_errorb = true; 
     }
 }
