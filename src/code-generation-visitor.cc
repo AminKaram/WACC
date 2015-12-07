@@ -401,10 +401,12 @@ void CodeGenVisitor::visit(String *node, std::string reg) {
 			".data" << "\n"
 					<< "\n";
   }
-  middle << "  LDR " << reg << ", =msg_" << messageNum << "\n";
-  begin  << "msg_" << messageNum << ":" << "\n"
-         << "  .word" << node->  value.length() << "\n"
-         << "  .ascii " << node-> value << "\n";
+  middle << 
+		"  LDR " << reg << ", =msg_" << messageNum << "\n";
+  begin  << 
+		"msg_" << messageNum << ":" << "\n" <<
+        "  .word " << node->value.size() << "\n" <<
+        "  .ascii " << node->value << "\n";
   messageNum++;
          
 }
