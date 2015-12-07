@@ -227,7 +227,16 @@ void CodeGenVisitor::visit(Boolean *node) {
 void CodeGenVisitor::visit(Char *node) {
   *output << "  MOV R4, #'" << node->value  << "'" << std::endl;
 }
-void CodeGenVisitor::visit(String *node) {}
+void CodeGenVisitor::visit(String *node) {
+    std::string reg = getAvailableRegister();
+    *ouput<< "STR " << reg << ", =msg_" << messageNum << std::endl;
+    //ADD THE FOLLOWING TO THE START OF THE STREAM
+    /*
+    *output << "msg_"<<messageNum<<":"<<std::endl
+            << ".word " << strlen(node -> value) << std::endl
+            << ".ascii \"" << node->value << "\"" << std::endl;
+            */
+}
 void CodeGenVisitor::visit(Null *node) {}
 
 void CodeGenVisitor::visit(BinaryOperator *node) {
