@@ -531,22 +531,30 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
    int oper = node -> op;
          
          std::string firstReg  = reg;
-         std::string tmp = reg.erase(0,1);
-         std::string secondReg = "r" + std::to_string(atoi(tmp.c_str()) + 1);
+         int tmp = atoi(reg.erase(0,1).c_str()) + 1;
+         std::string secondReg = "r" + std::to_string(tmp);
+         if (tmp > 10) { 
+           secondReg = "r10";   
+         }
          node -> left -> accept(this,firstReg);
+         if(tmp > 10) {
+           middle << "  PUSH {r10}\n";
+         }
          node -> right -> accept(this,secondReg);
+         if (tmp > 10) {
+           middle << "  POP {r11}\n";
+           firstReg = "r10";
+           secondReg = "r11";
+         }
      if(oper == tok::TOK_LOGOR || oper == tok::TOK_LOGAND){
 
       if (oper == tok::TOK_LOGOR){
-      //Implementation code-gen for OR 
-          
+      //Implementation code-gen for OR
          middle << "  ORR "<< firstReg << ", " << firstReg << ", "
 
                 << secondReg << "\n";
-    
        } else if (oper == tok::TOK_LOGAND){
       //Implementation code-gen for AND      
-
          middle << "  AND "<< firstReg << ", " << firstReg << ", "
                 << secondReg << "\n";
       }      
