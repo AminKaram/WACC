@@ -328,7 +328,7 @@ void CodeGenVisitor::printMsgRead(TypeId *type) {
         begin << 
            "msg_" << messageNum << ":" << std::endl <<
            "  .word 4" << std::endl <<
-           "  .ascii  \"%c\\0\"" << std::endl;
+           "  .ascii  \" %c\\0\"" << std::endl;
         charMessageNum = messageNum;
         messageNum++;
 //      }
