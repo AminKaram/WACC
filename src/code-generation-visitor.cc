@@ -758,8 +758,8 @@ void CodeGenVisitor::visit(UnaryOperator *node, std::string reg) {
         middle << "  EOR "<< reg << ", " << reg << ", #1" << std::endl
                << "  MOV r0, " << reg << std::endl;
    }else if(oper == tok::TOK_LEN){
-   //add implementation for len
-   }else if(oper == tok::TOK_ORD){
+      middle << "  LDR " << reg << ", [" << reg << "]\n";  
+   }else if(oper == tok::TOK_ORD){ 
    }else if(oper == tok::TOK_CHR){
    }
 }
