@@ -417,7 +417,7 @@ void CodeGenVisitor::visit(Null *node, std::string reg) {}
 
 void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
    int oper = node -> op;
-         std:: string firstReg = reg; 
+         std:: string firstReg = getAvailableRegister(); 
          std:: string secondReg = getAvailableRegister();
 
    if(oper == tok::TOK_LOGOR || oper == tok::TOK_LOGAND){
