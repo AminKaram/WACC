@@ -781,8 +781,7 @@ void CodeGenVisitor::visit(NewPair *node, std::string reg) {
 
   middle << "  LDR r0, =" << node->fst->type->size() << "\n"
          << "  BL malloc\n";
-   if (node->fst->type->equals(new CharTypeId)
-         || node->fst->type->equals(new BoolTypeId)) {
+   if (node -> fst -> type -> size() == 1) {
      middle << "  STRB r5, [r0]\n";
    }
    else {
@@ -792,8 +791,7 @@ void CodeGenVisitor::visit(NewPair *node, std::string reg) {
    node->snd->accept(this, "r5");
    middle << "  LDR r0, =" << node->snd->type->size() << "\n"
           << "  BL malloc\n";
-   if (node->snd->type->equals(new CharTypeId)
-        || node->snd->type->equals(new BoolTypeId)) {
+   if (node->snd -> type ->size() == 1) {
      middle << "  STRB r5, [r0]\n";
    }
    else {
