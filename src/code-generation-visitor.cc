@@ -348,7 +348,7 @@ void CodeGenVisitor::printMsg(TypeId *type) {
     }
 
     if (charTypeId) {
-		middle <<
+		middle << "MOV r0, r4\n"
 				"  BL putchar" << "\n";
 	} else if(stringTypeId) {
 		middle <<
@@ -364,7 +364,7 @@ void CodeGenVisitor::printMsg(TypeId *type) {
         stringMessageNum = messageNum;
 		messageNum++;
 	} else if(intTypeId) {
-		middle <<
+		middle << "MOV r0, r4\n"
 				"  BL p_print_int" << "\n";
 			begin << 
 				 "msg_" << messageNum << ":" << std::endl <<
@@ -373,7 +373,7 @@ void CodeGenVisitor::printMsg(TypeId *type) {
 		 intMessageNum = messageNum;
 		 messageNum++;
 	} else if(boolTypeId) {
-		middle <<
+		middle << "MOV r0, r4\n"
 				"  BL p_print_bool" << "\n";
 		if (!msgBool) {
 			msgBool = true;
@@ -535,8 +535,8 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
 
    int oper = node -> op;
          
-         std:: string firstReg  = getAvailableRegister();
-         std:: string secondReg = getAvailableRegister();
+         std:: string firstReg  = "r4";
+         std:: string secondReg = "r5";
          node -> left -> accept(this,firstReg);
          node -> right -> accept(this,secondReg);
      if(oper == tok::TOK_LOGOR || oper == tok::TOK_LOGAND){
@@ -593,7 +593,7 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
              middle << "  ADDS "<< firstReg <<", "<< firstReg <<", "
              << secondReg << "\n"
             
-             << "  BELVS p_throw_overflow_error"<< "\n";
+             << "  BLVS p_throw_overflow_error"<< "\n";
 
              p_throw_overflow_error();
                      
@@ -604,7 +604,7 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
              middle << "  SUBS "<< firstReg <<", "<< firstReg <<", "
              << secondReg << "\n"
 
-             << "  BELVS p_throw_overflow_error"<< "\n";
+             << "  BLVS p_throw_overflow_error"<< "\n";
              p_throw_overflow_error();
            } 
         }else if (oper >= tok::TOK_LESS && oper <= tok::TOK_NOTEQUALS){
@@ -643,7 +643,7 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
            }
     }
 
-    middle << "  MOV "<< reg << ", " << firstReg << "\n";
+    middle << "  MOV "<< "r0" << ", " << firstReg << "\n";
     freeRegister(firstReg);
     freeRegister(secondReg);
 }
@@ -733,6 +733,12 @@ void CodeGenVisitor::visit(NewPair *node, std::string reg) {
 
 void CodeGenVisitor::p_check_divide_by_zero(void){ 
     if(!p_check_divide_by_zerob){
+      if (!beginInitialisation) {
+      beginInitialisation = true;
+      begin <<
+        ".data" << "\n"
+            << "\n";
+      }
         end     << "p_check_divide_by_zero:"<< "\n"
                 << "  PUSH {lr}" << "\n"
                 << "  CMP r1, #0" << "\n"
@@ -751,10 +757,16 @@ void CodeGenVisitor::p_check_divide_by_zero(void){
 
 void CodeGenVisitor::p_throw_overflow_error(void){
     if(!p_throw_overflow_errorb){
+      if (!beginInitialisation) {
+      beginInitialisation = true;
+      begin <<
+        ".data" << "\n"
+            << "\n";
+      }
         end     << "p_throw_overflow_error: " << "\n"
 
                 << "  LDR r0, =msg_"<< messageNum<< "\n"
-                << "  BL p_throw_runtime_error" << "\n";
+                << "  BL p_throw_runtime_error  " << "\n";
         begin   << "msg_"<< messageNum << ":"<<"\n"
                 << "  .word 82"<< "\n"
                 << "  .ascii \"OverflowError: the result is too small/large to store in a 4 byte signed integer \\n\""<<"\n";
@@ -768,6 +780,12 @@ void CodeGenVisitor::p_throw_overflow_error(void){
 
 void CodeGenVisitor::p_throw_runtime_error(void){
     if(!p_throw_runtime_errorb){
+      if (!beginInitialisation) {
+      beginInitialisation = true;
+      begin <<
+        ".data" << "\n"
+            << "\nass";
+      }
          end    << "p_throw_runtime_error:" << "\n"
          "  BL p_print_string" << "\n";
              if (!msgString) {
@@ -776,7 +794,8 @@ void CodeGenVisitor::p_throw_runtime_error(void){
                   "msg_" << messageNum << ":" << std::endl <<
                   "  .word 5" << std::endl <<
                   "  .ascii  \"%.*s\\0\"" << std::endl;
-                  messageNum ++ ;
+                 stringMessageNum = messageNum;
+                 messageNum ++ ;
 
               }
                end << "  MOV r0, #-1" << "\n"
