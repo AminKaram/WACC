@@ -120,16 +120,6 @@ void CodeGenVisitor::visit(VariableDeclaration *node) {
   }
   varMap->operator[](node->id->id) = offset;
 
-// effective version of variable dec(USED IN DECLARING MULTIPLE VARIABLE)
-// let x be sum of the memory size of type in each assignment statement for all of 
-// the statement
-// SUB sp, sp, x
-// MOV r0, #value of first assign
-// STR r0, [sp, x - memory size of first assignment type]
-// repeat until all assignment done 
-// ADD sp, sp, x
-// See many variables declaration example for more information
-
   
 }
 void CodeGenVisitor::visit(FunctionDeclaration *node) {
@@ -182,9 +172,9 @@ void CodeGenVisitor::visit(Assignment *node) {
              //bound checking branch done here
              << "  ADD r5, r5, #4\n";
       if(arrLhs->type->size() == 1) {
-        middle << "  ADD r5, 5, r6, LSL #0\n";
+        middle << "  ADD r5, 5, r6, #0\n";
       } else {
-        middle << "  ADD r5, r5, r6, LSL #2\n";
+        middle << "  ADD r5, r5, r6, #2\n";
       }
     }
     middle << "  STR r4, [r5]\n";
@@ -767,6 +757,7 @@ void CodeGenVisitor::visit(UnaryOperator *node, std::string reg) {
    int oper = node -> op;
    node->expr->accept(this, reg);
    if(oper == tok ::TOK_MINUS){
+        middle << "INTO MINUS" << std::endl;
         middle << "  RSBS "<< reg << ", " << reg << ", #0"<< std::endl
                << "  BLVS p_throw_overflow_error" << std::endl
                << "  MOV r0, "<< reg << std::endl;
