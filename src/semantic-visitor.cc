@@ -114,6 +114,7 @@ void SemanticVisitor::visit(FunctionDeclaration *node) {
   for(int i=0; i < node->parameters->size(); i++) {
     TypeId *paramType = node->parameters->operator[](i)->type;
     params.push_back(ParamId(paramType));
+    node->parameters->operator[](i)->isParam = true;
   }
   
   FunctionId *func = new FunctionId(returnType, params);

@@ -114,24 +114,25 @@ void CodeGenVisitor::visit(VariableDeclaration *node) {
       } else {
       sizeSoFar += node->type->size();
       break;
-    }
+      }
     }
     sizeSoFar += node->table->variables->operator[](i)->type->size();
   }
   int offset = scopeSize - sizeSoFar;
-
-  if (node->type->equals(new BoolTypeId()) || node->type->equals(new CharTypeId())) {
-    middle << "  STRB r4, [sp" << (offset == 0 ? "" : ", #" + std::to_string(offset)) << "]\n"; 
-  } else {
-    middle << "  STR r4 ,[sp"<< (offset == 0 ? "" : ", #" + std::to_string(offset)) << "]\n"; 
+  if (!node->isParam) {
+    if (node->type->equals(new BoolTypeId()) || node->type->equals(new CharTypeId())) {
+      middle << "  STRB r4, [sp" << (offset == 0 ? "" : ", #" + std::to_string(offset)) << "]\n"; 
+    } else {
+      middle << "  STR r4 ,[sp"<< (offset == 0 ? "" : ", #" + std::to_string(offset)) << "]\n"; 
+    }
   }
   varMap->operator[](node->id->id) = offset;
-  std::cout << node->id->id << "  " << offset << std::endl;
 
   
 }
 void CodeGenVisitor::visit(FunctionDeclaration *node) {
 
+  scopeSize = 0;
   middle << "f_" << node->id->id << ":\n"
          << "  PUSH {lr}" << "\n";
   int sizeLocals = 0;
@@ -145,7 +146,6 @@ void CodeGenVisitor::visit(FunctionDeclaration *node) {
     scopeSize += node->table->variables->operator[](i)->type->size();
   }
   
-  std::cout << node->id->id << " size " << scopeSize <<std::endl;
   
   for (int i=0; i < node->table->variables->size(); i++) {
     if(node->table->isParam->operator[](node->table->variables->operator[](i))) {
@@ -155,8 +155,8 @@ void CodeGenVisitor::visit(FunctionDeclaration *node) {
   node->block->accept(this);
     middle << "  ADD sp, sp, #" << sizeLocals << "\n";
     middle << "  POP {pc}" << "\n"
-         << "  POP {pc}"  << "\n"
-         << "  .ltorg"   << "\n";
+           << "  POP {pc}"  << "\n"
+           << "  .ltorg"   << "\n";
 }
 
 
@@ -165,11 +165,11 @@ void CodeGenVisitor::visit(FunctionCall *node, std::string reg) {
     for(int i = node->parameters->size() - 1; i >= 0; i--) {
       node->parameters->operator[](i)->accept(this, reg);
       if(node->parameters->operator[](i)->type->size() > 1) {
-        middle << "  STR " << reg << ", [sp, #" 
+        middle << "  STR " << reg << ", [sp, #-" 
                <<  node->parameters->operator[](i)->type->size() 
                << "]!\n";
       } else {
-        middle << "  STRB " << reg << ", [sp, #" 
+        middle << "  STRB " << reg << ", [sp, #-" 
                <<  node->parameters->operator[](i)->type->size() 
                << "]!\n";
       }
@@ -178,6 +178,7 @@ void CodeGenVisitor::visit(FunctionCall *node, std::string reg) {
 
 
     middle << "  BL f_" << node->id->id << "\n"
+           << "  ADD sp, sp, #" << sizeParam << "\n" 
            << "  MOV " << reg << ",r0 \n";
 }
 
@@ -447,6 +448,7 @@ void CodeGenVisitor::printMsg(TypeId *type) {
 	  } else if(arrayTypeId) {
       //std::cout << "  BL p_print_reference" << "\n";
       middle << "  BL p_print_reference" << "\n";
+      printAssemblyOfPrintReference();
       if (!msgReference) {
         msgReference = true;
         begin << 
@@ -783,6 +785,7 @@ void CodeGenVisitor::visit(Identifier *node, std::string reg) {
 void CodeGenVisitor::visit(ArrayElem *node){}
 
 void CodeGenVisitor::printAssemblyCheckArrayBounds(){
+  p_throw_runtime_error();
   end <<
     "p_check_array_bounds: " << std::endl <<
     "  CMP r0, #0" << std::endl<<
@@ -793,6 +796,7 @@ void CodeGenVisitor::printAssemblyCheckArrayBounds(){
     "  LDRCS r0, =msg_" << checkArrayBoundMessageNum + 1 << std::endl <<
     "  BLCS p_throw_runtime_error" << std::endl <<
     "  POP {pc}" << "\n";
+    
 }
 
 void CodeGenVisitor::printMsgCheckArrayBounds() {
@@ -806,11 +810,11 @@ void CodeGenVisitor::printMsgCheckArrayBounds() {
       begin << 
          "msg_" << messageNum << ":" << std::endl <<
          "  .word 44" << std::endl <<
-         "  .ascii  \"ArrayIndexOutOfBoundsError: negative index\n\0\"" << std::endl;
+         "  .ascii  \"ArrayIndexOutOfBoundsError: negative index\"\n\0" << std::endl;
       begin << 
          "msg_" << messageNum + 1 << ":" << std::endl <<
          "  .word 45" << std::endl <<
-         "  .ascii  \"ArrayIndexOutOfBoundsError: index too large\n\0\"" << std::endl;
+         "  .ascii  \"ArrayIndexOutOfBoundsError: index too large\"\n\0" << std::endl;
       checkArrayBoundMessageNum = messageNum;
       messageNum+=2;
     }
