@@ -260,25 +260,25 @@ void CodeGenVisitor::visit(WhileStatement *node) {
 }
 
 void CodeGenVisitor::printAssemblyOfReadInt() {
-  middle << 
-        "p_read_int:" << "\n" <<
-        "  PUSH {lr}" << "\n" <<
-        "  MOV r1, r0" << "\n" <<
-        "  LDR r0, =msg_"<< intMessageNum << "\n" <<
-        "  ADD r0, r0, #4" << "\n" <<
-        "  BL scanf" << "\n" <<
-        "  POP {pc}" << "\n";
+  end << 
+      "p_read_int:" << "\n" <<
+      "  PUSH {lr}" << "\n" <<
+      "  MOV r1, r0" << "\n" <<
+      "  LDR r0, =msg_"<< intMessageNum << "\n" <<
+      "  ADD r0, r0, #4" << "\n" <<
+      "  BL scanf" << "\n" <<
+      "  POP {pc}" << "\n";
 }
 
 void CodeGenVisitor::printAssemblyOfReadChar() {
-  middle << 
-        "p_read_char:" << "\n" <<
-        "  PUSH {lr}" << "\n" <<
-        "  MOV r1, r0" << "\n" <<
-        "  LDR r0, =msg_"<< charMessageNum << "\n" <<
-        "  ADD r0, r0, #4" << "\n" <<
-        "  BL scanf" << "\n" <<
-        "  POP {pc}" << "\n";
+  end << 
+      "p_read_char:" << "\n" <<
+      "  PUSH {lr}" << "\n" <<
+      "  MOV r1, r0" << "\n" <<
+      "  LDR r0, =msg_"<< charMessageNum << "\n" <<
+      "  ADD r0, r0, #4" << "\n" <<
+      "  BL scanf" << "\n" <<
+      "  POP {pc}" << "\n";
 }
 
 void CodeGenVisitor::printMsgRead(TypeId *type) {
@@ -318,9 +318,9 @@ void CodeGenVisitor::printMsgRead(TypeId *type) {
 }
 
 void CodeGenVisitor::printStatementForRead(TypeId *type) {
-  
+
   if (!p_read_char && type->equals(new CharTypeId())) {
-      p_read_char = true;     
+      p_read_char = true;
       printAssemblyOfReadChar();
   } else if (!p_read_int && type->equals(new IntTypeId())) {
       p_read_int = true;
@@ -332,7 +332,6 @@ void CodeGenVisitor::visit(ReadStatement *node) {
 
   node->id->accept(this);
   TypeId *type = node->id->type;
-  if (!type) 
   printMsgRead(type);
   printStatementForRead(type);
 }
@@ -441,7 +440,7 @@ void CodeGenVisitor::printAssemblyOfPrintBool() {
 		"  MOV r0, #0" << std::endl<<
 		"  BL fflush" << std::endl<<
 		"  POP {pc}" << "\n";
-	  
+
 }
 
 void CodeGenVisitor::printAssemblyOfPrintInt() {
@@ -494,7 +493,8 @@ void CodeGenVisitor::printAssemblyOfPrintln() {
 }
 
 void CodeGenVisitor::visit(PrintlnStatement *node) {
-	node->expr->accept(this, "r0");
+	std::cout << "printlnstatement" << std::endl;
+  node->expr->accept(this, "r0");
 	TypeId *type = node->expr->type;
 	
 	printMsg(type);
@@ -503,14 +503,14 @@ void CodeGenVisitor::visit(PrintlnStatement *node) {
 	if(!p_print_ln) {	
 		p_print_ln = true;
 		printStatement(type);
+	  printAssemblyOfPrintln();
 	}
-	printAssemblyOfPrintln();
 }
 
 void CodeGenVisitor::visit(SkipStatement *node) { }
 
 void CodeGenVisitor::visit(Number *node, std::string reg) {
-  
+
   middle << "  LDR " << reg << ", =" << node->value << std::endl;
 }
 void CodeGenVisitor::visit(Boolean *node, std::string reg) {
@@ -692,8 +692,8 @@ void CodeGenVisitor::visit(UnaryOperator *node, std::string reg) {
    int oper = node -> op;
    std:: string freeReg = getAvailableRegister();
    if(oper == tok ::TOK_MINUS){
-        middle << "  LDR " << freeReg << ", [sp]"/* need to add offset */<< std::endl
-               << "  RSBS "<< freeReg << ", " << freeReg << ", #0"<< std::endl
+     node->expr->accept(this, freeReg);
+        middle << "  RSBS "<< freeReg << ", " << freeReg << ", #0"<< std::endl
                << "  BLVS p_throw_overflow_error" << std::endl
                << "  MOV r0, "<< freeReg << std::endl;
         p_throw_overflow_error();
