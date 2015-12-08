@@ -348,8 +348,7 @@ void CodeGenVisitor::printMsg(TypeId *type) {
     }
 
     if (charTypeId) {
-		middle << "MOV r0, r4\n"
-				"  BL putchar" << "\n";
+		middle << "  BL putchar" << "\n";
 	} else if(stringTypeId) {
 		middle <<
 				"  BL p_print_string" << "\n";
@@ -364,8 +363,7 @@ void CodeGenVisitor::printMsg(TypeId *type) {
         stringMessageNum = messageNum;
 		messageNum++;
 	} else if(intTypeId) {
-		middle << "MOV r0, r4\n"
-				"  BL p_print_int" << "\n";
+		middle << "  BL p_print_int" << "\n";
 			begin << 
 				 "msg_" << messageNum << ":" << std::endl <<
 				 "  .word 3" << std::endl <<
@@ -373,8 +371,7 @@ void CodeGenVisitor::printMsg(TypeId *type) {
 		 intMessageNum = messageNum;
 		 messageNum++;
 	} else if(boolTypeId) {
-		middle << "MOV r0, r4\n"
-				"  BL p_print_bool" << "\n";
+		middle << "  BL p_print_bool" << "\n";
 		if (!msgBool) {
 			msgBool = true;
 			begin << 
