@@ -102,6 +102,8 @@ private:
   bool p_throw_overflow_errorb = false;
   bool p_throw_runtime_errorb  = false;
   bool p_check_divide_by_zerob = false;
+
+  bool p_free_pairb  = false;
   
   void p_throw_runtime_error(void);
   void p_throw_overflow_error(void);

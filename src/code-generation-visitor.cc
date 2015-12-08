@@ -194,24 +194,27 @@ void CodeGenVisitor::visit(FreeStatement *node) {
     middle<< "  LDR r4, [sp]" << std::endl // add offset
           << "  Mov r0, r4\n"
           << "  BL p_free_pair\n";
-
-    end   << "  PUSH {lr}" << std::endl
-          << "  CMP r0, #0"<< std::endl
-          << "  LDREQ r0, =msg_"<<messageNum << std::endl
-          << "  BEQ p_throw_runtime_error"<< std::endl
-          << "  PUSH {r0}"<< std::endl
-          << "  LDR r0, [r0]"<< std::endl
-          << "  BL free"<< std::endl
-          << "  LDR r0, [sp]"<< std::endl
-          << "  LDR r0, [r0 , #4]"<< std::endl
-          << "  BL free"<< std::endl
-          << "  POP {r0}"<< std::endl
-          << "  BL free"<< std::endl
-          << "  POP {PC}"<< std::endl;
-    p_throw_runtime_error();
-    begin << "msg_"<< messageNum <<":"<<std::endl
-          << "  .word 50"<< std::endl
-          << "  .ascii \"NullReferenceError : dereference a null reference\\n\\0\""<< std::endl;
+     if(!p_free_pairb){
+         end   << "p_free_pair:"<<std::endl
+               << "  PUSH {lr}" << std::endl
+               << "  CMP r0, #0"<< std::endl
+               << "  LDREQ r0, =msg_"<<messageNum << std::endl
+               << "  BEQ p_throw_runtime_error"<< std::endl
+               << "  PUSH {r0}"<< std::endl
+               << "  LDR r0, [r0]"<< std::endl
+               << "  BL free"<< std::endl
+               << "  LDR r0, [sp]"<< std::endl
+               << "  LDR r0, [r0 , #4]"<< std::endl
+               << "  BL free"<< std::endl
+               << "  POP {r0}"<< std::endl
+               << "  BL free"<< std::endl
+               << "  POP {PC}"<< std::endl;
+         p_throw_runtime_error();
+         begin << "msg_"<< messageNum <<":"<<std::endl
+               << "  .word 50"<< std::endl
+               << "  .ascii \"NullReferenceError : dereference a null reference\\n\\0\""<< std::endl;
+        p_free_pairb = true;
+    }
          messageNum ++;
 }
 
