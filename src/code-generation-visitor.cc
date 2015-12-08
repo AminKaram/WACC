@@ -163,7 +163,8 @@ void CodeGenVisitor::visit(FunctionCall *node, std::string reg) {
     }
 
 
-    middle << "  BL " << "f_" << node->id->id << "\n"; 
+    middle << "  BL " << "f_" << node->id->id << "\n"
+           << "  MOV r0, " << reg << "\ns";
     if(sizeParam > 0 ) {
       middle << "  ADD sp, sp, #" << sizeParam << "\n";
     }
