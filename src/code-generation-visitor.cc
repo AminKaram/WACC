@@ -132,6 +132,7 @@ void CodeGenVisitor::visit(VariableDeclaration *node) {
 }
 void CodeGenVisitor::visit(FunctionDeclaration *node) {
 
+  scopeSize = 0;
   middle << "f_" << node->id->id << ":\n"
          << "  PUSH {lr}" << "\n";
   int sizeLocals = 0;
@@ -155,8 +156,8 @@ void CodeGenVisitor::visit(FunctionDeclaration *node) {
   node->block->accept(this);
     middle << "  ADD sp, sp, #" << sizeLocals << "\n";
     middle << "  POP {pc}" << "\n"
-         << "  POP {pc}"  << "\n"
-         << "  .ltorg"   << "\n";
+           << "  POP {pc}"  << "\n"
+           << "  .ltorg"   << "\n";
 }
 
 
@@ -165,11 +166,11 @@ void CodeGenVisitor::visit(FunctionCall *node, std::string reg) {
     for(int i = node->parameters->size() - 1; i >= 0; i--) {
       node->parameters->operator[](i)->accept(this, reg);
       if(node->parameters->operator[](i)->type->size() > 1) {
-        middle << "  STR " << reg << ", [sp, #" 
+        middle << "  STR " << reg << ", [sp, #-" 
                <<  node->parameters->operator[](i)->type->size() 
                << "]!\n";
       } else {
-        middle << "  STRB " << reg << ", [sp, #" 
+        middle << "  STRB " << reg << ", [sp, #-" 
                <<  node->parameters->operator[](i)->type->size() 
                << "]!\n";
       }
@@ -178,6 +179,7 @@ void CodeGenVisitor::visit(FunctionCall *node, std::string reg) {
 
 
     middle << "  BL f_" << node->id->id << "\n"
+           << "  ADD sp, sp, #" << sizeParam << "\n" 
            << "  MOV " << reg << ",r0 \n";
 }
 
