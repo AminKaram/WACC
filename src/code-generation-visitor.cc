@@ -734,6 +734,12 @@ void CodeGenVisitor::visit(NewPair *node, std::string reg) {
 
 void CodeGenVisitor::p_check_divide_by_zero(void){ 
     if(!p_check_divide_by_zerob){
+      if (!beginInitialisation) {
+      beginInitialisation = true;
+      begin <<
+        ".data" << "\n"
+            << "\n";
+      }
         end     << "p_check_divide_by_zero:"<< "\n"
                 << "  PUSH {lr}" << "\n"
                 << "  CMP r1, #0" << "\n"
@@ -751,11 +757,17 @@ void CodeGenVisitor::p_check_divide_by_zero(void){
 }
 
 void CodeGenVisitor::p_throw_overflow_error(void){
+  if (!beginInitialisation) {
+  beginInitialisation = true;
+  begin <<
+    ".data" << "\n"
+        << "\n";
+  }
     if(!p_throw_overflow_errorb){
         end     << "p_throw_overflow_error: " << "\n"
 
                 << "  LDR r0, =msg_"<< messageNum<< "\n"
-                << "  BL p_throw_runtime_error" << "\n";
+                << "  BL p_throw_runtime_error  " << "\n";
         begin   << "msg_"<< messageNum << ":"<<"\n"
                 << "  .word 82"<< "\n"
                 << "  .ascii \"OverflowError: the result is too small/large to store in a 4 byte signed integer \\n\""<<"\n";
@@ -768,6 +780,12 @@ void CodeGenVisitor::p_throw_overflow_error(void){
 }
 
 void CodeGenVisitor::p_throw_runtime_error(void){
+  if (!beginInitialisation) {
+  beginInitialisation = true;
+  begin <<
+    ".data" << "\n"
+        << "\n";
+  }
     if(!p_throw_runtime_errorb){
          end    << "p_throw_runtime_error:" << "\n"
          "  BL p_print_string" << "\n";
