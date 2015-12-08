@@ -755,7 +755,7 @@ void CodeGenVisitor::p_throw_overflow_error(void){
         end     << "p_throw_overflow_error: " << "\n"
 
                 << "  LDR r0, =msg_"<< messageNum<< "\n"
-                << "  BL p_throw_runtime_error\n" << "\n";
+                << "  BL p_throw_runtime_error" << "\n";
         begin   << "msg_"<< messageNum << ":"<<"\n"
                 << "  .word 82"<< "\n"
                 << "  .ascii \"OverflowError: the result is too small/large to store in a 4 byte signed integer \\n\""<<"\n";
