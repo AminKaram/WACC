@@ -102,7 +102,6 @@ void CodeGenVisitor::visit(FunctionDecList *node) {
 }
 void CodeGenVisitor::visit(VariableDeclaration *node) {
 // simpliest version for implementing variable declaration
-
   node->rhs->accept(this, "r4");
   int sizeSoFar = 0;
   for (int i = 0; i < node->table->variables->size(); i++) {
@@ -114,8 +113,7 @@ void CodeGenVisitor::visit(VariableDeclaration *node) {
   }
   if (node->type->equals(new BoolTypeId()) || node->type->equals(new CharTypeId())) {
     middle << "  STRB r4, [sp, #" << scopeSize-sizeSoFar << "]\n"; 
-  }
-  else {
+  } else {
     middle << "  STR r4, [sp, #" << scopeSize-sizeSoFar << "]\n"; 
   }
   varMap->operator[](node->id->id) = scopeSize - sizeSoFar;
@@ -163,7 +161,8 @@ void CodeGenVisitor::visit(FunctionCall *node, std::string reg) {
     }
 
 
-    middle << "  BL " << "f_" << node->id->id << "\n"; 
+    middle << "  BL " << "f_" << node->id->id << "\n"
+           << "  MOV r0, " << reg << "\n";
     if(sizeParam > 0 ) {
       middle << "  ADD sp, sp, #" << sizeParam << "\n";
     }
@@ -682,7 +681,22 @@ void CodeGenVisitor::visit(ArrayElem *node){}
 void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {}
 void CodeGenVisitor::visit(PairElem *node){}
 void CodeGenVisitor::visit(PairElem *node, std::string reg) {}
-void CodeGenVisitor::visit(ArrayLiter *node, std::string reg) {}
+
+void CodeGenVisitor::visit(ArrayLiter *node, std::string reg) {
+  ArrayId *arrType = dynamic_cast<ArrayId*>(node->type);
+  int elemSize = arrType->elementType->size();
+  int mallocSize = (node->elems->size() * elemSize) + 4;
+  middle << "  LDR r0,=" <<  mallocSize << "\n"
+         << "  BL malloc\n"
+         << "  MOV " << reg << ", r0\n";
+  for(int i = node->elems->size(); i > 0; i--) {
+    node->elems->operator[](i-1)->accept(this, "r5");
+    middle << "  STR r5, [" << reg << ", #"<< mallocSize - i*elemSize << "]\n";
+  }
+  middle << "  LDR r5, =" << node->elems->size() << "\n";
+  middle << "  STR r5, [" << reg << "]\n";
+}
+
 void CodeGenVisitor::visit(UnaryOperator *node, std::string reg) {
    int oper = node -> op;
    node->expr->accept(this, reg);
