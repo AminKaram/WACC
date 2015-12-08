@@ -49,6 +49,7 @@ void CodeGenVisitor::visit(Program *node) {
   if (end.rdbuf()->in_avail() != 0) {
       *file << end.rdbuf() << "\n" ;
     }
+
 }
 
 //void CodeGenVisitor::visit(AssignRhs *node) {
@@ -100,6 +101,7 @@ void CodeGenVisitor::visit(FunctionDecList *node) {
 }
 void CodeGenVisitor::visit(VariableDeclaration *node) {
 // simpliest version for implementing variable declaration
+
   node->rhs->accept(this, "r4");
   int sizeSoFar = 0;
   for (int i = 0; i < node->table->variables->size(); i++) {
@@ -116,6 +118,7 @@ void CodeGenVisitor::visit(VariableDeclaration *node) {
     middle << "  STR r4, [sp, #" << scopeSize-sizeSoFar << "]\n"; 
   }
   varMap->operator[](node->id->id) = scopeSize - sizeSoFar;
+
 // effective version of variable dec(USED IN DECLARING MULTIPLE VARIABLE)
 // let x be sum of the memory size of type in each assignment statement for all of 
 // the statement
@@ -129,14 +132,17 @@ void CodeGenVisitor::visit(VariableDeclaration *node) {
   
 }
 void CodeGenVisitor::visit(FunctionDeclaration *node) {
-  middle << "f_" << node->id->id << ":\n"
+
+  middle << node->id->id.append("_").append(node->id->id).append(":")
+          << "\n"
           << "  PUSH {lr}" << "\n";
   node->block->accept(this);
   middle << "  POP {pc}" << "\n"
-         << "  .ltorg"   << "\n";
+          << "  .ltorg"   << "\n";
 
 
 }
+
 
 void CodeGenVisitor::visit(FunctionCall *node, std::string reg) {
     int sizeParam = 0; 
@@ -152,6 +158,7 @@ void CodeGenVisitor::visit(FunctionCall *node, std::string reg) {
       sizeParam += node->parameters->operator[](i)->type->size();
     }
 
+
     middle << "  BL " << "f_" << node->id->id << "\n"; 
     if(sizeParam > 0 ) {
       middle << "  ADD sp, sp, #" << sizeParam << "\n";
@@ -166,6 +173,7 @@ void CodeGenVisitor::visit(Assignment *node) {
     middle << "  STR r4, [sp, #" << varMap->operator[](node->lhs->getId()) << "]\n";
   }
 }
+
 
 void CodeGenVisitor::visit(FreeStatement *node) {
     middle<< "  LDR r4, [sp]" << std::endl // add offset
@@ -191,6 +199,7 @@ void CodeGenVisitor::visit(FreeStatement *node) {
           << "  .ascii \"NullReferenceError : dereference a null reference\\n\\0\""<< std::endl;
 }
 
+
 void CodeGenVisitor::visit(ReturnStatement *node) {
   node->expr->accept(this, "r0");
 }
@@ -201,6 +210,7 @@ void CodeGenVisitor::visit(ExitStatement *node) {
   node->expr->accept(this, "r0");
 
   middle << "  BL exit"    << "\n";
+
 }
 
 void CodeGenVisitor::visit(BeginStatement *node) {}
@@ -208,7 +218,7 @@ void CodeGenVisitor::visit(BeginStatement *node) {}
 void CodeGenVisitor::visit(IfStatement *node) {
   node->expr->accept(this, "r4");
   middle << "  CMP r4, #0"                            << "\n"
-          << "  BEQ L" << std::to_string(labelNum)     << "\n";
+
   labelNum++;
   node->thenS->accept(this);
 
@@ -229,12 +239,15 @@ void CodeGenVisitor::visit(WhileStatement *node) {
   middle << "L" << std::to_string(labelNum) << ":" << "\n";
   node->doS->accept(this);
   middle << "L" << std::to_string(labelNum - 1) << ": " << "\n";
+
       node->expr->accept(this, "r4");
   middle << "  CMP r4, #1"                                << "\n"
+
           << "  BEQ L" << std::to_string(labelNum)         << "\n";
 }
 
 void CodeGenVisitor::visit(ReadStatement *node) {}
+
 
 void CodeGenVisitor::printMsg(TypeId *type) {
     IntTypeId *intTypeId       = dynamic_cast<IntTypeId*> (type);
@@ -313,6 +326,7 @@ void CodeGenVisitor::printlnMsg() {
 }
 
 
+
 void CodeGenVisitor::printAssemblyOfPrintString() {
 	end <<
 		"p_print_string: " << std::endl<<
@@ -369,6 +383,7 @@ void CodeGenVisitor::printStatement(TypeId *type) {
 }
 
 void CodeGenVisitor::visit(PrintStatement *node) {
+
     node->expr->accept(this, "r0");
     std::string stringToPrint;
     TypeId *type = node->expr->type;
@@ -437,11 +452,13 @@ void CodeGenVisitor::visit(Null *node, std::string reg) {}
 
 
 void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
+
    int oper = node -> op;
          std:: string firstReg = reg; 
          std:: string secondReg = getAvailableRegister();
 
    if(oper == tok::TOK_LOGOR || oper == tok::TOK_LOGAND){
+
          middle << "  LDRSB "<< firstReg << ", " /* << "[address where
          first value is stored]" (e.g. [sp])*/ << "\n";
          middle << "  LDRSB "<< secondReg <<", " /* << "[address where
@@ -451,10 +468,12 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
       //Implementation code-gen for OR 
           
          middle << "  ORR "<< firstReg << ", " << firstReg << ", "
+
                  << secondReg << "\n";
     
        } else if (oper == tok::TOK_LOGAND){
       //Implementation code-gen for AND      
+
          middle << "  AND "<< firstReg << ", " << firstReg << ", "
                  << secondReg << "\n";
       }      
@@ -476,6 +495,7 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
                      << "  ASR #31" << "\n"
 
                      << "  BLNE p_throw_overflow_error"<< "\n";
+
                      p_throw_overflow_error();
                      
 
@@ -483,11 +503,11 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
                //Implementation code gen for DIVIDE
                middle << "  MOV r0, "<< firstReg  << "\n"
                        << "  MOV r1, "<< secondReg << "\n"
+
                        << "  BL p_checkdivide_by_zero"<< "\n";
                p_check_divide_by_zero();
                middle << "  BL __aeabi_idiv"<< "\n";
         
-
            } else if (oper == tok::TOK_MODULO){
          //Implementation code-gen for MODULO 
 
@@ -502,11 +522,13 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
              << secondReg << "\n"
             
              << "  BELVS p_throw_overflow_error"<< "\n";
+
              p_throw_overflow_error();
                      
 
            } else if (oper == tok::TOK_MINUS){
          // Implementation code-gen for MINUS
+
              middle << "  SUBS "<< firstReg <<", "<< firstReg <<", "
              << secondReg << "\n"
 
@@ -621,8 +643,6 @@ void CodeGenVisitor::visit(NewPair *node, std::string reg) {
    }
    middle << "  STR r0, [r4, #4]\n";
 
-
-
 }
 
 void CodeGenVisitor::p_check_divide_by_zero(void){ 
@@ -636,6 +656,7 @@ void CodeGenVisitor::p_check_divide_by_zero(void){
         begin   << "msg_"<< messageNum << ":"<< "\n"
                 << "  .word 45" << "\n"
                 << "  .ascii \" DivideByZeroError : divide or modulo by zero \\n\\0\""<< "\n";
+
                 messageNum ++ ; 
         p_check_divide_by_zerob = true;
        p_throw_runtime_error();
@@ -645,11 +666,13 @@ void CodeGenVisitor::p_check_divide_by_zero(void){
 void CodeGenVisitor::p_throw_overflow_error(void){
     if(!p_throw_overflow_errorb){
         end     << "p_throw_overflow_error: " << "\n"
+
                 << "  LDR r0, =msg_"<< messageNum<< "\n"
                 << "  BL p_throw_runtime_error" << "\n";
         begin   << "msg_"<< messageNum << ":"<<"\n"
                 << "  .word 82"<< "\n"
                 << "  .ascii \"OverflowError: the result is too small/large to store in a 4 byte signed integer \\n\""<<"\n";
+
         messageNum ++ ; 
         p_throw_overflow_errorb = true;
 
@@ -663,6 +686,7 @@ void CodeGenVisitor::p_throw_runtime_error(void){
                 << "  BL p_print_string"<< "\n"
                 << "  MOV r0, #-1" << "\n"
                 << "  BL exit"<< "\n";
+
         p_throw_runtime_errorb = true; 
     }
 }

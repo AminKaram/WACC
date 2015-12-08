@@ -27,6 +27,7 @@ void SemanticVisitor::visit(Program *node) {
     exit(200);
   }
   node->statements->accept(this);
+
   node->table = scope;
 }
 
