@@ -82,6 +82,7 @@ public:
   Identifier *id = NULL;
   AssignRhs *rhs = NULL;
   SymbolTable *table = NULL;
+  bool isParam = false;
 
   VariableDeclaration(TypeId *type, Identifier *id);
 
