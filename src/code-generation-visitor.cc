@@ -139,8 +139,6 @@ void CodeGenVisitor::visit(FunctionDeclaration *node) {
   middle << "  POP {pc}" << "\n"
          << "  POP {pc}"  << "\n"
          << "  .ltorg"   << "\n";
-
-
 }
 
 
@@ -162,7 +160,7 @@ void CodeGenVisitor::visit(FunctionCall *node, std::string reg) {
 
 
     middle << "  BL " << "f_" << node->id->id << "\n"
-           << "  MOV r0, " << reg << "\n";
+           << "  MOV " << reg << ",r0 \n";
     if(sizeParam > 0 ) {
       middle << "  ADD sp, sp, #" << sizeParam << "\n";
     }
