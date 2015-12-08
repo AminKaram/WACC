@@ -223,10 +223,17 @@ void CodeGenVisitor::visit(FreeStatement *node) {
                << "  BL free"<< std::endl
                << "  POP {r0}"<< std::endl
                << "  BL free"<< std::endl
-               << "  POP {PC}"<< std::endl;
+               << "  POP {pc}"<< std::endl;
+ if (!beginInitialisation) {
+  beginInitialisation = true;
+  begin << 
+    ".data" << "\n"
+        << "\n";
+  }
+  
          begin << "msg_"<< messageNum <<":"<<std::endl
                << "  .word 50"<< std::endl
-               << "  .ascii \"NullReferenceError : dereference a null reference\\n\\0\""<< std::endl; 
+               << "  .ascii \"NullReferenceError: dereference a null reference\\n\\0\""<< std::endl; 
         messageNum ++;
          p_throw_runtime_error();
         
@@ -253,31 +260,31 @@ void CodeGenVisitor::visit(BeginStatement *node) {}
 
 void CodeGenVisitor::visit(IfStatement *node) {
   node->expr->accept(this, "r4");
-  labelNum++;
+  labelNum+= 2;
   middle << "  CMP r4, #0\n"
-         << "  BEQ L" << std::to_string(labelNum - 1)     << "\n";
+         << "  BEQ L" << std::to_string(labelNum - 2)     << "\n";
 
   node->thenS->accept(this);
 
-  middle << "  B L"  << std::to_string(labelNum)              << "\n"
-          << "L"      << std::to_string(labelNum - 1)   << ":" << "\n";
+  middle << "  B L"  << std::to_string(labelNum - 1)              << "\n"
+          << "L"      << std::to_string(labelNum - 2)   << ":" << "\n";
 
   node->elseS->accept(this);
 
-  middle << "L" << std::to_string(labelNum) << ":"  << "\n";
+  middle << "L" << std::to_string(labelNum -1) << ":"  << "\n";
 }
 
 void CodeGenVisitor::visit(WhileStatement *node) {
 
-  labelNum++;
-  middle << "  B L" << std::to_string(labelNum - 1) << "\n";
-  middle << "L" << std::to_string(labelNum) << ":" << "\n";
+  labelNum+= 2;
+  middle << "  B L" << std::to_string(labelNum - 2) << "\n";
+  middle << "L" << std::to_string(labelNum - 1) << ":" << "\n";
   node->doS->accept(this);
-  middle << "L" << std::to_string(labelNum - 1) << ": " << "\n";
+  middle << "L" << std::to_string(labelNum - 2) << ": " << "\n";
       node->expr->accept(this, "r4");
   middle << "  CMP r4, #1"                                << "\n"
 
-          << "  BEQ L" << std::to_string(labelNum)         << "\n";
+          << "  BEQ L" << std::to_string(labelNum - 1)         << "\n";
 }
 
 void CodeGenVisitor::printAssemblyOfReadInt() {
