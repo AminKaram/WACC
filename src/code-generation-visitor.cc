@@ -114,19 +114,19 @@ void CodeGenVisitor::visit(VariableDeclaration *node) {
       } else {
       sizeSoFar += node->type->size();
       break;
-    }
+      }
     }
     sizeSoFar += node->table->variables->operator[](i)->type->size();
   }
   int offset = scopeSize - sizeSoFar;
-
-  if (node->type->equals(new BoolTypeId()) || node->type->equals(new CharTypeId())) {
-    middle << "  STRB r4, [sp" << (offset == 0 ? "" : ", #" + std::to_string(offset)) << "]\n"; 
-  } else {
-    middle << "  STR r4 ,[sp"<< (offset == 0 ? "" : ", #" + std::to_string(offset)) << "]\n"; 
+  if (!node->isParam) {
+    if (node->type->equals(new BoolTypeId()) || node->type->equals(new CharTypeId())) {
+      middle << "  STRB r4, [sp" << (offset == 0 ? "" : ", #" + std::to_string(offset)) << "]\n"; 
+    } else {
+      middle << "  STR r4 ,[sp"<< (offset == 0 ? "" : ", #" + std::to_string(offset)) << "]\n"; 
+    }
   }
   varMap->operator[](node->id->id) = offset;
-  std::cout << node->id->id << "  " << offset << std::endl;
 
   
 }
@@ -146,7 +146,6 @@ void CodeGenVisitor::visit(FunctionDeclaration *node) {
     scopeSize += node->table->variables->operator[](i)->type->size();
   }
   
-  std::cout << node->id->id << " size " << scopeSize <<std::endl;
   
   for (int i=0; i < node->table->variables->size(); i++) {
     if(node->table->isParam->operator[](node->table->variables->operator[](i))) {
@@ -198,12 +197,14 @@ void CodeGenVisitor::visit(Assignment *node) {
              //bound checking branch done here
              << "  ADD r5, r5, #4\n";
       if(arrLhs->type->size() == 1) {
-        middle << "  ADD r5, r5, r6, LSL #0\n";
+        middle << "  ADD r5, r5, r6, LSL #0\n"
+               << "  STRB r4, [r5]\n";
       } else {
-        middle << "  ADD r5, r5, r6, LSL #2\n";
-      }
+        middle << "  ADD r5, r5, r6, LSL #2\n"
+               << "  STR r4, [r5]\n";
+      } 
     }
-    middle << "  STR r4, [r5]\n";
+    
     
   } else if(node->lhs->type->equals(boolType) || node->lhs->type->equals(charType)) {
     if (varMap->operator[](node->lhs->getId()) == 0) {
@@ -790,7 +791,7 @@ void CodeGenVisitor::printAssemblyCheckArrayBounds(){
     "  LDR r1, [r1]" << std::endl<<
     "  CMP r0, r1" << std::endl<<
     "  LDRCS r0, =msg_" << checkArrayBoundMessageNum + 1 << std::endl <<
-    "  CBLCS p_throw_runtime_error" << std::endl <<
+    "  BLCS p_throw_runtime_error" << std::endl <<
     "  POP {pc}" << "\n";
 }
 
@@ -805,11 +806,11 @@ void CodeGenVisitor::printMsgCheckArrayBounds() {
       begin << 
          "msg_" << messageNum << ":" << std::endl <<
          "  .word 44" << std::endl <<
-         "  .ascii  \"ArrayIndexOutOfBoundsError: negative index\n\0\"" << std::endl;
+         "  .ascii  \"ArrayIndexOutOfBoundsError: negative index\"\n\0" << std::endl;
       begin << 
          "msg_" << messageNum + 1 << ":" << std::endl <<
          "  .word 45" << std::endl <<
-         "  .ascii  \"ArrayIndexOutOfBoundsError: index too large\n\0\"" << std::endl;
+         "  .ascii  \"ArrayIndexOutOfBoundsError: index too large\"\n\0" << std::endl;
       checkArrayBoundMessageNum = messageNum;
       messageNum+=2;
     }
@@ -831,12 +832,14 @@ void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {
       middle << "  PUSH {r0}\n";
     }
 
+
     middle << "  MOV r0, r6\n"
            << "  MOV r1, " << reg << "\n";
            //bound checking branch done here
     if(reg == "r0") {
       middle << "  POP {r0}\n";        
     }
+
 
     middle << "  LDR " << reg << ", [" << reg << "]\n"
            << "  ADD " << reg << ", " << reg << ", #4\n";
