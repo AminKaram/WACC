@@ -837,8 +837,8 @@ void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {
 
 
     middle << "  MOV r0, r6\n"
-           << "  MOV r1, " << reg << "\n";
-           //bound checking branch done here
+           << "  MOV r1, " << reg << "\n"
+           << "BL p_check_array_bounds" << "\n";
     if(reg == "r0") {
       middle << "  POP {r0}\n";        
     }
