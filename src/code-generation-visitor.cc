@@ -580,7 +580,7 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
                middle << "  MOV r0, "<< firstReg  << "\n"
                       << "  MOV r1, "<< secondReg << "\n"
 
-                      << "  BL p_checkdivide_by_zero"<< "\n";
+                      << "  BL p_check_divide_by_zero"<< "\n";
                p_check_divide_by_zero();
                middle << "  BL __aeabi_idiv"<< "\n";
         
@@ -589,9 +589,10 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
 
                middle << "  MOV r0, "<< firstReg  << "\n"
                       << "  MOV r1, "<< secondReg << "\n"
-                      << "  BL p_checkdivide_by_zero"<< "\n";
+                      << "  BL p_check_divide_by_zero"<< "\n";
                p_check_divide_by_zero();
-               middle << "  BL __aeabi_idivmod"<< "\n";
+               middle << "  BL __aeabi_idivmod\n"
+                      << "  MOV r0, r1\n";
            } else if (oper == tok::TOK_PLUS){
         // Implementation code-gen for PLUS 
              middle << "  ADDS "<< firstReg <<", "<< firstReg <<", "
