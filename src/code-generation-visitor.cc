@@ -180,7 +180,7 @@ void CodeGenVisitor::visit(Assignment *node) {
              //bound checking branch done here
              << "  ADD r5, r5, #4\n";
       if(arrLhs->type->size() == 1) {
-        middle << "  ADD r5, 5, r6\n";
+        middle << "  ADD r5, 5, r6, LSL #0\n";
       } else {
         middle << "  ADD r5, r5, r6, LSL #2\n";
       }
@@ -223,7 +223,7 @@ void CodeGenVisitor::visit(FreeStatement *node) {
                << "  BL free"<< std::endl
                << "  POP {r0}"<< std::endl
                << "  BL free"<< std::endl
-               << "  POP {PC}"<< std::endl;
+               << "  POP {pc}"<< std::endl;
  if (!beginInitialisation) {
   beginInitialisation = true;
   begin << 
@@ -233,7 +233,7 @@ void CodeGenVisitor::visit(FreeStatement *node) {
   
          begin << "msg_"<< messageNum <<":"<<std::endl
                << "  .word 50"<< std::endl
-               << "  .ascii \"NullReferenceError : dereference a null reference\\n\\0\""<< std::endl; 
+               << "  .ascii \"NullReferenceError: dereference a null reference\\n\\0\""<< std::endl; 
         messageNum ++;
          p_throw_runtime_error();
         
@@ -746,9 +746,9 @@ void CodeGenVisitor::visit(ArrayLiter *node, std::string reg) {
   middle << "  LDR r0,=" <<  mallocSize << "\n"
          << "  BL malloc\n"
          << "  MOV " << reg << ", r0\n";
-  for(int i = node->elems->size(); i > 0; i--) {
-    node->elems->operator[](i-1)->accept(this, "r5");
-    middle << "  STR r5, [" << reg << ", #"<< mallocSize - i*elemSize << "]\n";
+  for(int i = 0; i < node->elems->size();) {
+    node->elems->operator[](i)->accept(this, "r5");
+    middle << "  STR r5, [" << reg << ", #"<< ++i*elemSize << "]\n";
   }
   middle << "  LDR r5, =" << node->elems->size() << "\n";
   middle << "  STR r5, [" << reg << "]\n";
@@ -786,7 +786,7 @@ void CodeGenVisitor::visit(NewPair *node, std::string reg) {
      middle << "  STRB r5, [r0]\n";
    }
    else {
-     middle << "  STRB r5, [r0]\n";
+     middle << "  STR r5, [r0]\n";
    }
    middle << "  STR r0, [r4]\n";
    node->snd->accept(this, "r5");
