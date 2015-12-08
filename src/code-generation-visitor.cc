@@ -550,10 +550,22 @@ void CodeGenVisitor::visit(UnaryOperator *node, std::string reg) {
                << "  MOV r0, " << freeReg << std::endl;
    }else if(oper == tok::TOK_LEN){
    //add implementation for len
+   //*******************NEED TO CHENGE THE REGISTERS******************
+        middle << "LDR r5, =" /*<<the length of the array*/ <<std::endl
+               << "STR r5, [r4]" << std::endl 
+               << "STR r4, [sp]" << std::endl 
+               << "STR r4, [sp]" << std::endl 
+               << "STR r4, [r4]" << std::endl
+               << "MOV r0 , r4"  << std::endl; 
    }else if(oper == tok::TOK_ORD){
    //add implementation for ord
+        middle<< "LDRSB "<< freeReg << ", [sp, #4]"/*add correct offset */<< std::endl
+              << "MOV " << reg << ", "<< freeReg << std::endl;
    }else if(oper == tok::TOK_CHR){
    //add implementation for chr
+        middle << "LDR " << freeReg << ", [sp]" /* add correct offset */ <<std::endl
+              << "MOV"<< reg <<", "<< freeReg << std::endl
+              << "BL putchar" <<std::endl;
    }
    freeRegister(freeReg);
 }
