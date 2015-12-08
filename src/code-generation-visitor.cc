@@ -139,7 +139,8 @@ void CodeGenVisitor::visit(FunctionDeclaration *node) {
           << "  PUSH {lr}" << "\n";
   node->block->accept(this);
   middle << "  POP {pc}" << "\n"
-          << "  .ltorg"   << "\n";
+         << "  Pop {pc}"  << "\n"
+         << "  .ltorg"   << "\n";
 
 
 }
