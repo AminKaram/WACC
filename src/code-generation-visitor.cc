@@ -628,6 +628,7 @@ void CodeGenVisitor::visit(String *node, std::string reg) {
 
 void CodeGenVisitor::visit(Null *node, std::string reg) {
   //std::cout<< "visit Null" << std::endl;
+  middle << "  MOV " << reg << ", #0" << std::endl;
 }
 
 
@@ -856,7 +857,9 @@ void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {
 }
 
 void CodeGenVisitor::visit(PairElem *node){}
-void CodeGenVisitor::visit(PairElem *node, std::string reg) {}
+void CodeGenVisitor::visit(PairElem *node, std::string reg) {
+
+}
 
 void CodeGenVisitor::visit(ArrayLiter *node, std::string reg) {
   ArrayId *arrType = dynamic_cast<ArrayId*>(node->type);
