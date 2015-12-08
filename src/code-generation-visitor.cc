@@ -790,7 +790,7 @@ void CodeGenVisitor::printAssemblyCheckArrayBounds(){
     "  LDR r1, [r1]" << std::endl<<
     "  CMP r0, r1" << std::endl<<
     "  LDRCS r0, =msg_" << checkArrayBoundMessageNum + 1 << std::endl <<
-    "  CBLCS p_throw_runtime_error" << std::endl <<
+    "  BLCS p_throw_runtime_error" << std::endl <<
     "  POP {pc}" << "\n";
 }
 
