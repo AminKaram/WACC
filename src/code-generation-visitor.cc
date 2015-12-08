@@ -518,26 +518,19 @@ void CodeGenVisitor::printStatement(TypeId *type) {
 			p_print_int = true;
 			printAssemblyOfPrintInt();
 	} else if (!p_print_reference && type->equals(new ArrayId(type))) {
-    std::cout << "printStatement" << "\n";
+    //std::cout << "printStatement" << "\n";
       p_print_reference = true;
       printAssemblyOfPrintReference();
     }
-  std::cout << "printStatement" << "\n";
+  //std::cout << "printStatement" << "\n";
 }
 
 void CodeGenVisitor::visit(PrintStatement *node) {
-  std::cout << "visit0" << "\n";
+  //std::cout << "visit0" << "\n";
   node->expr->accept(this, "r0");
-  std::cout << "visit1" << "\n";
   TypeId *type = node->expr->type;
-  std::cout << "visit" << "\n";
-  std::cout << type << "\n";
-  std::cout << "visit" << "\n";
 	printMsg(type);
-  std::cout << "visit2" << "\n";
   printStatement(type);
-  std::cout << "visitfinak" << "\n";
-
 }
 
 
@@ -571,16 +564,20 @@ void CodeGenVisitor::visit(PrintlnStatement *node) {
 void CodeGenVisitor::visit(SkipStatement *node) { }
 
 void CodeGenVisitor::visit(Number *node, std::string reg) {
+  //std::cout<< "visit Number" << std::endl;
   middle << "  LDR " << reg << ", =" << node->value << std::endl;
 }
 void CodeGenVisitor::visit(Boolean *node, std::string reg) {
+  //std::cout<< "Boolean" << std::endl;
   middle << "  MOV " << reg << ", #" << node->value << std::endl;
 }
 void CodeGenVisitor::visit(Char *node, std::string reg) {
+  //std::cout<< "visit char" << std::endl;
   middle << "  MOV " << reg << ", #'" << node->value  << "'" << std::endl;
 }
 
 void CodeGenVisitor::visit(String *node, std::string reg) {
+  //std::cout<< "visit String" << std::endl;
   int escapeChr = 0;
   if (!beginInitialisation) {
 		beginInitialisation = true;
@@ -606,10 +603,13 @@ void CodeGenVisitor::visit(String *node, std::string reg) {
          
 }
 
-void CodeGenVisitor::visit(Null *node, std::string reg) {}
+void CodeGenVisitor::visit(Null *node, std::string reg) {
+  //std::cout<< "visit Null" << std::endl;
+}
 
 
 void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
+   //std::cout<< "visit Binop" << std::endl;
    int oper = node -> op;
          
          std::string firstReg  = reg;
@@ -736,9 +736,10 @@ void CodeGenVisitor::visit(Identifier *node) {
 }
 
 void CodeGenVisitor::visit(Identifier *node, std::string reg) {
+  //std::cout<< "visit Identifier1" << std::endl;
 	if(adr) {
 		middle << "  ADD " << reg << ", sp, #" << varMap->operator[](node->id) << "\n";
-		return;
+    return;
 	}
   if(node->type->equals(new CharTypeId) || node->type->equals(new BoolTypeId())) {
     if(varMap->operator[](node->id) == 0) {
@@ -760,18 +761,21 @@ void CodeGenVisitor::visit(Identifier *node, std::string reg) {
 void CodeGenVisitor::visit(ArrayElem *node){}
 
 void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {
+    //std::cout << "visit ArrayElem" << std::endl;
     middle << "  ADD " << reg << ", sp ,#" << varMap->operator[](node->getId()) << "\n";
     for (int i=0; i < node->idxs->size(); i++) {
       node->idxs->operator[](i)->accept(this, "r6");
       if ( reg == "r0") {
         middle << "  PUSH {r0}\n";
       }
+
       middle << "  MOV r0, r6\n"
              << "  MOV r1, " << reg << "\n";
              //bound checking branch done here
       if(reg == "r0") {
         middle << "  POP {r0}\n";        
       }
+
       middle << "  LDR " << reg << ", [" << reg << "]\n"
              << "  ADD " << reg << ", " << reg << ", #4\n";
       if(node->type->size() == 1) {

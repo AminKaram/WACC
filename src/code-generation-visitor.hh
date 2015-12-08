@@ -38,6 +38,7 @@ public:
   void printMsgPrint(TypeId *type);
   void printMsg(TypeId *type);
   void printlnMsg();
+  void printAssemblyOfPrintReference();
   void printAssemblyOfPrintString();
   void printAssemblyOfPrintBool();
   void printAssemblyOfPrintInt();
@@ -87,21 +88,24 @@ private:
   
   bool beginInitialisation = false;
   
-  int stringMessageNum  = -1;
-  int boolMessageNum    = -1;
-  int newlineMessageNum = -1;
-  int intMessageNum     = -1;
-  int charMessageNum    = -1;
+  int stringMessageNum    = -1;
+  int boolMessageNum      = -1;
+  int newlineMessageNum   = -1;
+  int intMessageNum       = -1;
+  int charMessageNum      = -1;
+  int referenceMessageNum = -1;
   
-  bool msgInt     = false;
-  bool msgString  = false;
-  bool msgBool    = false;
-  bool msgChar    = false;
-  bool msgNewLine = false;
+  bool msgInt       = false;
+  bool msgString    = false;
+  bool msgBool      = false;
+  bool msgChar      = false;
+  bool msgNewLine   = false;
+  bool msgReference = false;  
 
   bool p_throw_overflow_errorb = false;
   bool p_throw_runtime_errorb  = false;
   bool p_check_divide_by_zerob = false;
+  bool p_print_reference       = false;
 
   bool p_free_pairb  = false;
   
