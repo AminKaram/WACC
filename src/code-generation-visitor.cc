@@ -357,9 +357,9 @@ void CodeGenVisitor::printMsg(TypeId *type) {
     				 "msg_" << messageNum << ":" << std::endl <<
     				 "  .word 5" << std::endl <<
     				 "  .ascii  \"%.*s\\0\"" << std::endl;
+          stringMessageNum = messageNum;
+          messageNum++;
     		}
-        stringMessageNum = messageNum;
-    		messageNum++;
 	} else if(intTypeId) {
   		middle << "  BL p_print_int" << "\n";
   			begin << 
