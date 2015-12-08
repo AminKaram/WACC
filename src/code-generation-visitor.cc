@@ -220,7 +220,6 @@ void CodeGenVisitor::visit(ReturnStatement *node) {
 }
 
 void CodeGenVisitor::visit(ExitStatement *node) {
-  std::cout << "exit" << std::endl;
 
   node->expr->accept(this, "r0");
 
@@ -283,7 +282,6 @@ void CodeGenVisitor::printAssemblyOfReadChar() {
 }
 
 void CodeGenVisitor::printMsgRead(TypeId *type) {
-  std::cout << "printMsgRead" << std:: endl;
   IntTypeId *intTypeId   = dynamic_cast<IntTypeId*> (type);
   CharTypeId *charTypeId = dynamic_cast<CharTypeId*> (type);
   
@@ -320,14 +318,11 @@ void CodeGenVisitor::printMsgRead(TypeId *type) {
 }
 
 void CodeGenVisitor::printStatementForRead(TypeId *type) {
-  std::cout << "printStatementForRead" << std:: endl;
   if (!p_read_char && type->equals(new CharTypeId())) {
       p_read_char = true;
-      std::cout << "printStatementForReadif" << std:: endl;
       printAssemblyOfReadChar();
   } else if (!p_read_int && type->equals(new IntTypeId())) {
       p_read_int = true;
-      std::cout << "printStatementForReadelse" << std:: endl;
       printAssemblyOfReadInt();
   }
 }
@@ -449,7 +444,6 @@ void CodeGenVisitor::printAssemblyOfPrintBool() {
 		"  MOV r0, #0" << std::endl<<
 		"  BL fflush" << std::endl<<
 		"  POP {pc}" << "\n";
-	   std::cout << boolMessageNum << std::endl;
 }
 
 void CodeGenVisitor::printAssemblyOfPrintInt() {
@@ -502,7 +496,6 @@ void CodeGenVisitor::printAssemblyOfPrintln() {
 }
 
 void CodeGenVisitor::visit(PrintlnStatement *node) {
-	std::cout << "printlnstatement" << std::endl;
   node->expr->accept(this, "r0");
 	TypeId *type = node->expr->type;
 	
@@ -519,7 +512,6 @@ void CodeGenVisitor::visit(PrintlnStatement *node) {
 void CodeGenVisitor::visit(SkipStatement *node) { }
 
 void CodeGenVisitor::visit(Number *node, std::string reg) {
-  std::cout << node->value << std::endl;
   middle << "  LDR " << reg << ", =" << node->value << std::endl;
 }
 void CodeGenVisitor::visit(Boolean *node, std::string reg) {
@@ -675,7 +667,7 @@ void CodeGenVisitor::visit(Identifier *node) {
 }
 
 void CodeGenVisitor::visit(Identifier *node, std::string reg) {
-  if(node->type->equals(new CharTypeId()) || node->type->equals(new IntTypeId())) {
+  if(node->type->equals(new StringTypeId()) || node->type->equals(new IntTypeId())) {
     if(varMap->operator[](node->id) == 0) {
       middle << "  LDRB " << reg << ", [sp]\n";
     } else { 
@@ -786,13 +778,18 @@ void CodeGenVisitor::p_throw_overflow_error(void){
 
 void CodeGenVisitor::p_throw_runtime_error(void){
     if(!p_throw_runtime_errorb){
-         end    << "p_throw_run_time_error:" << "\n"
-                << "  BL p_print_string"<< "\n"
-                << "  MOV r0, #-1" << "\n"
+         end    << "p_throw_run_time_error:" << "\n";
+                printMsg(new StringTypeId());
+               end << "  MOV r0, #-1" << "\n"
                 << "  BL exit"<< "\n";
 
-        p_throw_runtime_errorb = true; 
+        p_throw_runtime_errorb = true;
+        if (!p_print_string) {
+          p_print_string = true;
+          printAssemblyOfPrintString();
+        }
     }
+
 }
 
 void CodeGenVisitor::populateRegMap() {
