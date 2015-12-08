@@ -132,15 +132,12 @@ void CodeGenVisitor::visit(VariableDeclaration *node) {
 }
 void CodeGenVisitor::visit(FunctionDeclaration *node) {
 
-  middle << node->id->id.append("_").append(node->id->id).append(":")
-          << "\n"
-          << "  PUSH {lr}" << "\n";
+  middle << node->id->id << "_" << node->id->id << ":\n"
+         << "  PUSH {lr}" << "\n";
   node->block->accept(this);
   middle << "  POP {pc}" << "\n"
          << "  POP {pc}"  << "\n"
          << "  .ltorg"   << "\n";
-
-
 }
 
 
@@ -161,8 +158,8 @@ void CodeGenVisitor::visit(FunctionCall *node, std::string reg) {
     }
 
 
-    middle << "  BL " << "f_" << node->id->id << "\n"
-           << "  MOV r0, " << reg << "\n";
+    middle << "  BL " << node->id->id << "_" << node->id->id << "\n"
+           << "  MOV " << reg << ",r0 \n";
     if(sizeParam > 0 ) {
       middle << "  ADD sp, sp, #" << sizeParam << "\n";
     }
@@ -209,10 +206,10 @@ void CodeGenVisitor::visit(Assignment *node) {
 
 
 void CodeGenVisitor::visit(FreeStatement *node) {
-    if(!p_free_pairb){
          node -> expr -> accept(this,"r4");
          middle << "  Mov r0, r4\n"
                 << "  BL p_free_pair\n";
+    if(!p_free_pairb){     
          end   << "p_free_pair:"<<std::endl
                << "  PUSH {lr}" << std::endl
                << "  CMP r0, #0"<< std::endl
@@ -378,9 +375,9 @@ void CodeGenVisitor::printMsg(TypeId *type) {
     				 "msg_" << messageNum << ":" << std::endl <<
     				 "  .word 5" << std::endl <<
     				 "  .ascii  \"%.*s\\0\"" << std::endl;
+          stringMessageNum = messageNum;
+          messageNum++;
     		}
-        stringMessageNum = messageNum;
-    		messageNum++;
 	} else if(intTypeId) {
   		middle << "  BL p_print_int" << "\n";
   			begin << 
