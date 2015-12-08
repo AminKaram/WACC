@@ -11,7 +11,7 @@ CodeGenVisitor::~CodeGenVisitor() { }
 
 void CodeGenVisitor::visit(Program *node) {
 
-  middle << ".text" << "\n" << "\n"
+  middle << ".text" << std::endl<< "\n"
          << ".global main" << "\n";
 
   node->functions->accept(this);
@@ -30,7 +30,7 @@ void CodeGenVisitor::visit(Program *node) {
          << "  .ltorg"   << "\n";
 
   if (begin.rdbuf()->in_avail() != 0) {
-    *file << begin.rdbuf() << "\n" ;
+    *file << begin.rdbuf() << std::endl;
   }
   if (middle.rdbuf()->in_avail() != 0) {
       *file << middle.rdbuf() ;
@@ -293,42 +293,42 @@ void CodeGenVisitor::printlnMsg() {
 
 void CodeGenVisitor::printAssemblyOfPrintString() {
 	end <<
-		"p_print_string: " << "\n" <<
-		"  PUSH {lr}" << "\n" <<
-		"  LDR r1, [r0]" << "\n" <<
-		"  ADD r2, r0, #4" << "\n" <<
-		"  LDR r0, =msg_" << stringMessageNum << "\n" <<
-		"  ADD r0, r0, #4" << "\n" <<
-		"  BL printf" << "\n" <<
-		"  MOV r0, #0" << "\n" <<
-		"  BL fflush" << "\n" <<
+		"p_print_string: " << std::endl<<
+		"  PUSH {lr}" << std::endl<<
+		"  LDR r1, [r0]" << std::endl<<
+		"  ADD r2, r0, #4" << std::endl<<
+		"  LDR r0, =msg_" << stringMessageNum << std::endl<<
+		"  ADD r0, r0, #4" << std::endl<<
+		"  BL printf" << std::endl<<
+		"  MOV r0, #0" << std::endl<<
+		"  BL fflush" << std::endl<<
 		"  POP {pc}" << "\n";
 }
 
 void CodeGenVisitor::printAssemblyOfPrintBool() {
 	end <<
-		"p_print_bool: " << "\n" <<
-		"  PUSH {lr}" << "\n" <<
-		"  CMP r0, #0" << "\n" <<
-		"  LDRNE r0, =msg_" << boolMessageNum     << "\n" <<
-		"  LDREQ r0, =msg_" << boolMessageNum + 1 << "\n" <<
-		"  ADD r0, r0, #4" << "\n" <<
-		"  BL printf" << "\n" <<
-		"  MOV r0, #0" << "\n" <<
-		"  BL fflush" << "\n" <<
+		"p_print_bool: " << std::endl<<
+		"  PUSH {lr}" << std::endl<<
+		"  CMP r0, #0" << std::endl<<
+		"  LDRNE r0, =msg_" << boolMessageNum     << std::endl<<
+		"  LDREQ r0, =msg_" << boolMessageNum + 1 << std::endl<<
+		"  ADD r0, r0, #4" << std::endl<<
+		"  BL printf" << std::endl<<
+		"  MOV r0, #0" << std::endl<<
+		"  BL fflush" << std::endl<<
 		"  POP {pc}" << "\n";
 }
 
 void CodeGenVisitor::printAssemblyOfPrintInt() {
 	end <<
-		"p_print_int: " << "\n" <<
-		"  PUSH {lr}" << "\n" <<
-		"  MOV r1, r0" << "\n" <<
-		"  LDR r0, =msg_" << intMessageNum << "\n" <<
-		"  ADD r0, r0, #4" << "\n" <<
-		"  BL printf" << "\n" <<
-		"  MOV r0, #0" << "\n" <<
-		"  BL fflush" << "\n" <<
+		"p_print_int: " << std::endl<<
+		"  PUSH {lr}" << std::endl<<
+		"  MOV r1, r0" << std::endl<<
+		"  LDR r0, =msg_" << intMessageNum << std::endl<<
+		"  ADD r0, r0, #4" << std::endl<<
+		"  BL printf" << std::endl<<
+		"  MOV r0, #0" << std::endl<<
+		"  BL fflush" << std::endl<<
 		"  POP {pc}" << "\n";
 }
 
@@ -357,13 +357,13 @@ void CodeGenVisitor::visit(PrintStatement *node) {
 
 void CodeGenVisitor::printAssemblyOfPrintln() {
 	end <<
-		  "p_print_ln: " << "\n" <<
-		  "  PUSH {lr}" << "\n" <<
-		  "  LDR r0, =msg_" << newlineMessageNum << "\n" <<
-		  "  ADD r0, r0, #4" << "\n" <<
-		  "  BL puts" << "\n" <<
-		  "  MOV r0, #0" << "\n" <<
-		  "  BL fflush" << "\n" <<
+		  "p_print_ln: " << std::endl<<
+		  "  PUSH {lr}" << std::endl<<
+		  "  LDR r0, =msg_" << newlineMessageNum << std::endl<<
+		  "  ADD r0, r0, #4" << std::endl<<
+		  "  BL puts" << std::endl<<
+		  "  MOV r0, #0" << std::endl<<
+		  "  BL fflush" << std::endl<<
 		  "  POP {pc}" << "\n";
 }
 
@@ -403,8 +403,8 @@ void CodeGenVisitor::visit(String *node, std::string reg) {
   middle << 
 		"  LDR " << reg << ", =msg_" << messageNum << "\n";
   begin  << 
-		"msg_" << messageNum << ":" << "\n" <<
-        "  .word " << node->value.size() - 2 << "\n" <<
+		"msg_" << messageNum << ":" << std::endl<<
+        "  .word " << node->value.size() - 2 << std::endl<<
         "  .ascii " << node->value << "\n";
   messageNum++;
          
