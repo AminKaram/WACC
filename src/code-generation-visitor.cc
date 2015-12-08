@@ -93,6 +93,7 @@ void CodeGenVisitor::visit(VariableDeclaration *node) {
   int sizeSoFar = 0;
   for (int i = 0; i < node->table->variables->size(); i++) {
     if(node->table->variables->operator[](i)->id->id.compare(node->id->id) == 0) {
+      sizeSoFar += node->type->size();
       break;
     }
     sizeSoFar += node->table->variables->operator[](i)->type->size();
@@ -635,7 +636,7 @@ void CodeGenVisitor::p_throw_runtime_error(void){
 void CodeGenVisitor::populateRegMap() {
 	for (int i = 4; i < MAX_REG_NUMBER - 1; ++i) {
 		regTable->insert(std::pair <std::string, bool>
-										(std::string("R" + i), true));
+										(std::string("R" + std::to_string(i)), true));
 	}
 }
 
