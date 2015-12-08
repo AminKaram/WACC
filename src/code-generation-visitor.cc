@@ -172,12 +172,14 @@ void CodeGenVisitor::visit(Assignment *node) {
              //bound checking branch done here
              << "  ADD r5, r5, #4\n";
       if(arrLhs->type->size() == 1) {
-        middle << "  ADD r5, r5, r6, LSL #0\n";
+        middle << "  ADD r5, r5, r6, LSL #0\n"
+               << "  STRB r4, [r5]\n";
       } else {
-        middle << "  ADD r5, r5, r6, LSL #2\n";
-      }
+        middle << "  ADD r5, r5, r6, LSL #2\n"
+               << "  STR r4, [r5]\n";
+      } 
     }
-    middle << "  STR r4, [r5]\n";
+    
     
   } else if(node->lhs->type->equals(boolType) || node->lhs->type->equals(charType)) {
     if (varMap->operator[](node->lhs->getId()) == 0) {
@@ -766,7 +768,7 @@ void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {
 
       middle << "  MOV r0, r6\n"
              << "  MOV r1, " << reg << "\n";
-             //bound checking branch done here
+            
       if(reg == "r0") {
         middle << "  POP {r0}\n";        
       }
