@@ -55,6 +55,8 @@ public:
   void visit(BinaryOperator *node, std::string reg);
   void visit(Identifier *node, std::string reg);
   void visit(Identifier *node);
+  void printAssemblyCheckArrayBounds();
+  void printMsgCheckArrayBounds();
   void visit(ArrayElem *node, std::string reg);
   void visit(ArrayElem *node);
   void visit(PairElem *node, std::string reg);
@@ -88,24 +90,27 @@ private:
   
   bool beginInitialisation = false;
   
-  int stringMessageNum    = -1;
-  int boolMessageNum      = -1;
-  int newlineMessageNum   = -1;
-  int intMessageNum       = -1;
-  int charMessageNum      = -1;
-  int referenceMessageNum = -1;
+  int stringMessageNum          = -1;
+  int boolMessageNum            = -1;
+  int newlineMessageNum         = -1;
+  int intMessageNum             = -1;
+  int charMessageNum            = -1;
+  int referenceMessageNum       = -1;
+  int checkArrayBoundMessageNum = -1;      
   
-  bool msgInt       = false;
-  bool msgString    = false;
-  bool msgBool      = false;
-  bool msgChar      = false;
-  bool msgNewLine   = false;
-  bool msgReference = false;  
+  bool msgInt             = false;
+  bool msgString          = false;
+  bool msgBool            = false;
+  bool msgChar            = false;
+  bool msgNewLine         = false;
+  bool msgReference       = false;
+  bool msgCheckArrayBound = false;      
 
   bool p_throw_overflow_errorb = false;
   bool p_throw_runtime_errorb  = false;
   bool p_check_divide_by_zerob = false;
   bool p_print_reference       = false;
+  bool p_print_array_elem      = false;
 
   bool p_free_pairb  = false;
   
