@@ -128,16 +128,6 @@ void CodeGenVisitor::visit(VariableDeclaration *node) {
   varMap->operator[](node->id->id) = offset;
   std::cout << node->id->id << "  " << offset << std::endl;
 
-// effective version of variable dec(USED IN DECLARING MULTIPLE VARIABLE)
-// let x be sum of the memory size of type in each assignment statement for all of 
-// the statement
-// SUB sp, sp, x
-// MOV r0, #value of first assign
-// STR r0, [sp, x - memory size of first assignment type]
-// repeat until all assignment done 
-// ADD sp, sp, x
-// See many variables declaration example for more information
-
   
 }
 void CodeGenVisitor::visit(FunctionDeclaration *node) {
@@ -206,7 +196,7 @@ void CodeGenVisitor::visit(Assignment *node) {
              //bound checking branch done here
              << "  ADD r5, r5, #4\n";
       if(arrLhs->type->size() == 1) {
-        middle << "  ADD r5, 5, r6, LSL #0\n";
+        middle << "  ADD r5, r5, r6, LSL #0\n";
       } else {
         middle << "  ADD r5, r5, r6, LSL #2\n";
       }
@@ -287,15 +277,18 @@ void CodeGenVisitor::visit(BeginStatement *node) {}
 void CodeGenVisitor::visit(IfStatement *node) {
   node->expr->accept(this, "r4");
   labelNum+= 2;
+  int tmp = labelNum;
   middle << "  CMP r4, #0\n"
          << "  BEQ L" << std::to_string(labelNum - 2)     << "\n";
 
   node->thenS->accept(this);
+  labelNum = tmp;
 
   middle << "  B L"  << std::to_string(labelNum - 1)              << "\n"
           << "L"      << std::to_string(labelNum - 2)   << ":" << "\n";
 
   node->elseS->accept(this);
+  labelNum = tmp;
 
   middle << "L" << std::to_string(labelNum -1) << ":"  << "\n";
 }
@@ -303,9 +296,11 @@ void CodeGenVisitor::visit(IfStatement *node) {
 void CodeGenVisitor::visit(WhileStatement *node) {
 
   labelNum+= 2;
+  int temp = labelNum;
   middle << "  B L" << std::to_string(labelNum - 2) << "\n";
   middle << "L" << std::to_string(labelNum - 1) << ":" << "\n";
   node->doS->accept(this);
+   labelNum = temp;
   middle << "L" << std::to_string(labelNum - 2) << ": " << "\n";
       node->expr->accept(this, "r4");
   middle << "  CMP r4, #1"                                << "\n"
