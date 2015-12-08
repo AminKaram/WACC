@@ -447,6 +447,7 @@ void CodeGenVisitor::printMsg(TypeId *type) {
 	  } else if(arrayTypeId) {
       //std::cout << "  BL p_print_reference" << "\n";
       middle << "  BL p_print_reference" << "\n";
+      printAssemblyOfPrintReference();
       if (!msgReference) {
         msgReference = true;
         begin << 
@@ -782,6 +783,7 @@ void CodeGenVisitor::visit(Identifier *node, std::string reg) {
 void CodeGenVisitor::visit(ArrayElem *node){}
 
 void CodeGenVisitor::printAssemblyCheckArrayBounds(){
+  p_throw_runtime_error();
   end <<
     "p_check_array_bounds: " << std::endl <<
     "  CMP r0, #0" << std::endl<<
@@ -792,6 +794,7 @@ void CodeGenVisitor::printAssemblyCheckArrayBounds(){
     "  LDRCS r0, =msg_" << checkArrayBoundMessageNum + 1 << std::endl <<
     "  BLCS p_throw_runtime_error" << std::endl <<
     "  POP {pc}" << "\n";
+    
 }
 
 void CodeGenVisitor::printMsgCheckArrayBounds() {
