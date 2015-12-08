@@ -318,10 +318,6 @@ void CodeGenVisitor::printMsgRead(TypeId *type) {
 }
 
 void CodeGenVisitor::printStatementForRead(TypeId *type) {
-<<<<<<< HEAD
-=======
-
->>>>>>> 3ce180f7fe59bd3486cc5d7933da35e997fbd777
   if (!p_read_char && type->equals(new CharTypeId())) {
       p_read_char = true;
       printAssemblyOfReadChar();
@@ -443,10 +439,6 @@ void CodeGenVisitor::printAssemblyOfPrintBool() {
 		"  MOV r0, #0" << std::endl<<
 		"  BL fflush" << std::endl<<
 		"  POP {pc}" << "\n";
-<<<<<<< HEAD
-=======
-
->>>>>>> 3ce180f7fe59bd3486cc5d7933da35e997fbd777
 }
 
 void CodeGenVisitor::printAssemblyOfPrintInt() {
@@ -515,10 +507,7 @@ void CodeGenVisitor::visit(PrintlnStatement *node) {
 void CodeGenVisitor::visit(SkipStatement *node) { }
 
 void CodeGenVisitor::visit(Number *node, std::string reg) {
-<<<<<<< HEAD
-=======
 
->>>>>>> 3ce180f7fe59bd3486cc5d7933da35e997fbd777
   middle << "  LDR " << reg << ", =" << node->value << std::endl;
 }
 void CodeGenVisitor::visit(Boolean *node, std::string reg) {
