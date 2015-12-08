@@ -380,9 +380,9 @@ void CodeGenVisitor::printMsg(TypeId *type) {
   				 "msg_" << messageNum + 1 << ":" << std::endl <<
   				 "  .word 6" << std::endl <<
   				 "  .ascii \"false\\0\"" << std::endl;
-  		 }
-  		 boolMessageNum = messageNum;
-  		 messageNum+=2;
+        boolMessageNum = messageNum;
+        messageNum+=2;
+  		}
 	  }
 }
 
@@ -395,9 +395,9 @@ void CodeGenVisitor::printlnMsg() {
 			 "msg_" << messageNum << ":" << std::endl <<
 			 "  .word 1" << std::endl <<
 			 "  .ascii  \"\\0\"" << std::endl;
+	  newlineMessageNum = messageNum;
+	  messageNum++;
 	}           
-  newlineMessageNum = messageNum;     
-	messageNum++;
 }
 
 
