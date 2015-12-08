@@ -480,11 +480,6 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
                  << secondReg << "\n";
       }      
    } else if (oper >= tok::TOK_STAR && oper <= tok::TOK_MINUS){
-   
-             middle <<  "  LDR "<< firstReg << ", " /* << "[address where
-             first operand is stored]" (e.g. [sp])*/ << "\n";
-             middle << "  LDR "<< secondReg << ", "/* << "[address where
-             second operand is stored] (e.g. [sp , #4] )" */ << "\n";
            
            
            if(oper == tok :: TOK_STAR){
@@ -573,7 +568,7 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
            }
     }
 
-    middle << "  MOV "<< reg << firstReg << "\n";
+    middle << "  MOV "<< reg << ", " << firstReg << "\n";
     freeRegister(firstReg);
     freeRegister(secondReg);
 }
@@ -713,5 +708,4 @@ std::string CodeGenVisitor::getAvailableRegister() {
 
 void CodeGenVisitor::freeRegister(std::string reg) {
 	regTable->find(reg)->second = true;
-	middle << "  MOV " << reg << ", " << "#0" << "\n";
 }
