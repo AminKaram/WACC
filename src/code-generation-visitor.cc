@@ -519,7 +519,7 @@ void CodeGenVisitor::visit(SkipStatement *node) { }
 
 void CodeGenVisitor::visit(Number *node, std::string reg) {
   std::cout << node->value << std::endl;
-  middle << "  LDR " << reg << ", =" << node->value << std::endl;
+  middle << "  LDR " << reg << ",=" << node->value << std::endl;
 }
 void CodeGenVisitor::visit(Boolean *node, std::string reg) {
   middle << "  MOV " << reg << ", #" << node->value << std::endl;
