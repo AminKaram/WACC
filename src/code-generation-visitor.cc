@@ -114,19 +114,19 @@ void CodeGenVisitor::visit(VariableDeclaration *node) {
       } else {
       sizeSoFar += node->type->size();
       break;
-    }
+      }
     }
     sizeSoFar += node->table->variables->operator[](i)->type->size();
   }
   int offset = scopeSize - sizeSoFar;
-
-  if (node->type->equals(new BoolTypeId()) || node->type->equals(new CharTypeId())) {
-    middle << "  STRB r4, [sp" << (offset == 0 ? "" : ", #" + std::to_string(offset)) << "]\n"; 
-  } else {
-    middle << "  STR r4 ,[sp"<< (offset == 0 ? "" : ", #" + std::to_string(offset)) << "]\n"; 
+  if (!node->isParam) {
+    if (node->type->equals(new BoolTypeId()) || node->type->equals(new CharTypeId())) {
+      middle << "  STRB r4, [sp" << (offset == 0 ? "" : ", #" + std::to_string(offset)) << "]\n"; 
+    } else {
+      middle << "  STR r4 ,[sp"<< (offset == 0 ? "" : ", #" + std::to_string(offset)) << "]\n"; 
+    }
   }
   varMap->operator[](node->id->id) = offset;
-  std::cout << node->id->id << "  " << offset << std::endl;
 
   
 }
@@ -145,7 +145,6 @@ void CodeGenVisitor::visit(FunctionDeclaration *node) {
     scopeSize += node->table->variables->operator[](i)->type->size();
   }
   
-  std::cout << node->id->id << " size " << scopeSize <<std::endl;
   
   for (int i=0; i < node->table->variables->size(); i++) {
     if(node->table->isParam->operator[](node->table->variables->operator[](i))) {
