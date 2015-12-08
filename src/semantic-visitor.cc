@@ -122,9 +122,11 @@ void SemanticVisitor::visit(FunctionDeclaration *node) {
   scope->add("", *retType);
   
   for(int i = 0; i < node->parameters->size(); i++) {
-    std::string id = node->parameters->operator[](i)->id->id;
-    VariableId *var = new VariableId(params[i].type);
-    scope->add(id, *var);
+    //std::string id = node->parameters->operator[](i)->id->id;
+    scope->addVariable(node->parameters->operator[](i));
+    scope->isParam->operator[](node->parameters->operator[](i)) = true;
+    //VariableId *var = new VariableId(params[i].type);
+    //scope->add(id, *var);
   }
   
   node->block->accept(this);

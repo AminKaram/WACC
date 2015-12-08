@@ -102,23 +102,31 @@ void CodeGenVisitor::visit(FunctionDecList *node) {
 }
 void CodeGenVisitor::visit(VariableDeclaration *node) {
 // simpliest version for implementing variable declaration
-  node->rhs->accept(this, "r4");
+     std::cout << "variable declaration\n "; 
+  if(node->rhs) {
+    node->rhs->accept(this, "r4");
+  }
   int sizeSoFar = 0;
   for (int i = 0; i < node->table->variables->size(); i++) {
     if(node->table->variables->operator[](i)->id->id.compare(node->id->id) == 0) {
+      if (node->table->isParam->operator[](node->table->variables->operator[](i))) {
+          break;
+      } else {
       sizeSoFar += node->type->size();
       break;
+    }
     }
     sizeSoFar += node->table->variables->operator[](i)->type->size();
   }
   int offset = scopeSize - sizeSoFar;
-  
+
   if (node->type->equals(new BoolTypeId()) || node->type->equals(new CharTypeId())) {
     middle << "  STRB r4, [sp" << (offset == 0 ? "" : ", #" + std::to_string(offset)) << "]\n"; 
   } else {
     middle << "  STR r4 ,[sp"<< (offset == 0 ? "" : ", #" + std::to_string(offset)) << "]\n"; 
   }
   varMap->operator[](node->id->id) = offset;
+  std::cout << node->id->id << "  " << offset << std::endl;
 
 // effective version of variable dec(USED IN DECLARING MULTIPLE VARIABLE)
 // let x be sum of the memory size of type in each assignment statement for all of 
@@ -136,8 +144,27 @@ void CodeGenVisitor::visit(FunctionDeclaration *node) {
 
   middle << "f_" << node->id->id << ":\n"
          << "  PUSH {lr}" << "\n";
+  int sizeLocals = 0;
+  for (int i=0; i < node->table->variables->size(); i++) {
+    if(!node->table->isParam->operator[](node->table->variables->operator[](i))) {
+        sizeLocals = node->table->variables->operator[](i)->type->size();
+    } 
+  }
+  middle << "  SUB sp, sp, #" << sizeLocals << "\n"; 
+  for (int i=0; i < node->table->variables->size(); i++) {
+    scopeSize += node->table->variables->operator[](i)->type->size();
+  }
+  
+  std::cout << node->id->id << " size " << scopeSize <<std::endl;
+  
+  for (int i=0; i < node->table->variables->size(); i++) {
+    if(node->table->isParam->operator[](node->table->variables->operator[](i))) {
+      node->table->variables->operator[](i)->accept(this);
+    }
+  }
   node->block->accept(this);
-  middle << "  POP {pc}" << "\n"
+    middle << "  ADD sp, sp, #" << sizeLocals << "\n";
+    middle << "  POP {pc}" << "\n"
          << "  POP {pc}"  << "\n"
          << "  .ltorg"   << "\n";
 }
@@ -162,9 +189,6 @@ void CodeGenVisitor::visit(FunctionCall *node, std::string reg) {
 
     middle << "  BL f_" << node->id->id << "\n"
            << "  MOV " << reg << ",r0 \n";
-    if(sizeParam > 0 ) {
-      middle << "  ADD sp, sp, #" << sizeParam << "\n";
-    }
 }
 
 void CodeGenVisitor::visit(Assignment *node) {
