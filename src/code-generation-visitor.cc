@@ -6,6 +6,7 @@ CodeGenVisitor::CodeGenVisitor(std::ostream* stream) {
   file   = stream;
   regTable = new std::map<std::string, bool>();
   varMap = new std::map<std::string, int>();
+  populateRegMap();
 }
 
 CodeGenVisitor::~CodeGenVisitor() { }
@@ -149,10 +150,12 @@ void CodeGenVisitor::visit(FunctionCall *node, std::string reg) {
     for(int i = node->parameters->size() - 1; i >= 0; i--) {
       node->parameters->operator[](i)->accept(this, reg);
       if(node->parameters->operator[](i)->type->size() > 1) {
-        middle << "  STR " << reg << ", [sp, #" <<  node->parameters->operator[](i)->type->size() 
+        middle << "  STR " << reg << ", [sp, #" 
+               <<  node->parameters->operator[](i)->type->size() 
                << "]!\n";
       } else {
-        middle << "  STRB " << reg << ", [sp, #" <<  node->parameters->operator[](i)->type->size() 
+        middle << "  STRB " << reg << ", [sp, #" 
+               <<  node->parameters->operator[](i)->type->size() 
                << "]!\n";
       }
       sizeParam += node->parameters->operator[](i)->type->size();
@@ -167,10 +170,22 @@ void CodeGenVisitor::visit(FunctionCall *node, std::string reg) {
 
 void CodeGenVisitor::visit(Assignment *node) {
   node->rhs->accept(this, "r4");
-  if (varMap->operator[](node->lhs->getId()) == 0) {
-    middle << "  STR r4, [sp]\n";
+  IntTypeId *intType = new IntTypeId();
+  CharTypeId *charType = new CharTypeId();
+  if(node->lhs->type->equals(intType) || node->lhs->type->equals(charType)) {
+    if (varMap->operator[](node->lhs->getId()) == 0) {
+      middle << "  STRB r4, [sp]\n";
+    } else {
+      middle << "  STRB r4, [sp, #" << varMap->operator[](node->lhs->getId()) 
+             << "]\n";
+    }
   } else {
-    middle << "  STR r4, [sp, #" << varMap->operator[](node->lhs->getId()) << "]\n";
+      if (varMap->operator[](node->lhs->getId()) == 0) {
+        middle << "  STR r4, [sp]\n";
+      } else {
+        middle << "  STR r4, [sp, #" << varMap->operator[](node->lhs->getId()) 
+               << "]\n";
+      }
   }
 }
 
@@ -245,7 +260,90 @@ void CodeGenVisitor::visit(WhileStatement *node) {
           << "  BEQ L" << std::to_string(labelNum)         << "\n";
 }
 
-void CodeGenVisitor::visit(ReadStatement *node) {}
+void CodeGenVisitor::printAssemblyOfReadInt() {
+  middle << 
+        "p_read_int:" << "\n" <<
+        "  PUSH {lr}" << "\n" <<
+        "  MOV r1, r0" << "\n" <<
+        "  LDR r0, =msg_"<< intMessageNum << "\n" <<
+        "  ADD r0, r0, #4" << "\n" <<
+        "  BL scanf" << "\n" <<
+        "  POP {pc}" << "\n";
+}
+
+void CodeGenVisitor::printAssemblyOfReadChar() {
+  middle << 
+        "p_read_char:" << "\n" <<
+        "  PUSH {lr}" << "\n" <<
+        "  MOV r1, r0" << "\n" <<
+        "  LDR r0, =msg_"<< charMessageNum << "\n" <<
+        "  ADD r0, r0, #4" << "\n" <<
+        "  BL scanf" << "\n" <<
+        "  POP {pc}" << "\n";
+}
+
+void CodeGenVisitor::printMsgRead(TypeId *type) {
+  std::cout << "printMsgRead" << std:: endl;
+  IntTypeId *intTypeId   = dynamic_cast<IntTypeId*> (type);
+  CharTypeId *charTypeId = dynamic_cast<CharTypeId*> (type);
+  
+  if (!beginInitialisation) {
+  beginInitialisation = true;
+  begin << 
+    ".data" << "\n"
+        << "\n";
+  }
+  
+  if (charTypeId) {
+    middle <<
+        "  BL p_read_char" << "\n";
+    if (!msgChar) {
+      msgChar  = true;
+      begin << 
+         "msg_" << messageNum << ":" << std::endl <<
+         "  .word 4" << std::endl <<
+         "  .ascii  \"%c\\0\"" << std::endl;
+    } 
+  } else if(intTypeId) {
+      middle <<
+          "  BL p_read_int" << "\n";
+      if (!msgInt) {
+        msgInt = true;
+        begin << 
+           "msg_" << messageNum << ":" << std::endl <<
+           "  .word 3" << std::endl <<
+           "  .ascii  \"%d\\0\"" << std::endl;
+      }
+      intMessageNum = messageNum;
+      messageNum++;
+  }
+}
+
+void CodeGenVisitor::printStatementForRead(TypeId *type) {
+  std::cout << "printStatementForRead" << std:: endl;
+  if (!p_read_char && type->equals(new CharTypeId())) {
+      p_read_char = true;
+      std::cout << "printStatementForReadif" << std:: endl;
+      printAssemblyOfReadChar();
+  } else if (!p_read_int && type->equals(new IntTypeId())) {
+      p_read_int = true;
+      std::cout << "printStatementForReadelse" << std:: endl;
+      printAssemblyOfReadInt();
+  }
+}
+
+void CodeGenVisitor::visit(ReadStatement *node) {
+  //std::cout << "visit" << std:: endl;
+  node->id->accept(this);
+  //std::cout << "visit" << std:: endl;
+  TypeId *type = node->id->type;
+  if (!type) 
+  std::cout << "visit" << std:: endl;
+  printMsgRead(type);
+  //std::cout << "visit" << std:: endl;
+  printStatementForRead(type);
+  //std::cout << "visit" << std:: endl;
+}
 
 
 void CodeGenVisitor::printMsg(TypeId *type) {
@@ -253,7 +351,6 @@ void CodeGenVisitor::printMsg(TypeId *type) {
     StringTypeId *stringTypeId = dynamic_cast<StringTypeId*> (type);
     BoolTypeId *boolTypeId     = dynamic_cast<BoolTypeId*> (type);
     CharTypeId *charTypeId     = dynamic_cast<CharTypeId*> (type);
-
 
     if (!beginInitialisation) {
 		beginInitialisation = true;
@@ -454,10 +551,12 @@ void CodeGenVisitor::visit(Null *node, std::string reg) {}
 void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
 
    int oper = node -> op;
-         std:: string firstReg = reg; 
+         
+         std:: string firstReg  = getAvailableRegister();
          std:: string secondReg = getAvailableRegister();
-
-   if(oper == tok::TOK_LOGOR || oper == tok::TOK_LOGAND){
+         node -> left -> accept(this,firstReg);
+         node -> right -> accept(this,secondReg);
+     if(oper == tok::TOK_LOGOR || oper == tok::TOK_LOGAND){
 
          middle << "  LDRSB "<< firstReg << ", " /* << "[address where
          first value is stored]" (e.g. [sp])*/ << "\n";
@@ -478,11 +577,6 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
                  << secondReg << "\n";
       }      
    } else if (oper >= tok::TOK_STAR && oper <= tok::TOK_MINUS){
-   
-             middle <<  "  LDR "<< firstReg << ", " /* << "[address where
-             first operand is stored]" (e.g. [sp])*/ << "\n";
-             middle << "  LDR "<< secondReg << ", "/* << "[address where
-             second operand is stored] (e.g. [sp , #4] )" */ << "\n";
            
            
            if(oper == tok :: TOK_STAR){
@@ -570,10 +664,10 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
                      
            }
     }
-    middle << "  MOV r0, "<< firstReg << "\n";
+
+    middle << "  MOV "<< reg << ", " << firstReg << "\n";
     freeRegister(firstReg);
     freeRegister(secondReg);
-
 }
 
 void CodeGenVisitor::visit(Identifier *node) {
@@ -581,10 +675,20 @@ void CodeGenVisitor::visit(Identifier *node) {
 }
 
 void CodeGenVisitor::visit(Identifier *node, std::string reg) {
-  if(varMap->operator[](node->id) == 0) {
-    middle << "  LDR " << reg << ", [sp]\n";
-  } else { 
-    middle << "  LDR " << reg << ", [sp, #" << varMap->operator[](node->id) << "]\n";
+  if(node->type->equals(new CharTypeId()) || node->type->equals(new IntTypeId())) {
+    if(varMap->operator[](node->id) == 0) {
+      middle << "  LDRB " << reg << ", [sp]\n";
+    } else { 
+      middle << "  LDRB " << reg 
+             << ", [sp, #" << varMap->operator[](node->id) << "]\n";
+    }
+  } else {
+    if(varMap->operator[](node->id) == 0) {
+      middle << "  LDRB " << reg << ", [sp]\n";
+    } else { 
+      middle << "  LDRB " << reg 
+             << ", [sp, #" << varMap->operator[](node->id) << "]\n";
+    }
   }
 }
 
@@ -711,5 +815,4 @@ std::string CodeGenVisitor::getAvailableRegister() {
 
 void CodeGenVisitor::freeRegister(std::string reg) {
 	regTable->find(reg)->second = true;
-	middle << "  MOV " << reg << ", " << "#0" << "\n";
 }
