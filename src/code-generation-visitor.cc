@@ -6,6 +6,7 @@ CodeGenVisitor::CodeGenVisitor(std::ostream* stream) {
   file   = stream;
   regTable = new std::map<std::string, bool>();
   varMap = new std::map<std::string, int>();
+  populateRegMap();
 }
 
 CodeGenVisitor::~CodeGenVisitor() { }
@@ -36,9 +37,9 @@ void CodeGenVisitor::visit(Program *node) {
 
   node->statements->accept(this);
   middle << toEnd
-         << "  LDR R0, =0" << "\n"
+         << "  LDR r0, =0" << "\n"
          << "  POP {pc}" << "\n"
-         << "  .ltorg"   << "\n";
+         << "  .ltorg";
 
   if (begin.rdbuf()->in_avail() != 0) {
     *file << begin.rdbuf() << std::endl;
@@ -149,10 +150,12 @@ void CodeGenVisitor::visit(FunctionCall *node, std::string reg) {
     for(int i = node->parameters->size() - 1; i >= 0; i--) {
       node->parameters->operator[](i)->accept(this, reg);
       if(node->parameters->operator[](i)->type->size() > 1) {
-        middle << "  STR " << reg << ", [sp, #" <<  node->parameters->operator[](i)->type->size() 
+        middle << "  STR " << reg << ", [sp, #" 
+               <<  node->parameters->operator[](i)->type->size() 
                << "]!\n";
       } else {
-        middle << "  STRB " << reg << ", [sp, #" <<  node->parameters->operator[](i)->type->size() 
+        middle << "  STRB " << reg << ", [sp, #" 
+               <<  node->parameters->operator[](i)->type->size() 
                << "]!\n";
       }
       sizeParam += node->parameters->operator[](i)->type->size();
@@ -167,10 +170,22 @@ void CodeGenVisitor::visit(FunctionCall *node, std::string reg) {
 
 void CodeGenVisitor::visit(Assignment *node) {
   node->rhs->accept(this, "r4");
-  if (varMap->operator[](node->lhs->getId()) == 0) {
-    middle << "  STR r4, [sp]\n";
+  IntTypeId *intType = new IntTypeId();
+  CharTypeId *charType = new CharTypeId();
+  if(node->lhs->type->equals(intType) || node->lhs->type->equals(charType)) {
+    if (varMap->operator[](node->lhs->getId()) == 0) {
+      middle << "  STRB r4, [sp]\n";
+    } else {
+      middle << "  STRB r4, [sp, #" << varMap->operator[](node->lhs->getId()) 
+             << "]\n";
+    }
   } else {
-    middle << "  STR r4, [sp, #" << varMap->operator[](node->lhs->getId()) << "]\n";
+      if (varMap->operator[](node->lhs->getId()) == 0) {
+        middle << "  STR r4, [sp]\n";
+      } else {
+        middle << "  STR r4, [sp, #" << varMap->operator[](node->lhs->getId()) 
+               << "]\n";
+      }
   }
 }
 
@@ -201,13 +216,13 @@ void CodeGenVisitor::visit(FreeStatement *node) {
 
 
 void CodeGenVisitor::visit(ReturnStatement *node) {
-  node->expr->accept(this, "R0");
+  node->expr->accept(this, "r0");
 }
 
 void CodeGenVisitor::visit(ExitStatement *node) {
   std::cout << "exit" << std::endl;
 
-  node->expr->accept(this, "R0");
+  node->expr->accept(this, "r0");
 
   middle << "  BL exit"    << "\n";
 
@@ -216,11 +231,9 @@ void CodeGenVisitor::visit(ExitStatement *node) {
 void CodeGenVisitor::visit(BeginStatement *node) {}
 
 void CodeGenVisitor::visit(IfStatement *node) {
-
-  node->expr->accept(this, "R4");
-
-  middle << "  CMP R4, #0"                            << "\n"
-          << "  BEQ L" << std::to_string(labelNum)     << "\n";
+  node->expr->accept(this, "r4");
+  middle << "  CMP r4, #0\n"
+         << "  BEQ L" << std::to_string(labelNum)     << "\n";
   labelNum++;
   node->thenS->accept(this);
 
@@ -241,12 +254,11 @@ void CodeGenVisitor::visit(WhileStatement *node) {
   middle << "L" << std::to_string(labelNum) << ":" << "\n";
   node->doS->accept(this);
   middle << "L" << std::to_string(labelNum - 1) << ": " << "\n";
-  node->expr->accept(this, "R4");
+      node->expr->accept(this, "r4");
+  middle << "  CMP r4, #1"                                << "\n"
 
-  middle << "  CMP R4, #1"                                << "\n"
-         << "  BEQ L" << std::to_string(labelNum)         << "\n";
+          << "  BEQ L" << std::to_string(labelNum)         << "\n";
 }
-
 
 void CodeGenVisitor::printAssemblyOfReadInt() {
   middle << 
@@ -331,37 +343,38 @@ void CodeGenVisitor::visit(ReadStatement *node) {
   //std::cout << "visit" << std:: endl;
   printStatementForRead(type);
   //std::cout << "visit" << std:: endl;
-
 }
 
-void CodeGenVisitor::printMsgPrint(TypeId *type) {
-  IntTypeId *intTypeId       = dynamic_cast<IntTypeId*> (type);
-  StringTypeId *stringTypeId = dynamic_cast<StringTypeId*> (type);
-  BoolTypeId *boolTypeId     = dynamic_cast<BoolTypeId*> (type);
-  CharTypeId *charTypeId     = dynamic_cast<CharTypeId*> (type);
-  
-  if (!beginInitialisation) {
-	beginInitialisation = true;
-	begin << 
-		".data" << "\n"
-				<< "\n";
-  }
-  
-  if (charTypeId) {
+
+void CodeGenVisitor::printMsg(TypeId *type) {
+    IntTypeId *intTypeId       = dynamic_cast<IntTypeId*> (type);
+    StringTypeId *stringTypeId = dynamic_cast<StringTypeId*> (type);
+    BoolTypeId *boolTypeId     = dynamic_cast<BoolTypeId*> (type);
+    CharTypeId *charTypeId     = dynamic_cast<CharTypeId*> (type);
+
+    if (!beginInitialisation) {
+		beginInitialisation = true;
+		begin <<
+			".data" << "\n"
+					<< "\n";
+    }
+
+    if (charTypeId) {
 		middle <<
 				"  BL putchar" << "\n";
-  } else if(stringTypeId) {
+	} else if(stringTypeId) {
 		middle <<
 				"  BL p_print_string" << "\n";
-	if (!msgString) {
-		msgString  = true;
-		begin << 
-			 "msg_" << messageNum << ":" << std::endl <<
-			 "  .word 5" << std::endl <<
-			 "  .ascii  \"%.*s\\0\"" << std::endl;
-	 }         
-  stringMessageNum = messageNum;
-	messageNum++;
+		if (!msgString) {
+			msgString  = true;
+			begin <<
+				 "msg_" << messageNum << ":" << std::endl <<
+				 "  .word 5" << std::endl <<
+				 "  .ascii  \"%.*s\\0\"" << std::endl;
+		 }
+
+        stringMessageNum = messageNum;
+		messageNum++;
 	} else if(intTypeId) {
 		middle <<
 				"  BL p_print_int" << "\n";
@@ -375,8 +388,8 @@ void CodeGenVisitor::printMsgPrint(TypeId *type) {
 		 intMessageNum = messageNum;
 		 messageNum++;
 	} else if(boolTypeId) {
-  		middle <<
-  				"  BL p_print_bool" << "\n";
+		middle <<
+				"  BL p_print_bool" << "\n";
 		if (!msgBool) {
 			msgBool = true;
 			begin << 
@@ -436,7 +449,7 @@ void CodeGenVisitor::printAssemblyOfPrintBool() {
 		"  MOV r0, #0" << std::endl<<
 		"  BL fflush" << std::endl<<
 		"  POP {pc}" << "\n";
-	   //std::cout << boolMessageNum << std::endl;
+	   std::cout << boolMessageNum << std::endl;
 }
 
 void CodeGenVisitor::printAssemblyOfPrintInt() {
@@ -466,11 +479,13 @@ void CodeGenVisitor::printStatement(TypeId *type) {
 }
 
 void CodeGenVisitor::visit(PrintStatement *node) {
-  node->expr->accept(this, "r0");
-  TypeId *type = node->expr->type;
-	printMsgPrint(type);
-  printStatement(type);
 
+    node->expr->accept(this, "r0");
+    std::string stringToPrint;
+    TypeId *type = node->expr->type;
+
+	printMsg(type);
+    printStatement(type);
 }
 
 
@@ -490,7 +505,7 @@ void CodeGenVisitor::visit(PrintlnStatement *node) {
 	node->expr->accept(this, "r0");
 	TypeId *type = node->expr->type;
 	
-	printMsgPrint(type);
+	printMsg(type);
 	printlnMsg();
 	
 	if(!p_print_ln) {	
@@ -535,10 +550,12 @@ void CodeGenVisitor::visit(Null *node, std::string reg) {}
 void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
 
    int oper = node -> op;
-         std:: string firstReg = reg; 
+         
+         std:: string firstReg  = getAvailableRegister();
          std:: string secondReg = getAvailableRegister();
-
-   if(oper == tok::TOK_LOGOR || oper == tok::TOK_LOGAND){
+         node -> left -> accept(this,firstReg);
+         node -> right -> accept(this,secondReg);
+     if(oper == tok::TOK_LOGOR || oper == tok::TOK_LOGAND){
 
          middle << "  LDRSB "<< firstReg << ", " /* << "[address where
          first value is stored]" (e.g. [sp])*/ << "\n";
@@ -582,9 +599,9 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
 
            } else if (oper == tok::TOK_SLASH){
                //Implementation code gen for DIVIDE
+               middle << "  MOV r0, "<< firstReg  << "\n"
+                       << "  MOV r1, "<< secondReg << "\n"
 
-               middle << "  MOV R0, "<< firstReg  << "\n"
-                       << "  MOV R1, "<< secondReg << "\n"
                        << "  BL p_checkdivide_by_zero"<< "\n";
                p_check_divide_by_zero();
                middle << "  BL __aeabi_idiv"<< "\n";
@@ -592,8 +609,8 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
            } else if (oper == tok::TOK_MODULO){
          //Implementation code-gen for MODULO 
 
-               middle << "  MOV R0, "<< firstReg  << "\n"
-                       << "  MOV R1, "<< secondReg << "\n"
+               middle << "  MOV r0, "<< firstReg  << "\n"
+                       << "  MOV r1, "<< secondReg << "\n"
                        << "  BL p_checkdivide_by_zero"<< "\n";
                p_check_divide_by_zero();
                middle << "  BL __aeabi_idivmod"<< "\n";
@@ -651,10 +668,10 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
                      
            }
     }
-    middle << "  MOV R0, "<< firstReg << "\n";
+
+    middle << "  MOV "<< reg << firstReg << "\n";
     freeRegister(firstReg);
     freeRegister(secondReg);
-
 }
 
 void CodeGenVisitor::visit(Identifier *node) {
@@ -684,8 +701,8 @@ void CodeGenVisitor::visit(UnaryOperator *node, std::string reg) {
                << "  MOV r0, "<< freeReg << std::endl;
         p_throw_overflow_error();
    }else if(oper == tok::TOK_BANG){
-        middle << "  LDRSB " << freeReg << ", [sp]" /*need to add offset*/ << std::endl
-               << "  EOR "<< freeReg << ", " << reg << ", #1" << std::endl
+        node->expr->accept(this, freeReg);
+        middle << "  EOR "<< freeReg << ", " << freeReg << ", #1" << std::endl
                << "  MOV r0, " << freeReg << std::endl;
    }else if(oper == tok::TOK_LEN){
    //add implementation for len
@@ -694,7 +711,6 @@ void CodeGenVisitor::visit(UnaryOperator *node, std::string reg) {
    }else if(oper == tok::TOK_CHR){
    //add implementation for chr
    }
-   freeRegister(freeReg);
 }
 
 void CodeGenVisitor::visit(NewPair *node, std::string reg) {
@@ -788,7 +804,7 @@ std::string CodeGenVisitor::getAvailableRegister() {
 		}
 	}
 	//std::cerr << "ERROR. There are no available registers";
-  return "R4";
+  return "r4";
 }
 
 void CodeGenVisitor::freeRegister(std::string reg) {
