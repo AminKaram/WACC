@@ -798,7 +798,7 @@ void CodeGenVisitor::p_throw_runtime_error(void){
       beginInitialisation = true;
       begin <<
         ".data" << "\n"
-            << "\nass";
+            << "\n";
       }
          end    << "p_throw_runtime_error:" << "\n"
          "  BL p_print_string" << "\n";
