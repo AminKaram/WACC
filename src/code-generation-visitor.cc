@@ -189,11 +189,10 @@ void CodeGenVisitor::visit(Assignment *node) {
 
 
 void CodeGenVisitor::visit(FreeStatement *node) {
-    
-    node -> expr -> accept(this,"r4");
+    if(!p_free_pairb){
+         node -> expr -> accept(this,"r4");
          middle << "  Mov r0, r4\n"
                 << "  BL p_free_pair\n";
-     if(!p_free_pairb){
          end   << "p_free_pair:"<<std::endl
                << "  PUSH {lr}" << std::endl
                << "  CMP r0, #0"<< std::endl
@@ -797,7 +796,7 @@ void CodeGenVisitor::p_throw_runtime_error(void){
       beginInitialisation = true;
       begin <<
         ".data" << "\n"
-            << "\nass";
+            << "\n";
       }
          end    << "p_throw_runtime_error:" << "\n"
          "  BL p_print_string" << "\n";
