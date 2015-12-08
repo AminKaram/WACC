@@ -549,11 +549,6 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
          node -> right -> accept(this,secondReg);
      if(oper == tok::TOK_LOGOR || oper == tok::TOK_LOGAND){
 
-         middle << "  LDRSB "<< firstReg << ", " /* << "[address where
-         first value is stored]" (e.g. [sp])*/ << "\n";
-         middle << "  LDRSB "<< secondReg <<", " /* << "[address where
-         second value is stored] (e.g. [sp , #1] )" */ << "\n";
-
       if (oper == tok::TOK_LOGOR){
       //Implementation code-gen for OR 
           
