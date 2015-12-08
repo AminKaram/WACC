@@ -223,7 +223,7 @@ void CodeGenVisitor::visit(FreeStatement *node) {
                << "  BL free"<< std::endl
                << "  POP {r0}"<< std::endl
                << "  BL free"<< std::endl
-               << "  POP {PC}"<< std::endl;
+               << "  POP {pc}"<< std::endl;
  if (!beginInitialisation) {
   beginInitialisation = true;
   begin << 
