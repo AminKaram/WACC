@@ -777,7 +777,7 @@ void CodeGenVisitor::visit(NewPair *node, std::string reg) {
      middle << "  STRB r5, [r0]\n";
    }
    else {
-     middle << "  STRB r5, [r0]\n";
+     middle << "  STR r5, [r0]\n";
    }
    middle << "  STR r0, [r4]\n";
    node->snd->accept(this, "r5");
