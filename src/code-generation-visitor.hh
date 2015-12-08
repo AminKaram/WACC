@@ -103,6 +103,7 @@ private:
   void p_throw_overflow_error(void);
   void p_check_divide_by_zero(void);
   int scopeSize = 0;
+  std::map <std::string, int> *varMap;
 };
 
 
