@@ -769,7 +769,7 @@ void CodeGenVisitor::p_throw_overflow_error(void){
 
 void CodeGenVisitor::p_throw_runtime_error(void){
     if(!p_throw_runtime_errorb){
-         end    << "p_throw_run_time_error:" << "\n"
+         end    << "p_throw_runtime_error:" << "\n"
          "  BL p_print_string" << "\n";
              if (!msgString) {
                msgString  = true;
