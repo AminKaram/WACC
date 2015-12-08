@@ -21,11 +21,21 @@ void CodeGenVisitor::visit(Program *node) {
     scopeSize += node->table->variables->operator[](i)->type->size();
   }
   middle << "main:"       << "\n"
-         << "  PUSH {lr}\n"
-         << "  SUB sp, sp, #" << scopeSize << "\n";
+         << "  PUSH {lr}\n";
+  int tmp = scopeSize;
+  std::string toEnd("");
+  while (tmp > 1024) {
+    middle << "  SUB sp, sp, #1024\n";
+    toEnd += "  ADD sp, sp, #1024\n";
+    tmp -=1024;
+  }
+        
+  middle << "  SUB sp, sp, #" << tmp << "\n";
+  toEnd +=  "  ADD sp, sp, #" + std::to_string(tmp) + "\n";
 
   node->statements->accept(this);
-  middle << "  LDR R0, =0" << "\n"
+  middle << toEnd
+         << "  LDR R0, =0" << "\n"
          << "  POP {pc}" << "\n"
          << "  .ltorg"   << "\n";
 
@@ -33,10 +43,10 @@ void CodeGenVisitor::visit(Program *node) {
     *file << begin.rdbuf() << std::endl;
   }
   if (middle.rdbuf()->in_avail() != 0) {
-      *file << middle.rdbuf() ;
+      *file << middle.rdbuf() << "\n";
     }
   if (end.rdbuf()->in_avail() != 0) {
-      *file << end.rdbuf() ;
+      *file << end.rdbuf() << "\n" ;
     }
 }
 
