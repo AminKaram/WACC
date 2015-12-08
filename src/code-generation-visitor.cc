@@ -598,7 +598,7 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
              middle << "  ADDS "<< firstReg <<", "<< firstReg <<", "
              << secondReg << "\n"
             
-             << "  BELVS p_throw_overflow_error"<< "\n";
+             << "  BLVS p_throw_overflow_error"<< "\n";
 
              p_throw_overflow_error();
                      
@@ -609,7 +609,7 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
              middle << "  SUBS "<< firstReg <<", "<< firstReg <<", "
              << secondReg << "\n"
 
-             << "  BELVS p_throw_overflow_error"<< "\n";
+             << "  BLVS p_throw_overflow_error"<< "\n";
              p_throw_overflow_error();
            } 
         }else if (oper >= tok::TOK_LESS && oper <= tok::TOK_NOTEQUALS){
