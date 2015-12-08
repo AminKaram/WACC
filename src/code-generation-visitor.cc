@@ -132,9 +132,8 @@ void CodeGenVisitor::visit(VariableDeclaration *node) {
 }
 void CodeGenVisitor::visit(FunctionDeclaration *node) {
 
-  middle << node->id->id.append("_").append(node->id->id).append(":")
-          << "\n"
-          << "  PUSH {lr}" << "\n";
+  middle << node->id->id << "_" << node->id->id << ":\n"
+         << "  PUSH {lr}" << "\n";
   node->block->accept(this);
   middle << "  POP {pc}" << "\n"
          << "  POP {pc}"  << "\n"
@@ -159,7 +158,7 @@ void CodeGenVisitor::visit(FunctionCall *node, std::string reg) {
     }
 
 
-    middle << "  BL " << "f_" << node->id->id << "\n"
+    middle << "  BL " << node->id->id << "_" << node->id->id << "\n"
            << "  MOV " << reg << ",r0 \n";
     if(sizeParam > 0 ) {
       middle << "  ADD sp, sp, #" << sizeParam << "\n";
