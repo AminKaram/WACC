@@ -247,6 +247,7 @@ void CodeGenVisitor::visit(WhileStatement *node) {
          << "  BEQ L" << std::to_string(labelNum)         << "\n";
 }
 
+
 void CodeGenVisitor::printAssemblyOfReadInt() {
   middle << 
         "p_read_int:" << "\n" <<
@@ -257,7 +258,6 @@ void CodeGenVisitor::printAssemblyOfReadInt() {
         "  BL scanf" << "\n" <<
         "  POP {pc}" << "\n";
 }
-
 
 void CodeGenVisitor::printAssemblyOfReadChar() {
   middle << 
@@ -291,19 +291,19 @@ void CodeGenVisitor::printMsgRead(TypeId *type) {
          "msg_" << messageNum << ":" << std::endl <<
          "  .word 4" << std::endl <<
          "  .ascii  \"%c\\0\"" << std::endl;
+    } 
+  } else if(intTypeId) {
+      middle <<
+          "  BL p_read_int" << "\n";
+      if (!msgInt) {
+        msgInt = true;
+        begin << 
+           "msg_" << messageNum << ":" << std::endl <<
+           "  .word 3" << std::endl <<
+           "  .ascii  \"%d\\0\"" << std::endl;
       }
-    } else if(intTypeId) {
-        middle <<
-            "  BL p_read_int" << "\n";
-        if (!msgInt) {
-          msgInt = true;
-          begin << 
-             "msg_" << messageNum << ":" << std::endl <<
-             "  .word 3" << std::endl <<
-             "  .ascii  \"%d\\0\"" << std::endl;
-         }
-         intMessageNum = messageNum;
-         messageNum++;
+      intMessageNum = messageNum;
+      messageNum++;
   }
 }
 
@@ -321,15 +321,16 @@ void CodeGenVisitor::printStatementForRead(TypeId *type) {
 }
 
 void CodeGenVisitor::visit(ReadStatement *node) {
-  std::cout << "visit" << std:: endl;
+  //std::cout << "visit" << std:: endl;
   node->id->accept(this);
-  std::cout << "visit" << std:: endl;
+  //std::cout << "visit" << std:: endl;
   TypeId *type = node->id->type;
+  if (!type) 
   std::cout << "visit" << std:: endl;
   printMsgRead(type);
-  std::cout << "visit" << std:: endl;
+  //std::cout << "visit" << std:: endl;
   printStatementForRead(type);
-  std::cout << "visit" << std:: endl;
+  //std::cout << "visit" << std:: endl;
 
 }
 
