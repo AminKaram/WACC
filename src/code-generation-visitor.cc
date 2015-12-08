@@ -102,23 +102,31 @@ void CodeGenVisitor::visit(FunctionDecList *node) {
 }
 void CodeGenVisitor::visit(VariableDeclaration *node) {
 // simpliest version for implementing variable declaration
-  node->rhs->accept(this, "r4");
+     std::cout << "variable declaration\n "; 
+  if(node->rhs) {
+    node->rhs->accept(this, "r4");
+  }
   int sizeSoFar = 0;
   for (int i = 0; i < node->table->variables->size(); i++) {
     if(node->table->variables->operator[](i)->id->id.compare(node->id->id) == 0) {
+      if (node->table->isParam->operator[](node->table->variables->operator[](i))) {
+          break;
+      } else {
       sizeSoFar += node->type->size();
       break;
+    }
     }
     sizeSoFar += node->table->variables->operator[](i)->type->size();
   }
   int offset = scopeSize - sizeSoFar;
-  
+
   if (node->type->equals(new BoolTypeId()) || node->type->equals(new CharTypeId())) {
     middle << "  STRB r4, [sp" << (offset == 0 ? "" : ", #" + std::to_string(offset)) << "]\n"; 
   } else {
     middle << "  STR r4 ,[sp"<< (offset == 0 ? "" : ", #" + std::to_string(offset)) << "]\n"; 
   }
   varMap->operator[](node->id->id) = offset;
+  std::cout << node->id->id << "  " << offset << std::endl;
 
   
 }
@@ -126,8 +134,27 @@ void CodeGenVisitor::visit(FunctionDeclaration *node) {
 
   middle << "f_" << node->id->id << ":\n"
          << "  PUSH {lr}" << "\n";
+  int sizeLocals = 0;
+  for (int i=0; i < node->table->variables->size(); i++) {
+    if(!node->table->isParam->operator[](node->table->variables->operator[](i))) {
+        sizeLocals = node->table->variables->operator[](i)->type->size();
+    } 
+  }
+  middle << "  SUB sp, sp, #" << sizeLocals << "\n"; 
+  for (int i=0; i < node->table->variables->size(); i++) {
+    scopeSize += node->table->variables->operator[](i)->type->size();
+  }
+  
+  std::cout << node->id->id << " size " << scopeSize <<std::endl;
+  
+  for (int i=0; i < node->table->variables->size(); i++) {
+    if(node->table->isParam->operator[](node->table->variables->operator[](i))) {
+      node->table->variables->operator[](i)->accept(this);
+    }
+  }
   node->block->accept(this);
-  middle << "  POP {pc}" << "\n"
+    middle << "  ADD sp, sp, #" << sizeLocals << "\n";
+    middle << "  POP {pc}" << "\n"
          << "  POP {pc}"  << "\n"
          << "  .ltorg"   << "\n";
 }
@@ -152,9 +179,6 @@ void CodeGenVisitor::visit(FunctionCall *node, std::string reg) {
 
     middle << "  BL f_" << node->id->id << "\n"
            << "  MOV " << reg << ",r0 \n";
-    if(sizeParam > 0 ) {
-      middle << "  ADD sp, sp, #" << sizeParam << "\n";
-    }
 }
 
 void CodeGenVisitor::visit(Assignment *node) {
@@ -757,31 +781,74 @@ void CodeGenVisitor::visit(Identifier *node, std::string reg) {
 
 void CodeGenVisitor::visit(ArrayElem *node){}
 
-void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {
-    //std::cout << "visit ArrayElem" << std::endl;
-    middle << "  ADD " << reg << ", sp ,#" << varMap->operator[](node->getId()) << "\n";
-    for (int i=0; i < node->idxs->size(); i++) {
-      node->idxs->operator[](i)->accept(this, "r6");
-      if ( reg == "r0") {
-        middle << "  PUSH {r0}\n";
-      }
+void CodeGenVisitor::printAssemblyCheckArrayBounds(){
+  end <<
+    "p_check_array_bounds: " << std::endl <<
+    "  CMP r0, #0" << std::endl<<
+    "  LDRLT r0, =msg_" << checkArrayBoundMessageNum << std::endl <<
+    "  BLLT p_throw_runtime_error" << std::endl <<
+    "  LDR r1, [r1]" << std::endl<<
+    "  CMP r0, r1" << std::endl<<
+    "  LDRCS r0, =msg_" << checkArrayBoundMessageNum + 1 << std::endl <<
+    "  CBLCS p_throw_runtime_error" << std::endl <<
+    "  POP {pc}" << "\n";
+}
 
-      middle << "  MOV r0, r6\n"
-             << "  MOV r1, " << reg << "\n";
-            
-      if(reg == "r0") {
-        middle << "  POP {r0}\n";        
-      }
-
-      middle << "  LDR " << reg << ", [" << reg << "]\n"
-             << "  ADD " << reg << ", " << reg << ", #4\n";
-      if(node->type->size() == 1) {
-        middle << "  ADD " << reg << ", " << reg << ", r6\n";
-      } else {
-        middle << "  ADD " << reg << ", " << reg << ", r6, LSL #2\n";
-      }
+void CodeGenVisitor::printMsgCheckArrayBounds() {
+  //ArrayId *arrayTypeId       = dynamic_cast<ArrayId*> (type);
+  //  std::cout<< "print check" << std::endl;
+  //if(arrayTypeId -> elementType) {
+   // std::cout<< "print check" << std::endl;
+    middle << "  BL p_check_array_bounds" << "\n";
+    if (!msgCheckArrayBound) {
+      msgCheckArrayBound = true;
+      begin << 
+         "msg_" << messageNum << ":" << std::endl <<
+         "  .word 44" << std::endl <<
+         "  .ascii  \"ArrayIndexOutOfBoundsError: negative index\n\0\"" << std::endl;
+      begin << 
+         "msg_" << messageNum + 1 << ":" << std::endl <<
+         "  .word 45" << std::endl <<
+         "  .ascii  \"ArrayIndexOutOfBoundsError: index too large\n\0\"" << std::endl;
+      checkArrayBoundMessageNum = messageNum;
+      messageNum+=2;
     }
-    middle << "  LDR " << reg << ", ["<< reg << "]\n";
+  //}
+}
+
+void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {
+  //TypeId *type = node->type;
+  printMsgCheckArrayBounds();
+  if(!p_print_array_elem ) {
+      p_print_array_elem = true;
+      printAssemblyCheckArrayBounds();
+  }
+  //std::cout << "visit ArrayElem" << std::endl;
+  middle << "  ADD " << reg << ", sp ,#" << varMap->operator[](node->getId()) << "\n";
+  for (int i=0; i < node->idxs->size(); i++) {
+    node->idxs->operator[](i)->accept(this, "r6");
+    if ( reg == "r0") {
+      middle << "  PUSH {r0}\n";
+    }
+
+
+    middle << "  MOV r0, r6\n"
+           << "  MOV r1, " << reg << "\n";
+           //bound checking branch done here
+    if(reg == "r0") {
+      middle << "  POP {r0}\n";        
+    }
+
+
+    middle << "  LDR " << reg << ", [" << reg << "]\n"
+           << "  ADD " << reg << ", " << reg << ", #4\n";
+    if(node->type->size() == 1) {
+      middle << "  ADD " << reg << ", " << reg << ", r6\n";
+    } else {
+      middle << "  ADD " << reg << ", " << reg << ", r6, LSL #2\n";
+    }
+  }
+  middle << "  LDR " << reg << ", ["<< reg << "]\n";
 }
 
 void CodeGenVisitor::visit(PairElem *node){}
