@@ -213,6 +213,7 @@ void SemanticVisitor::visit(WhileStatement *node) {
 }
 
 void SemanticVisitor::visit(ReadStatement *node) {
+  node->id->accept(this);
   SemanticId *value = scope->lookUpAll(node->id->getId());
   if(!value) {
     std::cerr << "Cannot read undeclared variable: " << node->id->getId() 

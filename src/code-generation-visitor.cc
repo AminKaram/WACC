@@ -149,10 +149,12 @@ void CodeGenVisitor::visit(FunctionCall *node, std::string reg) {
     for(int i = node->parameters->size() - 1; i >= 0; i--) {
       node->parameters->operator[](i)->accept(this, reg);
       if(node->parameters->operator[](i)->type->size() > 1) {
-        middle << "  STR " << reg << ", [sp, #" <<  node->parameters->operator[](i)->type->size() 
+        middle << "  STR " << reg << ", [sp, #" 
+               <<  node->parameters->operator[](i)->type->size() 
                << "]!\n";
       } else {
-        middle << "  STRB " << reg << ", [sp, #" <<  node->parameters->operator[](i)->type->size() 
+        middle << "  STRB " << reg << ", [sp, #" 
+               <<  node->parameters->operator[](i)->type->size() 
                << "]!\n";
       }
       sizeParam += node->parameters->operator[](i)->type->size();
@@ -167,10 +169,22 @@ void CodeGenVisitor::visit(FunctionCall *node, std::string reg) {
 
 void CodeGenVisitor::visit(Assignment *node) {
   node->rhs->accept(this, "r4");
-  if (varMap->operator[](node->lhs->getId()) == 0) {
-    middle << "  STR r4, [sp]\n";
+  IntTypeId *intType = new IntTypeId();
+  CharTypeId *charType = new CharTypeId();
+  if(node->lhs->type->equals(intType) || node->lhs->type->equals(charType)) {
+    if (varMap->operator[](node->lhs->getId()) == 0) {
+      middle << "  STRB r4, [sp]\n";
+    } else {
+      middle << "  STRB r4, [sp, #" << varMap->operator[](node->lhs->getId()) 
+             << "]\n";
+    }
   } else {
-    middle << "  STR r4, [sp, #" << varMap->operator[](node->lhs->getId()) << "]\n";
+      if (varMap->operator[](node->lhs->getId()) == 0) {
+        middle << "  STR r4, [sp]\n";
+      } else {
+        middle << "  STR r4, [sp, #" << varMap->operator[](node->lhs->getId()) 
+               << "]\n";
+      }
   }
 }
 
