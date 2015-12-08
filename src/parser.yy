@@ -183,7 +183,7 @@ statement:
 assign_lhs:
 		ident
 		{
-      $$ = dynamic_cast<AssignLhs*>($1); } 
+      $$ = $1; } 
   | array_elem_lhs
 		{
       $$ = $1; } 
