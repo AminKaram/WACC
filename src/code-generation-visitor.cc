@@ -350,42 +350,41 @@ void CodeGenVisitor::printMsg(TypeId *type) {
 
     if (charTypeId) {
 		middle << "  BL putchar" << "\n";
-	} else if(stringTypeId) {
-		middle << "  BL p_print_string" << "\n";
-		if (!msgString) {
-			msgString  = true;
-			begin <<
-				 "msg_" << messageNum << ":" << std::endl <<
-				 "  .word 5" << std::endl <<
-				 "  .ascii  \"%.*s\\0\"" << std::endl;
-		 }
-
+	  } else if(stringTypeId) {
+    		middle << "  BL p_print_string" << "\n";
+    		if (!msgString) {
+    			msgString  = true;
+    			begin <<
+    				 "msg_" << messageNum << ":" << std::endl <<
+    				 "  .word 5" << std::endl <<
+    				 "  .ascii  \"%.*s\\0\"" << std::endl;
+    		}
         stringMessageNum = messageNum;
-		messageNum++;
+    		messageNum++;
 	} else if(intTypeId) {
-		middle << "  BL p_print_int" << "\n";
-			begin << 
-				 "msg_" << messageNum << ":" << std::endl <<
-				 "  .word 3" << std::endl <<
-				 "  .ascii  \"%d\\0\"" << std::endl;
-		 intMessageNum = messageNum;
-		 messageNum++;
+  		middle << "  BL p_print_int" << "\n";
+  			begin << 
+  				 "msg_" << messageNum << ":" << std::endl <<
+  				 "  .word 3" << std::endl <<
+  				 "  .ascii  \"%d\\0\"" << std::endl;
+  		 intMessageNum = messageNum;
+  		 messageNum++;
 	} else if(boolTypeId) {
-		middle << "  BL p_print_bool" << "\n";
-		if (!msgBool) {
-			msgBool = true;
-			begin << 
-				 "msg_" << messageNum << ":" << std::endl <<
-				 "  .word 5" << std::endl <<
-				 "  .ascii \"true\\0\"" << std::endl;
-			begin << 
-				 "msg_" << messageNum + 1 << ":" << std::endl <<
-				 "  .word 6" << std::endl <<
-				 "  .ascii \"false\\0\"" << std::endl;
-		 }
-		 boolMessageNum = messageNum;
-		 messageNum+=2;
-	}
+  		middle << "  BL p_print_bool" << "\n";
+  		if (!msgBool) {
+  			msgBool = true;
+  			begin << 
+  				 "msg_" << messageNum << ":" << std::endl <<
+  				 "  .word 5" << std::endl <<
+  				 "  .ascii \"true\\0\"" << std::endl;
+  			begin << 
+  				 "msg_" << messageNum + 1 << ":" << std::endl <<
+  				 "  .word 6" << std::endl <<
+  				 "  .ascii \"false\\0\"" << std::endl;
+  		 }
+  		 boolMessageNum = messageNum;
+  		 messageNum+=2;
+	  }
 }
 
 void CodeGenVisitor::printlnMsg() {
@@ -397,9 +396,8 @@ void CodeGenVisitor::printlnMsg() {
 			 "msg_" << messageNum << ":" << std::endl <<
 			 "  .word 1" << std::endl <<
 			 "  .ascii  \"\\0\"" << std::endl;
-	 }
-             
-    newlineMessageNum = messageNum;     
+	}           
+  newlineMessageNum = messageNum;     
 	messageNum++;
 }
 
@@ -499,7 +497,6 @@ void CodeGenVisitor::visit(PrintlnStatement *node) {
 void CodeGenVisitor::visit(SkipStatement *node) { }
 
 void CodeGenVisitor::visit(Number *node, std::string reg) {
-
   middle << "  LDR " << reg << ", =" << node->value << std::endl;
 }
 void CodeGenVisitor::visit(Boolean *node, std::string reg) {
@@ -525,11 +522,11 @@ void CodeGenVisitor::visit(String *node, std::string reg) {
   messageNum++;
          
 }
+
 void CodeGenVisitor::visit(Null *node, std::string reg) {}
 
 
 void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
-
    int oper = node -> op;
          
          std::string firstReg  = reg;
