@@ -170,9 +170,9 @@ void CodeGenVisitor::visit(FunctionCall *node, std::string reg) {
 
 void CodeGenVisitor::visit(Assignment *node) {
   node->rhs->accept(this, "r4");
-  IntTypeId *intType = new IntTypeId();
+  BoolTypeId *boolType = new BoolTypeId();
   CharTypeId *charType = new CharTypeId();
-  if(node->lhs->type->equals(intType) || node->lhs->type->equals(charType)) {
+  if(node->lhs->type->equals(boolType) || node->lhs->type->equals(charType)) {
     if (varMap->operator[](node->lhs->getId()) == 0) {
       middle << "  STRB r4, [sp]\n";
     } else {
@@ -491,7 +491,7 @@ void CodeGenVisitor::printAssemblyOfPrintln() {
 }
 
 void CodeGenVisitor::visit(PrintlnStatement *node) {
-  node->expr->accept(this, "r0");
+  node->expr->accept(this, "r4");
 	TypeId *type = node->expr->type;
 	
 	printMsg(type);
@@ -658,7 +658,7 @@ void CodeGenVisitor::visit(Identifier *node) {
 }
 
 void CodeGenVisitor::visit(Identifier *node, std::string reg) {
-  if(node->type->equals(new StringTypeId()) || node->type->equals(new IntTypeId())) {
+  if(node->type->equals(new CharTypeId) || node->type->equals(new BoolTypeId())) {
     if(varMap->operator[](node->id) == 0) {
       middle << "  LDRB " << reg << ", [sp]\n";
     } else { 
@@ -667,9 +667,9 @@ void CodeGenVisitor::visit(Identifier *node, std::string reg) {
     }
   } else {
     if(varMap->operator[](node->id) == 0) {
-      middle << "  LDRB " << reg << ", [sp]\n";
+      middle << "  LDR " << reg << ", [sp]\n";
     } else { 
-      middle << "  LDRB " << reg 
+      middle << "  LDR " << reg
              << ", [sp, #" << varMap->operator[](node->id) << "]\n";
     }
   }
@@ -682,7 +682,7 @@ void CodeGenVisitor::visit(PairElem *node, std::string reg) {}
 void CodeGenVisitor::visit(ArrayLiter *node, std::string reg) {}
 void CodeGenVisitor::visit(UnaryOperator *node, std::string reg) {
    int oper = node -> op;
-   std:: string freeReg = getAvailableRegister();
+   std:: string freeReg = reg;
    if(oper == tok ::TOK_MINUS){
      node->expr->accept(this, freeReg);
         middle << "  RSBS "<< freeReg << ", " << freeReg << ", #0"<< std::endl
