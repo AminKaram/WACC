@@ -439,7 +439,6 @@ void CodeGenVisitor::printAssemblyOfPrintBool() {
 		"  MOV r0, #0" << std::endl<<
 		"  BL fflush" << std::endl<<
 		"  POP {pc}" << "\n";
-
 }
 
 void CodeGenVisitor::printAssemblyOfPrintInt() {
@@ -470,12 +469,12 @@ void CodeGenVisitor::printStatement(TypeId *type) {
 
 void CodeGenVisitor::visit(PrintStatement *node) {
 
-    node->expr->accept(this, "r0");
-    std::string stringToPrint;
-    TypeId *type = node->expr->type;
+  node->expr->accept(this, "r0");
+  std::string stringToPrint;
+  TypeId *type = node->expr->type;
 
 	printMsg(type);
-    printStatement(type);
+  printStatement(type);
 }
 
 
