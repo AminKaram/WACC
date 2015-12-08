@@ -530,8 +530,9 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
 
    int oper = node -> op;
          
-         std:: string firstReg  = "r4";
-         std:: string secondReg = "r5";
+         std::string firstReg  = reg;
+         std::string tmp = reg.erase(0,1);
+         std::string secondReg = "r" + std::to_string(atoi(tmp.c_str()) + 1);
          node -> left -> accept(this,firstReg);
          node -> right -> accept(this,secondReg);
      if(oper == tok::TOK_LOGOR || oper == tok::TOK_LOGAND){
@@ -541,13 +542,13 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
           
          middle << "  ORR "<< firstReg << ", " << firstReg << ", "
 
-                 << secondReg << "\n";
+                << secondReg << "\n";
     
        } else if (oper == tok::TOK_LOGAND){
       //Implementation code-gen for AND      
 
          middle << "  AND "<< firstReg << ", " << firstReg << ", "
-                 << secondReg << "\n";
+                << secondReg << "\n";
       }      
    } else if (oper >= tok::TOK_STAR && oper <= tok::TOK_MINUS){
            
@@ -556,12 +557,12 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
               //Implementation code gen for MULTIPLY
 
              middle << "  SMULL "<< firstReg << ", " << secondReg << ", "
-                     << firstReg << ", " << secondReg << "\n"
+                    << firstReg << ", " << secondReg << "\n"
                      
-                     << "  CMP " << secondReg << ", "<< firstReg << ", "
-                     << "  ASR #31" << "\n"
+                    << "  CMP " << secondReg << ", "<< firstReg << ", "
+                    << "  ASR #31" << "\n"
 
-                     << "  BLNE p_throw_overflow_error"<< "\n";
+                    << "  BLNE p_throw_overflow_error"<< "\n";
 
                      p_throw_overflow_error();
                      
@@ -569,9 +570,9 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
            } else if (oper == tok::TOK_SLASH){
                //Implementation code gen for DIVIDE
                middle << "  MOV r0, "<< firstReg  << "\n"
-                       << "  MOV r1, "<< secondReg << "\n"
+                      << "  MOV r1, "<< secondReg << "\n"
 
-                       << "  BL p_checkdivide_by_zero"<< "\n";
+                      << "  BL p_checkdivide_by_zero"<< "\n";
                p_check_divide_by_zero();
                middle << "  BL __aeabi_idiv"<< "\n";
         
@@ -579,16 +580,16 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
          //Implementation code-gen for MODULO 
 
                middle << "  MOV r0, "<< firstReg  << "\n"
-                       << "  MOV r1, "<< secondReg << "\n"
-                       << "  BL p_checkdivide_by_zero"<< "\n";
+                      << "  MOV r1, "<< secondReg << "\n"
+                      << "  BL p_checkdivide_by_zero"<< "\n";
                p_check_divide_by_zero();
                middle << "  BL __aeabi_idivmod"<< "\n";
            } else if (oper == tok::TOK_PLUS){
         // Implementation code-gen for PLUS 
              middle << "  ADDS "<< firstReg <<", "<< firstReg <<", "
-             << secondReg << "\n"
+                    << secondReg << "\n"
             
-             << "  BLVS p_throw_overflow_error"<< "\n";
+                    << "  BLVS p_throw_overflow_error"<< "\n";
 
              p_throw_overflow_error();
                      
@@ -597,9 +598,9 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
          // Implementation code-gen for MINUS
 
              middle << "  SUBS "<< firstReg <<", "<< firstReg <<", "
-             << secondReg << "\n"
+                    << secondReg << "\n"
 
-             << "  BLVS p_throw_overflow_error"<< "\n";
+                    << "  BLVS p_throw_overflow_error"<< "\n";
              p_throw_overflow_error();
            } 
         }else if (oper >= tok::TOK_LESS && oper <= tok::TOK_NOTEQUALS){
@@ -608,39 +609,35 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
              if (oper == tok::TOK_LESS){
         // Implementation code-gen for LESS 
             middle << "  MOVLT "<< firstReg << ", #1"<< "\n"
-                    << "  MOVGE "<< firstReg << ", #0"<< "\n";
+                   << "  MOVGE "<< firstReg << ", #0"<< "\n";
 
            } else if (oper == tok::TOK_LESSEQUALS){
         //Implementation code-gen for LESSEQUALS
             middle << "  MOVLE "<< firstReg << ", #1"<< "\n"
-                    << "  MOVGT "<< firstReg << ", #0"<< "\n";
+                   << "  MOVGT "<< firstReg << ", #0"<< "\n";
                      
            } else if (oper == tok::TOK_GREATER){
         // Implementation code-gen for GREATER 
             middle << "  MOVGT "<< firstReg << ", #1"<< "\n"
-                    << "  MOVLE "<< firstReg << ", #1"<< "\n";
+                   << "  MOVLE "<< firstReg << ", #1"<< "\n";
  
            } else if (oper == tok::TOK_GREATEREQUALS){
         // Implementation code-gen for GREATEREQUALS 
             middle << "  MOVGE "<< firstReg << ", #1"<< "\n"
-                    << "  MOVLT "<< firstReg << ", #0"<< "\n";
+                   << "  MOVLT "<< firstReg << ", #0"<< "\n";
  
            } else if (oper == tok::TOK_EQUALS){
          //Implementation code-gen for EQUALS 
             middle << "  MOVEQ "<< firstReg << ", #1"<< "\n"
-                    << "  MOVNE "<< firstReg << ", #0"<< "\n";
+                   << "  MOVNE "<< firstReg << ", #0"<< "\n";
  
            } else if (oper == tok::TOK_NOTEQUALS){
         // Implementation code-gen for Not EQUAL
             middle << "  MOVNE "<< firstReg << ", #1"<< "\n"
-                    << "  MOVEQ "<< firstReg << ", #1"<< "\n";
+                   << "  MOVEQ "<< firstReg << ", #1"<< "\n";
                      
            }
     }
-
-    middle << "  MOV "<< "r0" << ", " << firstReg << "\n";
-    freeRegister(firstReg);
-    freeRegister(secondReg);
 }
 
 void CodeGenVisitor::visit(Identifier *node) {
