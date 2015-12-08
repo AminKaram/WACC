@@ -804,7 +804,6 @@ void CodeGenVisitor::visit(UnaryOperator *node, std::string reg) {
    int oper = node -> op;
    node->expr->accept(this, reg);
    if(oper == tok ::TOK_MINUS){
-        middle << "INTO MINUS" << std::endl;
         middle << "  RSBS "<< reg << ", " << reg << ", #0"<< std::endl
                << "  BLVS p_throw_overflow_error" << std::endl
                << "  MOV r0, "<< reg << std::endl;
