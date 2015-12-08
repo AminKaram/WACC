@@ -767,10 +767,10 @@ void CodeGenVisitor::visit(UnaryOperator *node, std::string reg) {
    int oper = node -> op;
    node->expr->accept(this, reg);
    if(oper == tok ::TOK_MINUS){
-        middle << "  RSBS "<< reg << ", " << reg << ", #0"<< std::endl
+       /* middle << "  RSBS "<< reg << ", " << reg << ", #0"<< std::endl
                << "  BLVS p_throw_overflow_error" << std::endl
                << "  MOV r0, "<< reg << std::endl;
-        p_throw_overflow_error();
+        p_throw_overflow_error();*/
    }else if(oper == tok::TOK_BANG){
         node->expr->accept(this, reg);
         middle << "  EOR "<< reg << ", " << reg << ", #1" << std::endl
