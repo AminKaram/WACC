@@ -172,7 +172,7 @@ void CodeGenVisitor::visit(Assignment *node) {
              //bound checking branch done here
              << "  ADD r5, r5, #4\n";
       if(arrLhs->type->size() == 1) {
-        middle << "  ADD r5, 5, r6, LSL #0\n";
+        middle << "  ADD r5, r5, r6, LSL #0\n";
       } else {
         middle << "  ADD r5, r5, r6, LSL #2\n";
       }
