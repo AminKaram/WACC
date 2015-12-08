@@ -448,7 +448,7 @@ void CodeGenVisitor::printMsg(TypeId *type) {
 	  } else if(arrayTypeId) {
       //std::cout << "  BL p_print_reference" << "\n";
       middle << "  BL p_print_reference" << "\n";
-      printAssemblyOfPrintReference();
+      
       if (!msgReference) {
         msgReference = true;
         begin << 
@@ -456,6 +456,7 @@ void CodeGenVisitor::printMsg(TypeId *type) {
            "  .word 3" << std::endl <<
            "  .ascii  \"%p\\0\"" << std::endl;
         referenceMessageNum = messageNum;
+        printAssemblyOfPrintReference();
         messageNum++;
       }
     }
