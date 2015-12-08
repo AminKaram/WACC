@@ -30,7 +30,12 @@ public:
   void visit(BeginStatement *node);
   void visit(IfStatement *node);
   void visit(WhileStatement *node);
+  void printAssemblyOfReadInt();
+  void printAssemblyOfReadChar();
+  void printMsgRead(TypeId *type);
+  void printStatementForRead(TypeId *type);
   void visit(ReadStatement *node);
+  void printMsgPrint(TypeId *type);
   void printMsg(TypeId *type);
   void printlnMsg();
   void printAssemblyOfPrintString();
@@ -75,6 +80,9 @@ private:
   bool p_print_bool   = false;
   bool p_print_int    = false;
   bool p_print_ln     = false;
+
+  bool p_read_char = false;
+  bool p_read_int  = false;
   
   bool beginInitialisation = false;
   
@@ -82,6 +90,7 @@ private:
   int boolMessageNum    = -1;
   int newlineMessageNum = -1;
   int intMessageNum     = -1;
+  int charMessageNum    = -1;
   
   bool msgInt     = false;
   bool msgString  = false;
