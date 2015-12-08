@@ -5,6 +5,7 @@
 CodeGenVisitor::CodeGenVisitor(std::ostream* stream) {
   file   = stream;
   regTable = new std::map<std::string, bool>();
+  varMap = new std::map<std::string, int>();
 }
 
 CodeGenVisitor::~CodeGenVisitor() { }
@@ -114,6 +115,7 @@ void CodeGenVisitor::visit(VariableDeclaration *node) {
   else {
     middle << "  STR r4, [sp, #" << scopeSize-sizeSoFar << "]\n"; 
   }
+  varMap->operator[](node->id->id) = scopeSize - sizeSoFar;
 // effective version of variable dec(USED IN DECLARING MULTIPLE VARIABLE)
 // let x be sum of the memory size of type in each assignment statement for all of 
 // the statement
@@ -156,7 +158,15 @@ void CodeGenVisitor::visit(FunctionCall *node, std::string reg) {
     }
 }
 
-void CodeGenVisitor::visit(Assignment *node) {}
+void CodeGenVisitor::visit(Assignment *node) {
+  node->rhs->accept(this, "r4");
+  if (varMap->operator[](node->lhs->getId()) == 0) {
+    middle << "  STR r4, [sp]\n";
+  } else {
+    middle << "  STR r4, [sp, #" << varMap->operator[](node->lhs->getId()) << "]\n";
+  }
+}
+
 void CodeGenVisitor::visit(FreeStatement *node) {
     middle<< "  LDR r4, [sp]" << std::endl // add offset
           << "  Mov r0, r4\n"
@@ -539,8 +549,19 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
     freeRegister(secondReg);
 
 }
-void CodeGenVisitor::visit(Identifier *node){}
-void CodeGenVisitor::visit(Identifier *node, std::string reg) {}
+
+void CodeGenVisitor::visit(Identifier *node) {
+    
+}
+
+void CodeGenVisitor::visit(Identifier *node, std::string reg) {
+  if(varMap->operator[](node->id) == 0) {
+    middle << "  LDR " << reg << ", [sp]\n";
+  } else { 
+    middle << "  LDR " << reg << ", [sp, #" << varMap->operator[](node->id) << "]\n";
+  }
+}
+
 void CodeGenVisitor::visit(ArrayElem *node){}
 void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {}
 void CodeGenVisitor::visit(PairElem *node){}
