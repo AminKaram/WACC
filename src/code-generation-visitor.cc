@@ -206,13 +206,16 @@ void CodeGenVisitor::visit(FreeStatement *node) {
                << "  POP {r0}"<< std::endl
                << "  BL free"<< std::endl
                << "  POP {PC}"<< std::endl;
-         p_throw_runtime_error();
          begin << "msg_"<< messageNum <<":"<<std::endl
                << "  .word 50"<< std::endl
-               << "  .ascii \"NullReferenceError : dereference a null reference\\n\\0\""<< std::endl;
+               << "  .ascii \"NullReferenceError : dereference a null reference\\n\\0\""<< std::endl; 
+        messageNum ++;
+         p_throw_runtime_error();
+        
         p_free_pairb = true;
+        
     }
-         messageNum ++;
+         
 }
 
 
