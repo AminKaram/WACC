@@ -192,9 +192,10 @@ void CodeGenVisitor::visit(Assignment *node) {
 
 
 void CodeGenVisitor::visit(FreeStatement *node) {
-    middle<< "  LDR r4, [sp]" << std::endl // add offset
-          << "  Mov r0, r4\n"
-          << "  BL p_free_pair\n";
+    
+    node -> expr -> accept(this,"r4");
+         middle << "  Mov r0, r4\n"
+                << "  BL p_free_pair\n";
      if(!p_free_pairb){
          end   << "p_free_pair:"<<std::endl
                << "  PUSH {lr}" << std::endl
