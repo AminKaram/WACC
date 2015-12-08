@@ -329,7 +329,7 @@ void CodeGenVisitor::printStatementForRead(TypeId *type) {
 
 void CodeGenVisitor::visit(ReadStatement *node) {
 
-  node->id->accept(this);
+  node->id->accept(this, "r0");
   TypeId *type = node->id->type;
   printMsgRead(type);
   printStatementForRead(type);
