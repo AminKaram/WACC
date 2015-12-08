@@ -1,20 +1,19 @@
 #ifndef SEMANTIC_VISITOR_HH
 #define SEMANTIC_VISITOR_HH
 #include "semantic-id.hh"
-#include "ast-node-visitor.hh"
 #include "astnode.hh"
 #include "symbol-table.hh"
 
-class SemanticVisitor : public AstNodeVisitor {
+class SemanticVisitor {
 public:
   SemanticVisitor();
   ~SemanticVisitor();
 
   void visit(ASTnode *node);
   void visit(Program *node);
-  void visit(AssignRhs *node);
-  void visit(AssignLhs *node);
-  void visit(Expression *node); 
+  //void visit(AssignRhs *node);
+  //void visit(AssignLhs *node);
+  //void visit(Expression *node); 
   void visit(StatSeq *node);
   void visit(FunctionDecList *node);  
   void visit(VariableDeclaration *node);

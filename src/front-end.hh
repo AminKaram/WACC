@@ -13,7 +13,7 @@ public:
 
 private:
   ParsingDriver *driver;
-  AstNodeVisitor *semanticAnalyzer;
+  SemanticVisitor *semanticAnalyzer;
   bool parsed = false;
 };
 

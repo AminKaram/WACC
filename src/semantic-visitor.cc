@@ -27,16 +27,48 @@ void SemanticVisitor::visit(Program *node) {
     exit(200);
   }
   node->statements->accept(this);
+
+  node->table = scope;
 }
 
-void SemanticVisitor::visit(AssignRhs *node) { 
-}
-
-void SemanticVisitor::visit(AssignLhs *node) {
-}
-
-void SemanticVisitor::visit(Expression *node) {
-}
+//void SemanticVisitor::visit(AssignRhs *node) { 
+//  ArrayLiter *arrayLiter = dynamic_cast<ArrayLiter*>(node);
+//  NewPair *newPair       = dynamic_cast<NewPair*>(node);
+//  Expression *expr       = dynamic_cast<Expression*>(node);
+//  PairElem *pairElem     = dynamic_cast<PairElem*>(node);
+//
+//  if(arrayLiter) arrayLiter->accept(this);
+//  if(newPair) newPair->accept(this);
+//  if(expr) expr->accept(this);
+//  if(pairElem) pairElem->accept(this);
+//}
+//
+//void SemanticVisitor::visit(AssignLhs *node) {
+//}
+//
+//void SemanticVisitor::visit(Expression *node) {
+//  Identifier *ident      = dynamic_cast<Identifier*>(node);
+//  FunctionCall *funcCall = dynamic_cast<FunctionCall*>(node);
+//  Number *number         = dynamic_cast<Number*>(node);
+//  Boolean *boolean       = dynamic_cast<Boolean*>(node);
+//  Char *charId           = dynamic_cast<Char*>(node);
+//  String *stringId       = dynamic_cast<String*>(node);
+//  Null *null             = dynamic_cast<Null*>(node);
+//  BinaryOperator *binop  = dynamic_cast<BinaryOperator*>(node);
+//  ArrayElem *arrayElem   = dynamic_cast<ArrayElem*>(node);
+//  UnaryOperator *unop    = dynamic_cast<UnaryOperator*>(node);
+//
+//  if(ident) ident->accept(this);
+//  if(funcCall) funcCall->accept(this);
+//  if(number) number->accept(this);
+//  if(boolean) boolean->accept(this); 
+//  if(charId) charId->accept(this);
+//  if(stringId) stringId->accept(this);
+//  if(null) null->accept(this);
+//  if(binop) binop->accept(this);
+//  if(arrayElem) arrayElem->accept(this);
+//  if(unop) unop->accept(this);
+//}
 
 void SemanticVisitor::visit(StatSeq *node) {
   for(int i = 0; i < node->statements.size(); i++) {
@@ -65,8 +97,7 @@ void SemanticVisitor::visit(VariableDeclaration *node) {
     exit(200);
   }
 
-  VariableId *variable = new VariableId(node->type);
-  scope->add(node->id->id, *variable);
+  scope->addVariable(node);
 }
 
 void SemanticVisitor::visit(FunctionDecList *node) {
@@ -97,6 +128,7 @@ void SemanticVisitor::visit(FunctionDeclaration *node) {
   }
   
   node->block->accept(this);
+  node->table = scope;
   scope = scope->getEncScope();
 }
 
@@ -149,6 +181,7 @@ void SemanticVisitor::visit(Assignment *node) {
 void SemanticVisitor::visit(BeginStatement *node) {
   scope = new SymbolTable(scope);;
   node->scope->accept(this);
+  node->table = scope;
   scope = scope->getEncScope();
 }
 
