@@ -253,15 +253,18 @@ void CodeGenVisitor::visit(BeginStatement *node) {}
 void CodeGenVisitor::visit(IfStatement *node) {
   node->expr->accept(this, "r4");
   labelNum+= 2;
+  int tmp = labelNum;
   middle << "  CMP r4, #0\n"
          << "  BEQ L" << std::to_string(labelNum - 2)     << "\n";
 
   node->thenS->accept(this);
+  labelNum = tmp;
 
   middle << "  B L"  << std::to_string(labelNum - 1)              << "\n"
           << "L"      << std::to_string(labelNum - 2)   << ":" << "\n";
 
   node->elseS->accept(this);
+  labelNum = tmp;
 
   middle << "L" << std::to_string(labelNum -1) << ":"  << "\n";
 }
@@ -269,9 +272,11 @@ void CodeGenVisitor::visit(IfStatement *node) {
 void CodeGenVisitor::visit(WhileStatement *node) {
 
   labelNum+= 2;
+  int temp = labelNum;
   middle << "  B L" << std::to_string(labelNum - 2) << "\n";
   middle << "L" << std::to_string(labelNum - 1) << ":" << "\n";
   node->doS->accept(this);
+   labelNum = temp;
   middle << "L" << std::to_string(labelNum - 2) << ": " << "\n";
       node->expr->accept(this, "r4");
   middle << "  CMP r4, #1"                                << "\n"
@@ -364,6 +369,7 @@ void CodeGenVisitor::printMsg(TypeId *type) {
     StringTypeId *stringTypeId = dynamic_cast<StringTypeId*> (type);
     BoolTypeId *boolTypeId     = dynamic_cast<BoolTypeId*> (type);
     CharTypeId *charTypeId     = dynamic_cast<CharTypeId*> (type);
+    ArrayId *arrayTypeId       = dynamic_cast<ArrayId*> (type);
 
     if (!beginInitialisation) {
 		beginInitialisation = true;
@@ -412,7 +418,19 @@ void CodeGenVisitor::printMsg(TypeId *type) {
         boolMessageNum = messageNum;
         messageNum+=2;
   		}
-	  }
+	  } else if(arrayTypeId) {
+      //std::cout << "  BL p_print_reference" << "\n";
+      middle << "  BL p_print_reference" << "\n";
+      if (!msgReference) {
+        msgReference = true;
+        begin << 
+           "msg_" << messageNum << ":" << std::endl <<
+           "  .word 3" << std::endl <<
+           "  .ascii  \"%p\\0\"" << std::endl;
+        referenceMessageNum = messageNum;
+        messageNum++;
+      }
+    }
 }
 
 void CodeGenVisitor::printlnMsg() {
@@ -429,7 +447,18 @@ void CodeGenVisitor::printlnMsg() {
 	}           
 }
 
-
+void CodeGenVisitor::printAssemblyOfPrintReference() {
+  end <<
+    "p_print_reference: " << std::endl<<
+    "  PUSH {lr}" << std::endl<<
+    "  MOV r1, r0" << std::endl<<
+    "  LDR r0, =msg_" << referenceMessageNum << std::endl<<
+    "  ADD r0, r0, #4" << std::endl<<
+    "  BL printf" << std::endl<<
+    "  MOV r0, #0" << std::endl<<
+    "  BL fflush" << std::endl<<
+    "  POP {pc}" << "\n";
+}
 
 void CodeGenVisitor::printAssemblyOfPrintString() {
 	end <<
@@ -473,6 +502,7 @@ void CodeGenVisitor::printAssemblyOfPrintInt() {
 }
 
 void CodeGenVisitor::printStatement(TypeId *type) {
+  //std::cout << "printStatement" << "\n";
 	if (!p_print_string && type->equals(new StringTypeId())) {
 		p_print_string = true;
 		printAssemblyOfPrintString();
@@ -482,10 +512,16 @@ void CodeGenVisitor::printStatement(TypeId *type) {
 	} else if (!p_print_int && type->equals(new IntTypeId())) {
 			p_print_int = true;
 			printAssemblyOfPrintInt();
-	}
+	} else if (!p_print_reference && type->equals(new ArrayId(type))) {
+    //std::cout << "printStatement" << "\n";
+      p_print_reference = true;
+      printAssemblyOfPrintReference();
+    }
+  //std::cout << "printStatement" << "\n";
 }
 
 void CodeGenVisitor::visit(PrintStatement *node) {
+  //std::cout << "visit0" << "\n";
   node->expr->accept(this, "r0");
   TypeId *type = node->expr->type;
 	printMsg(type);
@@ -523,16 +559,20 @@ void CodeGenVisitor::visit(PrintlnStatement *node) {
 void CodeGenVisitor::visit(SkipStatement *node) { }
 
 void CodeGenVisitor::visit(Number *node, std::string reg) {
+  //std::cout<< "visit Number" << std::endl;
   middle << "  LDR " << reg << ", =" << node->value << std::endl;
 }
 void CodeGenVisitor::visit(Boolean *node, std::string reg) {
+  //std::cout<< "Boolean" << std::endl;
   middle << "  MOV " << reg << ", #" << node->value << std::endl;
 }
 void CodeGenVisitor::visit(Char *node, std::string reg) {
+  //std::cout<< "visit char" << std::endl;
   middle << "  MOV " << reg << ", #'" << node->value  << "'" << std::endl;
 }
 
 void CodeGenVisitor::visit(String *node, std::string reg) {
+  //std::cout<< "visit String" << std::endl;
   int escapeChr = 0;
   if (!beginInitialisation) {
 		beginInitialisation = true;
@@ -558,10 +598,13 @@ void CodeGenVisitor::visit(String *node, std::string reg) {
          
 }
 
-void CodeGenVisitor::visit(Null *node, std::string reg) {}
+void CodeGenVisitor::visit(Null *node, std::string reg) {
+  //std::cout<< "visit Null" << std::endl;
+}
 
 
 void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
+   //std::cout<< "visit Binop" << std::endl;
    int oper = node -> op;
          
          std::string firstReg  = reg;
@@ -688,9 +731,10 @@ void CodeGenVisitor::visit(Identifier *node) {
 }
 
 void CodeGenVisitor::visit(Identifier *node, std::string reg) {
+  //std::cout<< "visit Identifier1" << std::endl;
 	if(adr) {
 		middle << "  ADD " << reg << ", sp, #" << varMap->operator[](node->id) << "\n";
-		return;
+    return;
 	}
   if(node->type->equals(new CharTypeId) || node->type->equals(new BoolTypeId())) {
     if(varMap->operator[](node->id) == 0) {
@@ -712,18 +756,21 @@ void CodeGenVisitor::visit(Identifier *node, std::string reg) {
 void CodeGenVisitor::visit(ArrayElem *node){}
 
 void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {
+    //std::cout << "visit ArrayElem" << std::endl;
     middle << "  ADD " << reg << ", sp ,#" << varMap->operator[](node->getId()) << "\n";
     for (int i=0; i < node->idxs->size(); i++) {
       node->idxs->operator[](i)->accept(this, "r6");
       if ( reg == "r0") {
         middle << "  PUSH {r0}\n";
       }
+
       middle << "  MOV r0, r6\n"
              << "  MOV r1, " << reg << "\n";
              //bound checking branch done here
       if(reg == "r0") {
         middle << "  POP {r0}\n";        
       }
+
       middle << "  LDR " << reg << ", [" << reg << "]\n"
              << "  ADD " << reg << ", " << reg << ", #4\n";
       if(node->type->size() == 1) {

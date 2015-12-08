@@ -294,6 +294,9 @@ void SemanticVisitor::visit(BinaryOperator *node) {
 
 void SemanticVisitor::visit(ArrayElem *node) {
   SemanticId *value = scope->lookUpAll(node->id->id);
+  for(int i = 0; i < node->idxs->size(); i++) {
+    node->idxs->operator[](i)->accept(this);
+  }
   
   if(!value) {
     std::cerr << "Cannot access non declared array elem" << std::endl;
