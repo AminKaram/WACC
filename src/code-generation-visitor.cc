@@ -628,7 +628,7 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
            } else if (oper == tok::TOK_GREATER){
         // Implementation code-gen for GREATER 
             middle << "  MOVGT "<< firstReg << ", #1"<< "\n"
-                   << "  MOVLE "<< firstReg << ", #1"<< "\n";
+                   << "  MOVLE "<< firstReg << ", #0"<< "\n";
  
            } else if (oper == tok::TOK_GREATEREQUALS){
         // Implementation code-gen for GREATEREQUALS 
@@ -643,7 +643,7 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
            } else if (oper == tok::TOK_NOTEQUALS){
         // Implementation code-gen for Not EQUAL
             middle << "  MOVNE "<< firstReg << ", #1"<< "\n"
-                   << "  MOVEQ "<< firstReg << ", #1"<< "\n";
+                   << "  MOVEQ "<< firstReg << ", #0"<< "\n";
                      
            }
     }
