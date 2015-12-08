@@ -682,23 +682,20 @@ void CodeGenVisitor::visit(PairElem *node, std::string reg) {}
 void CodeGenVisitor::visit(ArrayLiter *node, std::string reg) {}
 void CodeGenVisitor::visit(UnaryOperator *node, std::string reg) {
    int oper = node -> op;
-   std:: string freeReg = reg;
+   node->expr->accept(this, reg);
    if(oper == tok ::TOK_MINUS){
-     node->expr->accept(this, freeReg);
-        middle << "  RSBS "<< freeReg << ", " << freeReg << ", #0"<< std::endl
+        middle << "  RSBS "<< reg << ", " << reg << ", #0"<< std::endl
                << "  BLVS p_throw_overflow_error" << std::endl
-               << "  MOV r0, "<< freeReg << std::endl;
+               << "  MOV r0, "<< reg << std::endl;
         p_throw_overflow_error();
    }else if(oper == tok::TOK_BANG){
-        node->expr->accept(this, freeReg);
-        middle << "  EOR "<< freeReg << ", " << freeReg << ", #1" << std::endl
-               << "  MOV r0, " << freeReg << std::endl;
+        node->expr->accept(this, reg);
+        middle << "  EOR "<< reg << ", " << reg << ", #1" << std::endl
+               << "  MOV r0, " << reg << std::endl;
    }else if(oper == tok::TOK_LEN){
    //add implementation for len
    }else if(oper == tok::TOK_ORD){
-   //add implementation for ord
    }else if(oper == tok::TOK_CHR){
-   //add implementation for chr
    }
 }
 
