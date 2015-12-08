@@ -372,6 +372,7 @@ void CodeGenVisitor::printMsg(TypeId *type) {
     StringTypeId *stringTypeId = dynamic_cast<StringTypeId*> (type);
     BoolTypeId *boolTypeId     = dynamic_cast<BoolTypeId*> (type);
     CharTypeId *charTypeId     = dynamic_cast<CharTypeId*> (type);
+    ArrayId *arrayTypeId       = dynamic_cast<ArrayId*> (type);
 
     if (!beginInitialisation) {
 		beginInitialisation = true;
@@ -420,7 +421,19 @@ void CodeGenVisitor::printMsg(TypeId *type) {
         boolMessageNum = messageNum;
         messageNum+=2;
   		}
-	  }
+	  } else if(arrayTypeId) {
+      //std::cout << "  BL p_print_reference" << "\n";
+      middle << "  BL p_print_reference" << "\n";
+      if (!msgReference) {
+        msgReference = true;
+        begin << 
+           "msg_" << messageNum << ":" << std::endl <<
+           "  .word 3" << std::endl <<
+           "  .ascii  \"%p\\0\"" << std::endl;
+        referenceMessageNum = messageNum;
+        messageNum++;
+      }
+    }
 }
 
 void CodeGenVisitor::printlnMsg() {
@@ -437,7 +450,18 @@ void CodeGenVisitor::printlnMsg() {
 	}           
 }
 
-
+void CodeGenVisitor::printAssemblyOfPrintReference() {
+  end <<
+    "p_print_reference: " << std::endl<<
+    "  PUSH {lr}" << std::endl<<
+    "  MOV r1, r0" << std::endl<<
+    "  LDR r0, =msg_" << referenceMessageNum << std::endl<<
+    "  ADD r0, r0, #4" << std::endl<<
+    "  BL printf" << std::endl<<
+    "  MOV r0, #0" << std::endl<<
+    "  BL fflush" << std::endl<<
+    "  POP {pc}" << "\n";
+}
 
 void CodeGenVisitor::printAssemblyOfPrintString() {
 	end <<
@@ -481,6 +505,7 @@ void CodeGenVisitor::printAssemblyOfPrintInt() {
 }
 
 void CodeGenVisitor::printStatement(TypeId *type) {
+  //std::cout << "printStatement" << "\n";
 	if (!p_print_string && type->equals(new StringTypeId())) {
 		p_print_string = true;
 		printAssemblyOfPrintString();
@@ -490,14 +515,27 @@ void CodeGenVisitor::printStatement(TypeId *type) {
 	} else if (!p_print_int && type->equals(new IntTypeId())) {
 			p_print_int = true;
 			printAssemblyOfPrintInt();
-	}
+	} else if (!p_print_reference && type->equals(new ArrayId(type))) {
+    std::cout << "printStatement" << "\n";
+      p_print_reference = true;
+      printAssemblyOfPrintReference();
+    }
+  std::cout << "printStatement" << "\n";
 }
 
 void CodeGenVisitor::visit(PrintStatement *node) {
+  std::cout << "visit0" << "\n";
   node->expr->accept(this, "r0");
+  std::cout << "visit1" << "\n";
   TypeId *type = node->expr->type;
+  std::cout << "visit" << "\n";
+  std::cout << type << "\n";
+  std::cout << "visit" << "\n";
 	printMsg(type);
+  std::cout << "visit2" << "\n";
   printStatement(type);
+  std::cout << "visitfinak" << "\n";
+
 }
 
 
