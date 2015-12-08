@@ -75,6 +75,7 @@ private:
   std::map<std::string, bool> *regTable;
   int labelNum   = 0;
   int messageNum = 0;
+	bool adr = false;
   
   bool p_print_string = false;
   bool p_print_bool   = false;

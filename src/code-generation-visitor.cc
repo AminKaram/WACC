@@ -305,13 +305,10 @@ void CodeGenVisitor::printMsgRead(TypeId *type) {
   } else if(intTypeId) {
       middle <<
           "  BL p_read_int" << "\n";
-      if (!msgInt) {
-        msgInt = true;
         begin << 
            "msg_" << messageNum << ":" << std::endl <<
            "  .word 3" << std::endl <<
            "  .ascii  \"%d\\0\"" << std::endl;
-      }
       intMessageNum = messageNum;
       messageNum++;
   }
@@ -328,8 +325,9 @@ void CodeGenVisitor::printStatementForRead(TypeId *type) {
 }
 
 void CodeGenVisitor::visit(ReadStatement *node) {
-
+	adr = true;
   node->id->accept(this, "r0");
+	adr = false;
   TypeId *type = node->id->type;
   printMsgRead(type);
   printStatementForRead(type);
@@ -368,13 +366,10 @@ void CodeGenVisitor::printMsg(TypeId *type) {
 	} else if(intTypeId) {
 		middle <<
 				"  BL p_print_int" << "\n";
-		if (!msgInt) {
-			msgInt = true;
 			begin << 
 				 "msg_" << messageNum << ":" << std::endl <<
 				 "  .word 3" << std::endl <<
 				 "  .ascii  \"%d\\0\"" << std::endl;
-		 }
 		 intMessageNum = messageNum;
 		 messageNum++;
 	} else if(boolTypeId) {
@@ -472,7 +467,6 @@ void CodeGenVisitor::visit(PrintStatement *node) {
   node->expr->accept(this, "r0");
   std::string stringToPrint;
   TypeId *type = node->expr->type;
-
 	printMsg(type);
   printStatement(type);
 }
@@ -491,10 +485,11 @@ void CodeGenVisitor::printAssemblyOfPrintln() {
 }
 
 void CodeGenVisitor::visit(PrintlnStatement *node) {
-  node->expr->accept(this, "r4");
+  node->expr->accept(this, "r0");
 	TypeId *type = node->expr->type;
 	
 	printMsg(type);
+	printStatement(type);
 	printlnMsg();
 	
 	if(!p_print_ln) {	
@@ -658,6 +653,10 @@ void CodeGenVisitor::visit(Identifier *node) {
 }
 
 void CodeGenVisitor::visit(Identifier *node, std::string reg) {
+	if(adr) {
+		middle << "  ADD " << reg << ", sp, #" << varMap->operator[](node->id) << "\n";
+		return;
+	}
   if(node->type->equals(new CharTypeId) || node->type->equals(new BoolTypeId())) {
     if(varMap->operator[](node->id) == 0) {
       middle << "  LDRB " << reg << ", [sp]\n";
