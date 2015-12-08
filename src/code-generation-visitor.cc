@@ -491,7 +491,8 @@ void CodeGenVisitor::printAssemblyOfPrintln() {
 }
 
 void CodeGenVisitor::visit(PrintlnStatement *node) {
-	node->expr->accept(this, "r0");
+	std::cout << "printlnstatement" << std::endl;
+  node->expr->accept(this, "r0");
 	TypeId *type = node->expr->type;
 	
 	printMsg(type);
@@ -500,8 +501,8 @@ void CodeGenVisitor::visit(PrintlnStatement *node) {
 	if(!p_print_ln) {	
 		p_print_ln = true;
 		printStatement(type);
+	  printAssemblyOfPrintln();
 	}
-	printAssemblyOfPrintln();
 }
 
 void CodeGenVisitor::visit(SkipStatement *node) { }
@@ -564,11 +565,6 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
                  << secondReg << "\n";
       }      
    } else if (oper >= tok::TOK_STAR && oper <= tok::TOK_MINUS){
-   
-             middle <<  "  LDR "<< firstReg << ", " /* << "[address where
-             first operand is stored]" (e.g. [sp])*/ << "\n";
-             middle << "  LDR "<< secondReg << ", "/* << "[address where
-             second operand is stored] (e.g. [sp , #4] )" */ << "\n";
            
            
            if(oper == tok :: TOK_STAR){
@@ -657,7 +653,7 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
            }
     }
 
-    middle << "  MOV "<< reg << firstReg << "\n";
+    middle << "  MOV "<< reg << ", " << firstReg << "\n";
     freeRegister(firstReg);
     freeRegister(secondReg);
 }
@@ -667,10 +663,20 @@ void CodeGenVisitor::visit(Identifier *node) {
 }
 
 void CodeGenVisitor::visit(Identifier *node, std::string reg) {
-  if(varMap->operator[](node->id) == 0) {
-    middle << "  LDR " << reg << ", [sp]\n";
-  } else { 
-    middle << "  LDR " << reg << ", [sp, #" << varMap->operator[](node->id) << "]\n";
+  if(node->type->equals(new CharTypeId()) || node->type->equals(new IntTypeId())) {
+    if(varMap->operator[](node->id) == 0) {
+      middle << "  LDRB " << reg << ", [sp]\n";
+    } else { 
+      middle << "  LDRB " << reg 
+             << ", [sp, #" << varMap->operator[](node->id) << "]\n";
+    }
+  } else {
+    if(varMap->operator[](node->id) == 0) {
+      middle << "  LDRB " << reg << ", [sp]\n";
+    } else { 
+      middle << "  LDRB " << reg 
+             << ", [sp, #" << varMap->operator[](node->id) << "]\n";
+    }
   }
 }
 
@@ -683,8 +689,8 @@ void CodeGenVisitor::visit(UnaryOperator *node, std::string reg) {
    int oper = node -> op;
    std:: string freeReg = getAvailableRegister();
    if(oper == tok ::TOK_MINUS){
-        middle << "  LDR " << freeReg << ", [sp]"/* need to add offset */<< std::endl
-               << "  RSBS "<< freeReg << ", " << freeReg << ", #0"<< std::endl
+     node->expr->accept(this, freeReg);
+        middle << "  RSBS "<< freeReg << ", " << freeReg << ", #0"<< std::endl
                << "  BLVS p_throw_overflow_error" << std::endl
                << "  MOV r0, "<< freeReg << std::endl;
         p_throw_overflow_error();
@@ -797,5 +803,4 @@ std::string CodeGenVisitor::getAvailableRegister() {
 
 void CodeGenVisitor::freeRegister(std::string reg) {
 	regTable->find(reg)->second = true;
-	middle << "  MOV " << reg << ", " << "#0" << "\n";
 }
