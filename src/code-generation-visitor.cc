@@ -224,6 +224,13 @@ void CodeGenVisitor::visit(FreeStatement *node) {
                << "  POP {r0}"<< std::endl
                << "  BL free"<< std::endl
                << "  POP {PC}"<< std::endl;
+ if (!beginInitialisation) {
+  beginInitialisation = true;
+  begin << 
+    ".data" << "\n"
+        << "\n";
+  }
+  
          begin << "msg_"<< messageNum <<":"<<std::endl
                << "  .word 50"<< std::endl
                << "  .ascii \"NullReferenceError : dereference a null reference\\n\\0\""<< std::endl; 
@@ -751,8 +758,8 @@ void CodeGenVisitor::visit(UnaryOperator *node, std::string reg) {
         middle << "  EOR "<< reg << ", " << reg << ", #1" << std::endl
                << "  MOV r0, " << reg << std::endl;
    }else if(oper == tok::TOK_LEN){
-   //add implementation for len
-   }else if(oper == tok::TOK_ORD){
+      middle << "  LDR " << reg << ", [" << reg << "]\n";  
+   }else if(oper == tok::TOK_ORD){ 
    }else if(oper == tok::TOK_CHR){
    }
 }
