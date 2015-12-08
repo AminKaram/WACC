@@ -253,31 +253,31 @@ void CodeGenVisitor::visit(BeginStatement *node) {}
 
 void CodeGenVisitor::visit(IfStatement *node) {
   node->expr->accept(this, "r4");
-  labelNum++;
+  labelNum+= 2;
   middle << "  CMP r4, #0\n"
-         << "  BEQ L" << std::to_string(labelNum - 1)     << "\n";
+         << "  BEQ L" << std::to_string(labelNum - 2)     << "\n";
 
   node->thenS->accept(this);
 
-  middle << "  B L"  << std::to_string(labelNum)              << "\n"
-          << "L"      << std::to_string(labelNum - 1)   << ":" << "\n";
+  middle << "  B L"  << std::to_string(labelNum - 1)              << "\n"
+          << "L"      << std::to_string(labelNum - 2)   << ":" << "\n";
 
   node->elseS->accept(this);
 
-  middle << "L" << std::to_string(labelNum) << ":"  << "\n";
+  middle << "L" << std::to_string(labelNum -1) << ":"  << "\n";
 }
 
 void CodeGenVisitor::visit(WhileStatement *node) {
 
-  labelNum++;
-  middle << "  B L" << std::to_string(labelNum - 1) << "\n";
-  middle << "L" << std::to_string(labelNum) << ":" << "\n";
+  labelNum+= 2;
+  middle << "  B L" << std::to_string(labelNum - 2) << "\n";
+  middle << "L" << std::to_string(labelNum - 1) << ":" << "\n";
   node->doS->accept(this);
-  middle << "L" << std::to_string(labelNum - 1) << ": " << "\n";
+  middle << "L" << std::to_string(labelNum - 2) << ": " << "\n";
       node->expr->accept(this, "r4");
   middle << "  CMP r4, #1"                                << "\n"
 
-          << "  BEQ L" << std::to_string(labelNum)         << "\n";
+          << "  BEQ L" << std::to_string(labelNum - 1)         << "\n";
 }
 
 void CodeGenVisitor::printAssemblyOfReadInt() {
