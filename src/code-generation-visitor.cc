@@ -540,8 +540,8 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
 
    int oper = node -> op;
          
-         std:: string firstReg  = getAvailableRegister();
-         std:: string secondReg = getAvailableRegister();
+         std:: string firstReg  = "r4";
+         std:: string secondReg = "r5";
          node -> left -> accept(this,firstReg);
          node -> right -> accept(this,secondReg);
      if(oper == tok::TOK_LOGOR || oper == tok::TOK_LOGAND){
@@ -648,7 +648,7 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
            }
     }
 
-    middle << "  MOV "<< reg << ", " << firstReg << "\n";
+    middle << "  MOV "<< "r0" << ", " << firstReg << "\n";
     freeRegister(firstReg);
     freeRegister(secondReg);
 }
