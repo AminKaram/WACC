@@ -350,8 +350,7 @@ void CodeGenVisitor::printMsg(TypeId *type) {
     if (charTypeId) {
 		middle << "  BL putchar" << "\n";
 	} else if(stringTypeId) {
-		middle << "MOV r0, r4\n"
-				"  BL p_print_string" << "\n";
+		middle << "  BL p_print_string" << "\n";
 		if (!msgString) {
 			msgString  = true;
 			begin <<
