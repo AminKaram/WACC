@@ -777,6 +777,8 @@ void CodeGenVisitor::p_throw_runtime_error(void){
                   "msg_" << messageNum << ":" << std::endl <<
                   "  .word 5" << std::endl <<
                   "  .ascii  \"%.*s\\0\"" << std::endl;
+                  messageNum ++ ;
+
               }
                end << "  MOV r0, #-1" << "\n"
                 << "  BL exit"<< "\n";
