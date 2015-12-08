@@ -253,9 +253,10 @@ void CodeGenVisitor::visit(BeginStatement *node) {}
 
 void CodeGenVisitor::visit(IfStatement *node) {
   node->expr->accept(this, "r4");
-  middle << "  CMP r4, #0\n"
-         << "  BEQ L" << std::to_string(labelNum)     << "\n";
   labelNum++;
+  middle << "  CMP r4, #0\n"
+         << "  BEQ L" << std::to_string(labelNum - 1)     << "\n";
+
   node->thenS->accept(this);
 
   middle << "  B L"  << std::to_string(labelNum)              << "\n"
@@ -264,14 +265,12 @@ void CodeGenVisitor::visit(IfStatement *node) {
   node->elseS->accept(this);
 
   middle << "L" << std::to_string(labelNum) << ":"  << "\n";
-  labelNum--;
 }
 
 void CodeGenVisitor::visit(WhileStatement *node) {
 
-
-  middle << "  B L" << std::to_string(labelNum) << "\n";
   labelNum++;
+  middle << "  B L" << std::to_string(labelNum - 1) << "\n";
   middle << "L" << std::to_string(labelNum) << ":" << "\n";
   node->doS->accept(this);
   middle << "L" << std::to_string(labelNum - 1) << ": " << "\n";
@@ -320,7 +319,7 @@ void CodeGenVisitor::printMsgRead(TypeId *type) {
       begin << 
          "msg_" << messageNum << ":" << std::endl <<
          "  .word 4" << std::endl <<
-         "  .ascii  \"%c\\0\"" << std::endl;
+         "  .ascii  \" %c\\0\"" << std::endl;
       charMessageNum = messageNum;
       messageNum++;
   } else if(intTypeId) {
@@ -383,12 +382,15 @@ void CodeGenVisitor::printMsg(TypeId *type) {
     		}
 	} else if(intTypeId) {
   		middle << "  BL p_print_int" << "\n";
-  			begin << 
-  				 "msg_" << messageNum << ":" << std::endl <<
-  				 "  .word 3" << std::endl <<
-  				 "  .ascii  \"%d\\0\"" << std::endl;
-  		 intMessageNum = messageNum;
-  		 messageNum++;
+      if (!msgInt) {
+        msgInt = true;
+        begin << 
+           "msg_" << messageNum << ":" << std::endl <<
+           "  .word 3" << std::endl <<
+           "  .ascii  \"%d\\0\"" << std::endl;
+      }
+  		intMessageNum = messageNum;
+  		messageNum++;
 	} else if(boolTypeId) {
   		middle << "  BL p_print_bool" << "\n";
   		if (!msgBool) {
@@ -478,9 +480,7 @@ void CodeGenVisitor::printStatement(TypeId *type) {
 }
 
 void CodeGenVisitor::visit(PrintStatement *node) {
-
   node->expr->accept(this, "r0");
-  std::string stringToPrint;
   TypeId *type = node->expr->type;
 	printMsg(type);
   printStatement(type);
