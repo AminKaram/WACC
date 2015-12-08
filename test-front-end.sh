@@ -1,9 +1,9 @@
 #!/bin/bash
 #command line testing utility wor the wacc front-end.
 
-VALID="$HOME/second_year/labs/wacc_examples/valid/"
-SYNTAX="$HOME/second_year/labs/wacc_examples/invalid/syntaxErr/"
-SEMANTIC="$HOME/second_year/labs/wacc_examples/invalid/semanticErr/"
+VALID="$HOME/wacc_examples/valid/"
+SYNTAX="$HOME/wacc_examples/invalid/syntaxErr/"
+SEMANTIC="$HOME/wacc_examples/invalid/semanticErr/"
 
 VFAIL=0
 SYFAIL=0
