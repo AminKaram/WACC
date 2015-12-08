@@ -10,26 +10,23 @@ CodeGenVisitor::CodeGenVisitor(std::ostream* stream) {
 CodeGenVisitor::~CodeGenVisitor() { }
 
 void CodeGenVisitor::visit(Program *node) {
-  // when you prin you should add
-  // msg_0:
-  //  .word 13
-  //  .ascii  "Hello World!\n"
-  // msg_1:
-  //  .word 5
-  //  .ascii  "%.*s\0"
   middle << ".text" << "\n" << "\n"
           << ".global main" << "\n";
 
   node->functions->accept(this);
-
+ 
+  scopeSize = 0;
+  for (int i = 1; i < node->table->variables->size(); i++) {
+    scopeSize += node->table->variables->operator[](i)->type->size();
+  }
   middle << "main:"       << "\n"
-          << "  PUSH {lr}\n";
-
+         << "  PUSH {lr}\n"
+         << "  SUB, sp, sp, #" << scopeSize << "\n";
 
   node->statements->accept(this);
   middle << "  LDR R0, =0" << "\n"
-          << "  POP {pc}" << "\n"
-          << "  .ltorg"   << "\n";
+         << "  POP {pc}" << "\n"
+         << "  .ltorg"   << "\n";
 
   if (begin.rdbuf()->in_avail() != 0) {
     *file << begin.rdbuf() << "\n" ;
@@ -92,11 +89,18 @@ void CodeGenVisitor::visit(FunctionDecList *node) {
 void CodeGenVisitor::visit(VariableDeclaration *node) {
 // simpliest version for implementing variable declaration
   node->rhs->accept(this, "r4");
+  int sizeSoFar = 0;
+  for (int i = 0; i < node->table->variables->size(); i++) {
+    if(node->table->variables->operator[](i)->id->id.compare(node->id->id) == 0) {
+      break;
+    }
+    sizeSoFar += node->table->variables->operator[](i)->type->size();
+  }
   if (node->type->equals(new BoolTypeId()) || node->type->equals(new CharTypeId())) {
-     middle << "  STRB r4, [sp]" << "\n"; // offset needs to be added to this
+    middle << "  STRB r4 [sp, #" << scopeSize-sizeSoFar << "]\n"; 
   }
   else {
-    middle << "  STR r4, [sp]" << "\n"; // offset needs to be added to this
+    middle << "  STR r4 [sp, #" << scopeSize-sizeSoFar << "]\n"; 
   }
 // effective version of variable dec(USED IN DECLARING MULTIPLE VARIABLE)
 // let x be sum of the memory size of type in each assignment statement for all of 

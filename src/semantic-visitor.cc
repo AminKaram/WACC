@@ -27,6 +27,7 @@ void SemanticVisitor::visit(Program *node) {
     exit(200);
   }
   node->statements->accept(this);
+  node->table = scope;
 }
 
 //void SemanticVisitor::visit(AssignRhs *node) { 
@@ -95,8 +96,7 @@ void SemanticVisitor::visit(VariableDeclaration *node) {
     exit(200);
   }
 
-  VariableId *variable = new VariableId(node->type);
-  scope->add(node->id->id, *variable);
+  scope->addVariable(node);
 }
 
 void SemanticVisitor::visit(FunctionDecList *node) {
@@ -127,6 +127,7 @@ void SemanticVisitor::visit(FunctionDeclaration *node) {
   }
   
   node->block->accept(this);
+  node->table = scope;
   scope = scope->getEncScope();
 }
 
@@ -179,6 +180,7 @@ void SemanticVisitor::visit(Assignment *node) {
 void SemanticVisitor::visit(BeginStatement *node) {
   scope = new SymbolTable(scope);;
   node->scope->accept(this);
+  node->table = scope;
   scope = scope->getEncScope();
 }
 
