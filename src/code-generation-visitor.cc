@@ -784,7 +784,7 @@ void CodeGenVisitor::p_throw_runtime_error(void){
   beginInitialisation = true;
   begin <<
     ".data" << "\n"
-        << "\n";
+        << "\nass";
   }
     if(!p_throw_runtime_errorb){
          end    << "p_throw_runtime_error:" << "\n"
@@ -795,7 +795,8 @@ void CodeGenVisitor::p_throw_runtime_error(void){
                   "msg_" << messageNum << ":" << std::endl <<
                   "  .word 5" << std::endl <<
                   "  .ascii  \"%.*s\\0\"" << std::endl;
-                  messageNum ++ ;
+                 stringMessageNum = messageNum;
+                 messageNum ++ ;
 
               }
                end << "  MOV r0, #-1" << "\n"
