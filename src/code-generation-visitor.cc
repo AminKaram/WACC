@@ -239,46 +239,134 @@ void CodeGenVisitor::visit(WhileStatement *node) {
   middle << "L" << std::to_string(labelNum) << ":" << "\n";
   node->doS->accept(this);
   middle << "L" << std::to_string(labelNum - 1) << ": " << "\n";
+<<<<<<< HEAD
 
       node->expr->accept(this, "r4");
   middle << "  CMP r4, #1"                                << "\n"
 
           << "  BEQ L" << std::to_string(labelNum)         << "\n";
+=======
+  node->expr->accept(this, "R4");
+
+  middle << "  CMP R4, #1"                                << "\n"
+         << "  BEQ L" << std::to_string(labelNum)         << "\n";
+>>>>>>> 9669a59774cfc6b849305e5bbeaea8e3a22785f4
 }
 
-void CodeGenVisitor::visit(ReadStatement *node) {}
+void CodeGenVisitor::printAssemblyOfReadInt() {
+  middle << 
+        "p_read_int:" << "\n" <<
+        "  PUSH {lr}" << "\n" <<
+        "  MOV r1, r0" << "\n" <<
+        "  LDR r0, =msg_"<< intMessageNum << "\n" <<
+        "  ADD r0, r0, #4" << "\n" <<
+        "  BL scanf" << "\n" <<
+        "  POP {pc}" << "\n";
+}
 
 
-void CodeGenVisitor::printMsg(TypeId *type) {
-    IntTypeId *intTypeId       = dynamic_cast<IntTypeId*> (type);
-    StringTypeId *stringTypeId = dynamic_cast<StringTypeId*> (type);
-    BoolTypeId *boolTypeId     = dynamic_cast<BoolTypeId*> (type);
-    CharTypeId *charTypeId     = dynamic_cast<CharTypeId*> (type);
-    
-    
-    if (!beginInitialisation) {
-		beginInitialisation = true;
-		begin << 
-			".data" << "\n"
-					<< "\n";
-    }
-    
-    if (charTypeId) {
+void CodeGenVisitor::printAssemblyOfReadChar() {
+  middle << 
+        "p_read_char:" << "\n" <<
+        "  PUSH {lr}" << "\n" <<
+        "  MOV r1, r0" << "\n" <<
+        "  LDR r0, =msg_"<< charMessageNum << "\n" <<
+        "  ADD r0, r0, #4" << "\n" <<
+        "  BL scanf" << "\n" <<
+        "  POP {pc}" << "\n";
+}
+
+void CodeGenVisitor::printMsgRead(TypeId *type) {
+  std::cout << "printMsgRead" << std:: endl;
+  IntTypeId *intTypeId   = dynamic_cast<IntTypeId*> (type);
+  CharTypeId *charTypeId = dynamic_cast<CharTypeId*> (type);
+  
+  if (!beginInitialisation) {
+  beginInitialisation = true;
+  begin << 
+    ".data" << "\n"
+        << "\n";
+  }
+  
+  if (charTypeId) {
+    middle <<
+        "  BL p_read_char" << "\n";
+    if (!msgChar) {
+      msgChar  = true;
+      begin << 
+         "msg_" << messageNum << ":" << std::endl <<
+         "  .word 4" << std::endl <<
+         "  .ascii  \"%c\\0\"" << std::endl;
+      }
+    } else if(intTypeId) {
+        middle <<
+            "  BL p_read_int" << "\n";
+        if (!msgInt) {
+          msgInt = true;
+          begin << 
+             "msg_" << messageNum << ":" << std::endl <<
+             "  .word 3" << std::endl <<
+             "  .ascii  \"%d\\0\"" << std::endl;
+         }
+         intMessageNum = messageNum;
+         messageNum++;
+  }
+}
+
+void CodeGenVisitor::printStatementForRead(TypeId *type) {
+  std::cout << "printStatementForRead" << std:: endl;
+  if (!p_read_char && type->equals(new CharTypeId())) {
+      p_read_char = true;
+      std::cout << "printStatementForReadif" << std:: endl;
+      printAssemblyOfReadChar();
+  } else if (!p_read_int && type->equals(new IntTypeId())) {
+      p_read_int = true;
+      std::cout << "printStatementForReadelse" << std:: endl;
+      printAssemblyOfReadInt();
+  }
+}
+
+void CodeGenVisitor::visit(ReadStatement *node) {
+  std::cout << "visit" << std:: endl;
+  node->id->accept(this);
+  std::cout << "visit" << std:: endl;
+  TypeId *type = node->id->type;
+  std::cout << "visit" << std:: endl;
+  printMsgRead(type);
+  std::cout << "visit" << std:: endl;
+  printStatementForRead(type);
+  std::cout << "visit" << std:: endl;
+
+}
+
+void CodeGenVisitor::printMsgPrint(TypeId *type) {
+  IntTypeId *intTypeId       = dynamic_cast<IntTypeId*> (type);
+  StringTypeId *stringTypeId = dynamic_cast<StringTypeId*> (type);
+  BoolTypeId *boolTypeId     = dynamic_cast<BoolTypeId*> (type);
+  CharTypeId *charTypeId     = dynamic_cast<CharTypeId*> (type);
+  
+  if (!beginInitialisation) {
+	beginInitialisation = true;
+	begin << 
+		".data" << "\n"
+				<< "\n";
+  }
+  
+  if (charTypeId) {
 		middle <<
 				"  BL putchar" << "\n";
-	} else if(stringTypeId) {
+  } else if(stringTypeId) {
 		middle <<
 				"  BL p_print_string" << "\n";
-		if (!msgString) {
-			msgString  = true;
-			begin << 
-				 "msg_" << messageNum << ":" << std::endl <<
-				 "  .word 5" << std::endl <<
-				 "  .ascii  \"%.*s\\0\"" << std::endl;
-		 }
-             
-        stringMessageNum = messageNum;
-		messageNum++;
+	if (!msgString) {
+		msgString  = true;
+		begin << 
+			 "msg_" << messageNum << ":" << std::endl <<
+			 "  .word 5" << std::endl <<
+			 "  .ascii  \"%.*s\\0\"" << std::endl;
+	 }         
+  stringMessageNum = messageNum;
+	messageNum++;
 	} else if(intTypeId) {
 		middle <<
 				"  BL p_print_int" << "\n";
@@ -292,8 +380,8 @@ void CodeGenVisitor::printMsg(TypeId *type) {
 		 intMessageNum = messageNum;
 		 messageNum++;
 	} else if(boolTypeId) {
-		middle <<
-				"  BL p_print_bool" << "\n";
+  		middle <<
+  				"  BL p_print_bool" << "\n";
 		if (!msgBool) {
 			msgBool = true;
 			begin << 
@@ -353,7 +441,7 @@ void CodeGenVisitor::printAssemblyOfPrintBool() {
 		"  MOV r0, #0" << std::endl<<
 		"  BL fflush" << std::endl<<
 		"  POP {pc}" << "\n";
-	   std::cout << boolMessageNum << std::endl;
+	   //std::cout << boolMessageNum << std::endl;
 }
 
 void CodeGenVisitor::printAssemblyOfPrintInt() {
@@ -383,13 +471,11 @@ void CodeGenVisitor::printStatement(TypeId *type) {
 }
 
 void CodeGenVisitor::visit(PrintStatement *node) {
+  node->expr->accept(this, "r0");
+  TypeId *type = node->expr->type;
+	printMsgPrint(type);
+  printStatement(type);
 
-    node->expr->accept(this, "r0");
-    std::string stringToPrint;
-    TypeId *type = node->expr->type;
-
-	printMsg(type);
-    printStatement(type);
 }
 
 
@@ -409,7 +495,7 @@ void CodeGenVisitor::visit(PrintlnStatement *node) {
 	node->expr->accept(this, "r0");
 	TypeId *type = node->expr->type;
 	
-	printMsg(type);
+	printMsgPrint(type);
 	printlnMsg();
 	
 	if(!p_print_ln) {	
