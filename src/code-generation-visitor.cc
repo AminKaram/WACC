@@ -350,7 +350,7 @@ void CodeGenVisitor::printMsg(TypeId *type) {
     }
 
     if (charTypeId) {
-		middle <<
+		middle << "MOV r0, r4\n"
 				"  BL putchar" << "\n";
 	} else if(stringTypeId) {
 		middle <<
@@ -366,7 +366,7 @@ void CodeGenVisitor::printMsg(TypeId *type) {
         stringMessageNum = messageNum;
 		messageNum++;
 	} else if(intTypeId) {
-		middle <<
+		middle << "MOV r0, r4\n"
 				"  BL p_print_int" << "\n";
 		if (!msgInt) {
 			msgInt = true;
@@ -378,7 +378,7 @@ void CodeGenVisitor::printMsg(TypeId *type) {
 		 intMessageNum = messageNum;
 		 messageNum++;
 	} else if(boolTypeId) {
-		middle <<
+		middle << "MOV r0, r4\n"
 				"  BL p_print_bool" << "\n";
 		if (!msgBool) {
 			msgBool = true;
