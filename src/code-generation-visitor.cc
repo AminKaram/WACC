@@ -224,6 +224,13 @@ void CodeGenVisitor::visit(FreeStatement *node) {
                << "  POP {r0}"<< std::endl
                << "  BL free"<< std::endl
                << "  POP {PC}"<< std::endl;
+ if (!beginInitialisation) {
+  beginInitialisation = true;
+  begin << 
+    ".data" << "\n"
+        << "\n";
+  }
+  
          begin << "msg_"<< messageNum <<":"<<std::endl
                << "  .word 50"<< std::endl
                << "  .ascii \"NullReferenceError : dereference a null reference\\n\\0\""<< std::endl; 
