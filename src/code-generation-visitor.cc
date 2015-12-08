@@ -534,17 +534,26 @@ void CodeGenVisitor::visit(Char *node, std::string reg) {
 }
 
 void CodeGenVisitor::visit(String *node, std::string reg) {
+  int escapeChr = 0;
   if (!beginInitialisation) {
 		beginInitialisation = true;
 		begin << 
 			".data" << "\n"
 					<< "\n";
   }
+
+  for (int i = 0; i < node->value.size() - 1; ++i ) {
+    if((node->value.operator[](i) == '\\') && 
+                                    (node->value.operator[](i + 1) != '\\')) {
+        escapeChr++;    
+    }
+  }
+
   middle << 
 		"  LDR " << reg << ", =msg_" << messageNum << "\n";
   begin  << 
 		"msg_" << messageNum << ":" << std::endl<<
-        "  .word " << node->value.size() - 2 << std::endl<<
+        "  .word " << node->value.size() - escapeChr - 2 << std::endl<<
         "  .ascii " << node->value << "\n";
   messageNum++;
          
