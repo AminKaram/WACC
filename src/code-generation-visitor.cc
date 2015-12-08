@@ -186,6 +186,8 @@ void CodeGenVisitor::visit(ReturnStatement *node) {
 }
 
 void CodeGenVisitor::visit(ExitStatement *node) {
+  std::cout << "exit" << std::endl;
+
   node->expr->accept(this, "R0");
 
   middle << "  BL exit"    << "\n";
@@ -394,6 +396,7 @@ void CodeGenVisitor::visit(PrintlnStatement *node) {
 void CodeGenVisitor::visit(SkipStatement *node) { }
 
 void CodeGenVisitor::visit(Number *node, std::string reg) {
+  std::cout << node->value << std::endl;
   middle << "  LDR " << reg << ", =" << node->value << std::endl;
 }
 void CodeGenVisitor::visit(Boolean *node, std::string reg) {
@@ -553,7 +556,7 @@ void CodeGenVisitor::visit(UnaryOperator *node, std::string reg) {
         middle << "  LDR " << freeReg << ", [sp]"/* need to add offset */<< std::endl
                << "  RSBS "<< freeReg << ", " << freeReg << ", #0"<< std::endl
                << "  BLVS p_throw_overflow_error" << std::endl
-               << "  MOV r0, "<< freeReg;
+               << "  MOV r0, "<< freeReg << std::endl;
         p_throw_overflow_error();
    }else if(oper == tok::TOK_BANG){
         middle << "  LDRSB " << freeReg << ", [sp]" /*need to add offset*/ << std::endl
@@ -657,7 +660,7 @@ std::string CodeGenVisitor::getAvailableRegister() {
 			return it->first;
 		}
 	}
-	std::cerr << "ERROR. There are no available registers";
+	//std::cerr << "ERROR. There are no available registers";
   return "R4";
 }
 
