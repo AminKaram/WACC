@@ -597,10 +597,20 @@ void CodeGenVisitor::visit(Identifier *node) {
 }
 
 void CodeGenVisitor::visit(Identifier *node, std::string reg) {
-  if(varMap->operator[](node->id) == 0) {
-    middle << "  LDR " << reg << ", [sp]\n";
-  } else { 
-    middle << "  LDR " << reg << ", [sp, #" << varMap->operator[](node->id) << "]\n";
+  if(node->type->equals(new CharTypeId()) || node->type->equals(new IntTypeId())) {
+    if(varMap->operator[](node->id) == 0) {
+      middle << "  LDRB " << reg << ", [sp]\n";
+    } else { 
+      middle << "  LDRB " << reg 
+             << ", [sp, #" << varMap->operator[](node->id) << "]\n";
+    }
+  } else {
+    if(varMap->operator[](node->id) == 0) {
+      middle << "  LDRB " << reg << ", [sp]\n";
+    } else { 
+      middle << "  LDRB " << reg 
+             << ", [sp, #" << varMap->operator[](node->id) << "]\n";
+    }
   }
 }
 
