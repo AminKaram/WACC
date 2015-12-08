@@ -329,6 +329,7 @@ void CodeGenVisitor::printAssemblyOfPrintBool() {
 		"  MOV r0, #0" << std::endl<<
 		"  BL fflush" << std::endl<<
 		"  POP {pc}" << "\n";
+	   std::cout << boolMessageNum << std::endl;
 }
 
 void CodeGenVisitor::printAssemblyOfPrintInt() {
