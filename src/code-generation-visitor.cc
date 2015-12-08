@@ -250,9 +250,10 @@ void CodeGenVisitor::visit(BeginStatement *node) {}
 
 void CodeGenVisitor::visit(IfStatement *node) {
   node->expr->accept(this, "r4");
-  middle << "  CMP r4, #0\n"
-         << "  BEQ L" << std::to_string(labelNum)     << "\n";
   labelNum++;
+  middle << "  CMP r4, #0\n"
+         << "  BEQ L" << std::to_string(labelNum - 1)     << "\n";
+
   node->thenS->accept(this);
 
   middle << "  B L"  << std::to_string(labelNum)              << "\n"
@@ -261,14 +262,12 @@ void CodeGenVisitor::visit(IfStatement *node) {
   node->elseS->accept(this);
 
   middle << "L" << std::to_string(labelNum) << ":"  << "\n";
-  labelNum--;
 }
 
 void CodeGenVisitor::visit(WhileStatement *node) {
 
-
-  middle << "  B L" << std::to_string(labelNum) << "\n";
   labelNum++;
+  middle << "  B L" << std::to_string(labelNum - 1) << "\n";
   middle << "L" << std::to_string(labelNum) << ":" << "\n";
   node->doS->accept(this);
   middle << "L" << std::to_string(labelNum - 1) << ": " << "\n";
