@@ -36,6 +36,7 @@ public:
   void printStatementForRead(TypeId *type);
   void visit(ReadStatement *node);
   void printMsgPrint(TypeId *type);
+  void printMsg(TypeId *type);
   void printlnMsg();
   void printAssemblyOfPrintString();
   void printAssemblyOfPrintBool();
