@@ -233,7 +233,7 @@ void CodeGenVisitor::visit(FreeStatement *node) {
   
          begin << "msg_"<< messageNum <<":"<<std::endl
                << "  .word 50"<< std::endl
-               << "  .ascii \"NullReferenceError : dereference a null reference\\n\\0\""<< std::endl; 
+               << "  .ascii \"NullReferenceError: dereference a null reference\\n\\0\""<< std::endl; 
         messageNum ++;
          p_throw_runtime_error();
         
