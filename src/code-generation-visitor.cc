@@ -260,25 +260,25 @@ void CodeGenVisitor::visit(WhileStatement *node) {
 }
 
 void CodeGenVisitor::printAssemblyOfReadInt() {
-  middle << 
-        "p_read_int:" << "\n" <<
-        "  PUSH {lr}" << "\n" <<
-        "  MOV r1, r0" << "\n" <<
-        "  LDR r0, =msg_"<< intMessageNum << "\n" <<
-        "  ADD r0, r0, #4" << "\n" <<
-        "  BL scanf" << "\n" <<
-        "  POP {pc}" << "\n";
+  end << 
+      "p_read_int:" << "\n" <<
+      "  PUSH {lr}" << "\n" <<
+      "  MOV r1, r0" << "\n" <<
+      "  LDR r0, =msg_"<< intMessageNum << "\n" <<
+      "  ADD r0, r0, #4" << "\n" <<
+      "  BL scanf" << "\n" <<
+      "  POP {pc}" << "\n";
 }
 
 void CodeGenVisitor::printAssemblyOfReadChar() {
-  middle << 
-        "p_read_char:" << "\n" <<
-        "  PUSH {lr}" << "\n" <<
-        "  MOV r1, r0" << "\n" <<
-        "  LDR r0, =msg_"<< charMessageNum << "\n" <<
-        "  ADD r0, r0, #4" << "\n" <<
-        "  BL scanf" << "\n" <<
-        "  POP {pc}" << "\n";
+  end << 
+      "p_read_char:" << "\n" <<
+      "  PUSH {lr}" << "\n" <<
+      "  MOV r1, r0" << "\n" <<
+      "  LDR r0, =msg_"<< charMessageNum << "\n" <<
+      "  ADD r0, r0, #4" << "\n" <<
+      "  BL scanf" << "\n" <<
+      "  POP {pc}" << "\n";
 }
 
 void CodeGenVisitor::printMsgRead(TypeId *type) {
@@ -318,6 +318,10 @@ void CodeGenVisitor::printMsgRead(TypeId *type) {
 }
 
 void CodeGenVisitor::printStatementForRead(TypeId *type) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> 3ce180f7fe59bd3486cc5d7933da35e997fbd777
   if (!p_read_char && type->equals(new CharTypeId())) {
       p_read_char = true;
       printAssemblyOfReadChar();
@@ -328,16 +332,11 @@ void CodeGenVisitor::printStatementForRead(TypeId *type) {
 }
 
 void CodeGenVisitor::visit(ReadStatement *node) {
-  //std::cout << "visit" << std:: endl;
+
   node->id->accept(this);
-  //std::cout << "visit" << std:: endl;
   TypeId *type = node->id->type;
-  if (!type) 
-  std::cout << "visit" << std:: endl;
   printMsgRead(type);
-  //std::cout << "visit" << std:: endl;
   printStatementForRead(type);
-  //std::cout << "visit" << std:: endl;
 }
 
 
@@ -444,6 +443,10 @@ void CodeGenVisitor::printAssemblyOfPrintBool() {
 		"  MOV r0, #0" << std::endl<<
 		"  BL fflush" << std::endl<<
 		"  POP {pc}" << "\n";
+<<<<<<< HEAD
+=======
+
+>>>>>>> 3ce180f7fe59bd3486cc5d7933da35e997fbd777
 }
 
 void CodeGenVisitor::printAssemblyOfPrintInt() {
@@ -512,6 +515,10 @@ void CodeGenVisitor::visit(PrintlnStatement *node) {
 void CodeGenVisitor::visit(SkipStatement *node) { }
 
 void CodeGenVisitor::visit(Number *node, std::string reg) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> 3ce180f7fe59bd3486cc5d7933da35e997fbd777
   middle << "  LDR " << reg << ", =" << node->value << std::endl;
 }
 void CodeGenVisitor::visit(Boolean *node, std::string reg) {
@@ -549,11 +556,6 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
          node -> left -> accept(this,firstReg);
          node -> right -> accept(this,secondReg);
      if(oper == tok::TOK_LOGOR || oper == tok::TOK_LOGAND){
-
-         middle << "  LDRSB "<< firstReg << ", " /* << "[address where
-         first value is stored]" (e.g. [sp])*/ << "\n";
-         middle << "  LDRSB "<< secondReg <<", " /* << "[address where
-         second value is stored] (e.g. [sp , #1] )" */ << "\n";
 
       if (oper == tok::TOK_LOGOR){
       //Implementation code-gen for OR 
