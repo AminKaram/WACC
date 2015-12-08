@@ -224,13 +224,16 @@ void CodeGenVisitor::visit(FreeStatement *node) {
                << "  POP {r0}"<< std::endl
                << "  BL free"<< std::endl
                << "  POP {PC}"<< std::endl;
-         p_throw_runtime_error();
          begin << "msg_"<< messageNum <<":"<<std::endl
                << "  .word 50"<< std::endl
-               << "  .ascii \"NullReferenceError : dereference a null reference\\n\\0\""<< std::endl;
+               << "  .ascii \"NullReferenceError : dereference a null reference\\n\\0\""<< std::endl; 
+        messageNum ++;
+         p_throw_runtime_error();
+        
         p_free_pairb = true;
+        
     }
-         messageNum ++;
+         
 }
 
 
@@ -316,7 +319,7 @@ void CodeGenVisitor::printMsgRead(TypeId *type) {
       begin << 
          "msg_" << messageNum << ":" << std::endl <<
          "  .word 4" << std::endl <<
-         "  .ascii  \"%c\\0\"" << std::endl;
+         "  .ascii  \" %c\\0\"" << std::endl;
       charMessageNum = messageNum;
       messageNum++;
   } else if(intTypeId) {
@@ -379,12 +382,15 @@ void CodeGenVisitor::printMsg(TypeId *type) {
     		}
 	} else if(intTypeId) {
   		middle << "  BL p_print_int" << "\n";
-  			begin << 
-  				 "msg_" << messageNum << ":" << std::endl <<
-  				 "  .word 3" << std::endl <<
-  				 "  .ascii  \"%d\\0\"" << std::endl;
-  		 intMessageNum = messageNum;
-  		 messageNum++;
+      if (!msgInt) {
+        msgInt = true;
+        begin << 
+           "msg_" << messageNum << ":" << std::endl <<
+           "  .word 3" << std::endl <<
+           "  .ascii  \"%d\\0\"" << std::endl;
+      }
+  		intMessageNum = messageNum;
+  		messageNum++;
 	} else if(boolTypeId) {
   		middle << "  BL p_print_bool" << "\n";
   		if (!msgBool) {
@@ -474,9 +480,7 @@ void CodeGenVisitor::printStatement(TypeId *type) {
 }
 
 void CodeGenVisitor::visit(PrintStatement *node) {
-
   node->expr->accept(this, "r0");
-  std::string stringToPrint;
   TypeId *type = node->expr->type;
 	printMsg(type);
   printStatement(type);
