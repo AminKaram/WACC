@@ -295,13 +295,12 @@ void CodeGenVisitor::printMsgRead(TypeId *type) {
   if (charTypeId) {
     middle <<
         "  BL p_read_char" << "\n";
-    if (!msgChar) {
-      msgChar  = true;
       begin << 
          "msg_" << messageNum << ":" << std::endl <<
          "  .word 4" << std::endl <<
          "  .ascii  \"%c\\0\"" << std::endl;
-    } 
+      charMessageNum = messageNum;
+      messageNum++;
   } else if(intTypeId) {
       middle <<
           "  BL p_read_int" << "\n";
