@@ -6,6 +6,7 @@ CodeGenVisitor::CodeGenVisitor(std::ostream* stream) {
   file   = stream;
   regTable = new std::map<std::string, bool>();
   varMap = new std::map<std::string, int>();
+  populateRegMap();
 }
 
 CodeGenVisitor::~CodeGenVisitor() { }
@@ -456,10 +457,12 @@ void CodeGenVisitor::visit(Null *node, std::string reg) {}
 void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
 
    int oper = node -> op;
-         std:: string firstReg = reg; 
+         
+         std:: string firstReg  = getAvailableRegister();
          std:: string secondReg = getAvailableRegister();
-
-   if(oper == tok::TOK_LOGOR || oper == tok::TOK_LOGAND){
+         node -> left -> accept(this,firstReg);
+         node -> right -> accept(this,secondReg);
+     if(oper == tok::TOK_LOGOR || oper == tok::TOK_LOGAND){
 
          middle << "  LDRSB "<< firstReg << ", " /* << "[address where
          first value is stored]" (e.g. [sp])*/ << "\n";
@@ -572,10 +575,9 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
                      
            }
     }
-    middle << "  MOV R0, "<< firstReg << "\n";
+    middle << "  MOV "<< reg << firstReg << "\n";
     freeRegister(firstReg);
     freeRegister(secondReg);
-
 }
 
 void CodeGenVisitor::visit(Identifier *node) {
