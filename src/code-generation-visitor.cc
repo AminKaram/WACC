@@ -405,7 +405,8 @@ void CodeGenVisitor::printAssemblyOfPrintln() {
 }
 
 void CodeGenVisitor::visit(PrintlnStatement *node) {
-	node->expr->accept(this, "r0");
+	std::cout << "printlnstatement" << std::endl;
+  node->expr->accept(this, "r0");
 	TypeId *type = node->expr->type;
 	
 	printMsg(type);
@@ -414,8 +415,8 @@ void CodeGenVisitor::visit(PrintlnStatement *node) {
 	if(!p_print_ln) {	
 		p_print_ln = true;
 		printStatement(type);
+	  printAssemblyOfPrintln();
 	}
-	printAssemblyOfPrintln();
 }
 
 void CodeGenVisitor::visit(SkipStatement *node) { }
@@ -596,8 +597,8 @@ void CodeGenVisitor::visit(UnaryOperator *node, std::string reg) {
    int oper = node -> op;
    std:: string freeReg = getAvailableRegister();
    if(oper == tok ::TOK_MINUS){
-        middle << "  LDR " << freeReg << ", [sp]"/* need to add offset */<< std::endl
-               << "  RSBS "<< freeReg << ", " << freeReg << ", #0"<< std::endl
+     node->expr->accept(this, freeReg);
+        middle << "  RSBS "<< freeReg << ", " << freeReg << ", #0"<< std::endl
                << "  BLVS p_throw_overflow_error" << std::endl
                << "  MOV r0, "<< freeReg << std::endl;
         p_throw_overflow_error();
