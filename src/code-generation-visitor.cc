@@ -757,13 +757,13 @@ void CodeGenVisitor::p_check_divide_by_zero(void){
 }
 
 void CodeGenVisitor::p_throw_overflow_error(void){
-  if (!beginInitialisation) {
-  beginInitialisation = true;
-  begin <<
-    ".data" << "\n"
-        << "\n";
-  }
     if(!p_throw_overflow_errorb){
+      if (!beginInitialisation) {
+      beginInitialisation = true;
+      begin <<
+        ".data" << "\n"
+            << "\n";
+      }
         end     << "p_throw_overflow_error: " << "\n"
 
                 << "  LDR r0, =msg_"<< messageNum<< "\n"
@@ -780,13 +780,13 @@ void CodeGenVisitor::p_throw_overflow_error(void){
 }
 
 void CodeGenVisitor::p_throw_runtime_error(void){
-  if (!beginInitialisation) {
-  beginInitialisation = true;
-  begin <<
-    ".data" << "\n"
-        << "\nass";
-  }
     if(!p_throw_runtime_errorb){
+      if (!beginInitialisation) {
+      beginInitialisation = true;
+      begin <<
+        ".data" << "\n"
+            << "\nass";
+      }
          end    << "p_throw_runtime_error:" << "\n"
          "  BL p_print_string" << "\n";
              if (!msgString) {
