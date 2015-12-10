@@ -2,6 +2,31 @@
 #include "parser.hh"
 #define tok yy::parser::token::yytokentype
 
+std::string CodeGenVisitor::allocateStack(int bytes) {
+  std::string res = "";
+  int tmp = bytes;
+  while(tmp > 1024) {
+    res += "  SUB sp, sp, #1024";
+  }
+  if(tmp > 0) {
+    res += "  SUB sp, sp, #" + std::to_string(tmp); 
+  }
+  return res;
+}
+
+std::string CodeGenVisitor::deallocateStack(int bytes) {
+  std::string res = "";
+  int tmp = bytes;
+  while(tmp > 1024) {
+    res += "  ADD sp, sp, #1024";
+  }
+  if(tmp > 0) {
+    res += "  ADD sp, sp, #" + std::to_string(tmp); 
+  }
+  return res;
+}
+
+
 CodeGenVisitor::CodeGenVisitor(std::ostream* stream) {
   file   = stream;
   regTable = new std::map<std::string, bool>();
@@ -24,19 +49,11 @@ void CodeGenVisitor::visit(Program *node) {
   }
   middle << "main:"       << "\n"
          << "  PUSH {lr}\n";
-  int tmp = scopeSize;
-  std::string toEnd("");
-  while (tmp > 1024) {
-    middle << "  SUB sp, sp, #1024\n";
-    toEnd += "  ADD sp, sp, #1024\n";
-    tmp -=1024;
-  }
-        
-  middle << "  SUB sp, sp, #" << tmp << "\n";
-  toEnd +=  "  ADD sp, sp, #" + std::to_string(tmp) + "\n";
+
+  middle << allocateStack(scopeSize);
 
   node->statements->accept(this);
-  middle << toEnd
+  middle << deallocateStack(scopeSize)
          << "  LDR r0, =0" << "\n"
          << "  POP {pc}" << "\n"
          << "  .ltorg";
@@ -103,7 +120,7 @@ void CodeGenVisitor::visit(FunctionDecList *node) {
 void CodeGenVisitor::visit(VariableDeclaration *node) {
 // simpliest version for implementing variable declaration
      std::cout << "variable declaration\n "; 
-  if(node->rhs) {
+  if(!node->isParam) {
     node->rhs->accept(this, "r4");
   }
   int sizeSoFar = 0;

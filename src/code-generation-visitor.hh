@@ -71,6 +71,10 @@ public:
   
 
 private:
+
+  std::string allocateStack(int bytes);
+  std::string deallocateStack(int bytes);
+
   std::ostream *file;
   std::stringstream begin;
   std::stringstream middle;
