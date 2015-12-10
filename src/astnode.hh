@@ -78,11 +78,9 @@ public:
 
 class VariableDeclaration : public Statement { 
 public:
-  TypeId *type = NULL;
   Identifier *id = NULL;
   AssignRhs *rhs = NULL;
   SymbolTable *table = NULL;
-  bool isParam = false;
 
   VariableDeclaration(TypeId *type, Identifier *id);
 
@@ -94,17 +92,28 @@ public:
 };
 typedef std::vector<VariableDeclaration*> VariableList;
 
+class Param : public ASTnode {
+public:
+  Identifier *id = NULL;
+
+  Param(TypeId *type, Identifier *id);
+  ~Param();
+  void accept(SemanticVisitor *visitor);
+  void accept(CodeGenVisitor *visitor);
+};
+typedef std::vector<Param*> ParamList;
+
 class FunctionDeclaration : public Statement {
 public:
   TypeId *type = NULL;
   Identifier *id = NULL;
-  VariableList *parameters = NULL;
+  ParamList *parameters = NULL;
   StatSeq *block = NULL;
   SymbolTable *table = NULL;
   
   FunctionDeclaration(TypeId *type, Identifier *id, StatSeq *block);
 
-  FunctionDeclaration(TypeId *type, Identifier *id, VariableList *parameters,
+  FunctionDeclaration(TypeId *type, Identifier *id, ParamList *parameters,
                       StatSeq *block);
 
   ~FunctionDeclaration(); 

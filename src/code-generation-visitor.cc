@@ -119,31 +119,6 @@ void CodeGenVisitor::visit(FunctionDecList *node) {
 }
 void CodeGenVisitor::visit(VariableDeclaration *node) {
 // simpliest version for implementing variable declaration
-     std::cout << "variable declaration\n "; 
-  if(!node->isParam) {
-    node->rhs->accept(this, "r4");
-  }
-  int sizeSoFar = 0;
-  for (int i = 0; i < node->table->variables->size(); i++) {
-    if(node->table->variables->operator[](i)->id->id.compare(node->id->id) == 0) {
-      if (node->table->isParam->operator[](node->table->variables->operator[](i))) {
-          break;
-      } else {
-      sizeSoFar += node->type->size();
-      break;
-      }
-    }
-    sizeSoFar += node->table->variables->operator[](i)->type->size();
-  }
-  int offset = scopeSize - sizeSoFar;
-  if (!node->isParam) {
-    if (node->type->equals(new BoolTypeId()) || node->type->equals(new CharTypeId())) {
-      middle << "  STRB r4, [sp" << (offset == 0 ? "" : ", #" + std::to_string(offset)) << "]\n"; 
-    } else {
-      middle << "  STR r4 ,[sp"<< (offset == 0 ? "" : ", #" + std::to_string(offset)) << "]\n"; 
-    }
-  }
-  varMap->operator[](node->id->id) = offset;
 
   
 }
@@ -154,20 +129,17 @@ void CodeGenVisitor::visit(FunctionDeclaration *node) {
          << "  PUSH {lr}" << "\n";
   int sizeLocals = 0;
   for (int i=0; i < node->table->variables->size(); i++) {
-    if(!node->table->isParam->operator[](node->table->variables->operator[](i))) {
         sizeLocals = node->table->variables->operator[](i)->type->size();
-    } 
   }
   middle << "  SUB sp, sp, #" << sizeLocals << "\n"; 
+  
   for (int i=0; i < node->table->variables->size(); i++) {
     scopeSize += node->table->variables->operator[](i)->type->size();
   }
   
   
   for (int i=0; i < node->table->variables->size(); i++) {
-    if(node->table->isParam->operator[](node->table->variables->operator[](i))) {
       node->table->variables->operator[](i)->accept(this);
-    }
   }
   node->block->accept(this);
     middle << "  ADD sp, sp, #" << sizeLocals << "\n";
@@ -932,6 +904,8 @@ void CodeGenVisitor::visit(NewPair *node, std::string reg) {
    middle << "  STR r0, [r4, #4]\n";
 
 }
+
+void CodeGenVisitor::visit(Param *node) { }
 
 void CodeGenVisitor::p_check_divide_by_zero(void){ 
     if(!p_check_divide_by_zerob){

@@ -36,10 +36,14 @@ FunctionDecList::~FunctionDecList() {
 }
 
 VariableDeclaration::VariableDeclaration(TypeId *type, Identifier *id)
-    : type(type), id(id) {}
+    : id(id) {
+  this->type = type;      
+}
 
 VariableDeclaration::VariableDeclaration(TypeId *type, Identifier *id, AssignRhs *rhs)
-    : type(type), id(id), rhs(rhs) {}
+    : id(id), rhs(rhs) {
+  this->type =type;      
+}
 
 VariableDeclaration::~VariableDeclaration() {
     freePtr(type);
@@ -47,13 +51,21 @@ VariableDeclaration::~VariableDeclaration() {
     freePtr(rhs);
 }
 
+Param::Param(TypeId *type, Identifier *id) : id(id) {
+  this->type = type;  
+}
+Param::~Param() {
+  freePtr(type);
+  freePtr(id);
+}
+
 FunctionDeclaration::FunctionDeclaration(TypeId *type, Identifier *id, StatSeq *block) 
     : type(type), id(id), block(block) {
-        parameters = new VariableList();
+        parameters = new ParamList();
         }
 
 FunctionDeclaration::FunctionDeclaration(TypeId *type, Identifier *id, 
-      VariableList *parameters, StatSeq *block) 
+      ParamList *parameters, StatSeq *block) 
     : type(type), id(id), parameters(parameters), block(block) {}
 
 FunctionDeclaration::~FunctionDeclaration() {
@@ -214,6 +226,8 @@ void FunctionDecList::accept(SemanticVisitor *visitor) { visitor->visit(this); }
 void FunctionDecList::accept(CodeGenVisitor *visitor) { visitor->visit(this); }
 void VariableDeclaration::accept(SemanticVisitor *visitor) { visitor->visit(this); }
 void VariableDeclaration::accept(CodeGenVisitor *visitor) { visitor->visit(this); }
+void Param::accept(SemanticVisitor *visitor) { visitor->visit(this); }
+void Param::accept(CodeGenVisitor *visitor) { visitor->visit(this); }
 void FunctionDeclaration::accept(SemanticVisitor *visitor) { visitor->visit(this); }
 void FunctionDeclaration::accept(CodeGenVisitor *visitor) { visitor->visit(this); }
 void FunctionCall::accept(SemanticVisitor *visitor) { visitor->visit(this); }

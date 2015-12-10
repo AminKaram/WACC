@@ -4,8 +4,8 @@
 
 SymbolTable::SymbolTable(SymbolTable *encScope) : encScope(encScope) {
   dictionary = new std::map<std::string, SemanticId&>();    
-  variables = new std::vector<VariableDeclaration*>();
-  isParam = new std::map<VariableDeclaration*, bool>();
+  variables  = new std::vector<VariableDeclaration*>();
+  varMap     = new std::map<std::string, int>();
 }
 
 SymbolTable::~SymbolTable() {
@@ -53,4 +53,28 @@ int SymbolTable::addVariable(VariableDeclaration *var) {
 
 SymbolTable* SymbolTable::getEncScope() {
   return encScope;
+}
+
+Maybe<int> SymbolTable::getOffsetScope(std::string varName) {
+  Maybe<int> res;
+  auto it = varMap->find(varName);
+  if (it != varMap->end()) {
+    res.valid = true;
+    res.data = (it->second);
+    return res;
+  }
+  res.valid = false;
+  res.data = 0;
+  return res;
+}
+
+Maybe<int>SymbolTable::searchOffset(std::string id) {
+  SymbolTable *s = this;
+  while(s) {
+    Maybe<int> val = s->getOffsetScope(id);
+    if(val.data) return val;
+    s = s->encScope;
+  }
+  Maybe<int> defaultRes = {0, false};
+  return defaultRes;
 }
