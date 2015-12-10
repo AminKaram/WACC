@@ -72,15 +72,14 @@
 %type <ExpressionList*>       arg_list expr_list array_index
 %type <VariableList*>         param_list
 %type <VariableDeclaration*>  param
-%type <int>	     			        int_sign
 %type <FunctionDeclaration*>  function_declaration
 %type <FunctionDecList*>      func_list
 
 
 /* Precedence of operators */
 %left LOGOR LOGAND 
-%left LESS GREATER LESSEQUALS GREATEREQUALS NOTEQUALS EQUALS PLUS MINUS STAR 
-%left SLASH MODULO BANG LEN CHR ORD UMINUS UPLUS
+%left LESS GREATER LESSEQUALS GREATEREQUALS NOTEQUALS EQUALS PLUS MINUS 
+%left STAR SLASH MODULO BANG LEN CHR ORD UMINUS UPLUS
 
 
 
@@ -183,7 +182,7 @@ statement:
 assign_lhs:
 		ident
 		{
-      $$ = dynamic_cast<AssignLhs*>($1); } 
+      $$ = $1; } 
   | array_elem_lhs
 		{
       $$ = $1; } 
@@ -402,16 +401,10 @@ array_index:
       $$->push_back($3); }
     ;
 int_liter:
-		int_sign INTEGER
-		 { Number *res  = new Number($1 * $2);
+	  INTEGER
+		 { Number *res  = new Number($1);
        res->type = new IntTypeId();
        $$ = res; }
-    ;
-int_sign:
-		/* empty */
-		{ $$ = 1; }
-	|	PLUS %prec UPLUS
-		{ $$ = 1; }
     ;
 bool_liter:
 		TRUE		

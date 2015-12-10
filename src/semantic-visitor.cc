@@ -27,6 +27,7 @@ void SemanticVisitor::visit(Program *node) {
     exit(200);
   }
   node->statements->accept(this);
+
   node->table = scope;
 }
 
@@ -113,6 +114,7 @@ void SemanticVisitor::visit(FunctionDeclaration *node) {
   for(int i=0; i < node->parameters->size(); i++) {
     TypeId *paramType = node->parameters->operator[](i)->type;
     params.push_back(ParamId(paramType));
+    node->parameters->operator[](i)->isParam = true;
   }
   
   FunctionId *func = new FunctionId(returnType, params);
@@ -121,9 +123,11 @@ void SemanticVisitor::visit(FunctionDeclaration *node) {
   scope->add("", *retType);
   
   for(int i = 0; i < node->parameters->size(); i++) {
-    std::string id = node->parameters->operator[](i)->id->id;
-    VariableId *var = new VariableId(params[i].type);
-    scope->add(id, *var);
+    //std::string id = node->parameters->operator[](i)->id->id;
+    scope->addVariable(node->parameters->operator[](i));
+    scope->isParam->operator[](node->parameters->operator[](i)) = true;
+    //VariableId *var = new VariableId(params[i].type);
+    //scope->add(id, *var);
   }
   
   node->block->accept(this);
@@ -212,6 +216,7 @@ void SemanticVisitor::visit(WhileStatement *node) {
 }
 
 void SemanticVisitor::visit(ReadStatement *node) {
+  node->id->accept(this);
   SemanticId *value = scope->lookUpAll(node->id->getId());
   if(!value) {
     std::cerr << "Cannot read undeclared variable: " << node->id->getId() 
@@ -292,6 +297,9 @@ void SemanticVisitor::visit(BinaryOperator *node) {
 
 void SemanticVisitor::visit(ArrayElem *node) {
   SemanticId *value = scope->lookUpAll(node->id->id);
+  for(int i = 0; i < node->idxs->size(); i++) {
+    node->idxs->operator[](i)->accept(this);
+  }
   
   if(!value) {
     std::cerr << "Cannot access non declared array elem" << std::endl;

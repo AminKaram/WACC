@@ -5,6 +5,7 @@
 SymbolTable::SymbolTable(SymbolTable *encScope) : encScope(encScope) {
   dictionary = new std::map<std::string, SemanticId&>();    
   variables = new std::vector<VariableDeclaration*>();
+  isParam = new std::map<VariableDeclaration*, bool>();
 }
 
 SymbolTable::~SymbolTable() {
@@ -44,9 +45,10 @@ int SymbolTable::add(std::string id, SemanticId& val) {
 
 int SymbolTable::addVariable(VariableDeclaration *var) {
   VariableId *variable = new VariableId(var->type);
-  add(var->id->id, *variable);
+  int res = add(var->id->id, *variable);
   variables->push_back(var);
   var->table = this;
+  return res;
 }
 
 SymbolTable* SymbolTable::getEncScope() {

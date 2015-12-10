@@ -17,10 +17,13 @@ public:
   int addVariable(VariableDeclaration*);
   SymbolTable* getEncScope();
   std::vector<VariableDeclaration*> *variables = NULL;
+  std::map<VariableDeclaration*, bool> *isParam = NULL;
 
 private:
   SymbolTable *encScope = NULL;
   std::map<std::string, SemanticId&> *dictionary = NULL;
+  
+  
 };
 
 #endif

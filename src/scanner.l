@@ -36,7 +36,8 @@ letter        [a-zA-Z]
 identifier    [a-zA-Z|_]{1}[a-zA-Z|0-9|_]*
 whitespace    [ \t]+
 comment       #[^\n]*
-charlit       \'([^\\\'\"]|\\\\|\\\"|\\r|\\n|\\b|\\0)\'
+charlit       \'[^\\\'\"]\'
+escapedchar   \'(\\\\|\\\"|\\r|\\n|\\b|\\0)\'
 stringlit     \"(\\.|[^\\"])*\"
 
 %{
@@ -125,6 +126,8 @@ false 		    return (token::make_FALSE(loc));
 {stringlit}   return (token::make_STRINGLIT(yytext, loc));
 
 {charlit}     return (token::make_CHARLIT(yytext[1], loc));  
+
+{escapedchar} return (token::make_CHARLIT(yytext[2], loc));
 
 .             {
                 driver.error(loc, "syntax error: invalid character");

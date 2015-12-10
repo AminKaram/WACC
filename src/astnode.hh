@@ -28,7 +28,8 @@ class AssignLhs : public virtual ASTnode {
 public:
   virtual std::string getId();
   void accept(SemanticVisitor *visitor) = 0;
-  void accept(CodeGenVisitor *visitor) = 0;
+  virtual void accept(CodeGenVisitor *visitor) = 0;
+  virtual void accept(CodeGenVisitor *visitor, std::string reg) = 0;
 };
 
 class AssignRhs : public virtual ASTnode {
@@ -81,6 +82,7 @@ public:
   Identifier *id = NULL;
   AssignRhs *rhs = NULL;
   SymbolTable *table = NULL;
+  bool isParam = false;
 
   VariableDeclaration(TypeId *type, Identifier *id);
 
