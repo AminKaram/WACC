@@ -6,10 +6,10 @@ std::string CodeGenVisitor::allocateStack(int bytes) {
   std::string res = "";
   int tmp = bytes;
   while(tmp > 1024) {
-    res += "  SUB sp, sp, #1024";
+    res += "  SUB sp, sp, #1024\n";
   }
   if(tmp > 0) {
-    res += "  SUB sp, sp, #" + std::to_string(tmp); 
+    res += "  SUB sp, sp, #" + std::to_string(tmp) + "\n";
   }
   return res;
 }
@@ -18,10 +18,10 @@ std::string CodeGenVisitor::deallocateStack(int bytes) {
   std::string res = "";
   int tmp = bytes;
   while(tmp > 1024) {
-    res += "  ADD sp, sp, #1024";
+    res += "  ADD sp, sp, #1024\n";
   }
   if(tmp > 0) {
-    res += "  ADD sp, sp, #" + std::to_string(tmp); 
+    res += "  ADD sp, sp, #" + std::to_string(tmp) + "\n";
   }
   return res;
 }
@@ -82,46 +82,39 @@ void CodeGenVisitor::visit(FunctionDecList *node) {
   }
 }
 void CodeGenVisitor::visit(VariableDeclaration *node) {
-  std::cout << "variable declaration\n ";
   if(node->rhs) {
    node->rhs->accept(this, "r4");
   }
   int sizeSoFar = 0;
-  for (int i = 0; i < currentScope->variables->size(); i++) {
+  for (int i = currentScope->variables->size()-1; i >=0; i--) {
     if(currentScope->variables->operator[](i)->id->id.compare(node->id->id) == 0) {
-     sizeSoFar += node->type->size();
-     break;
+    sizeSoFar += currentScope->variables->operator[](i)->type->size();
+    break;
    }
-   std::cout << currentScope->variables->operator [](i)->id->id << std::endl;
    sizeSoFar += currentScope->variables->operator[](i)->type->size();
   }
   int offset = scopeSize - sizeSoFar;
-   if (node->type->equals(new BoolTypeId()) || node->type->equals(new CharTypeId())) {
+  if (node->type->equals(new BoolTypeId()) || node->type->equals(new CharTypeId())) {
      middle << "  STRB r4, [sp" << (offset == 0 ? "" : ", #" + std::to_string(offset)) << "]\n";
-   } else {
-     middle << "  STR r4 ,[sp"<< (offset == 0 ? "" : ", #" + std::to_string(offset)) << "]\n";
-   }
-  varMap->operator[](node->id->id) = offset;
+  } else {
+    middle << "  STR r4 ,[sp"<< (offset == 0 ? "" : ", #" + std::to_string(offset)) << "]\n";
+  }
+  currentScope->addOffset(node->id->id, offset);
 }
 void CodeGenVisitor::visit(FunctionDeclaration *node) {
-
-  scopeSize = 0;
   middle << "f_" << node->id->id << ":\n"
          << "  PUSH {lr}" << "\n";
-  int sizeLocals = 0;
+  int scopeSize = 4;
   for (int i=0; i < node->block->table->variables->size(); i++) {
-        sizeLocals = node->block->table->variables->operator[](i)->type->size();
+        scopeSize += node->block->table->variables->operator[](i)->type->size();
   }
-  middle << "  SUB sp, sp, #" << sizeLocals << "\n"; 
-  
-  for (int i=0; i < node->block->table->variables->size(); i++) {
-    scopeSize += node->block->table->variables->operator[](i)->type->size();
+  middle << "  SUB sp, sp, #" << scopeSize << "\n"; 
+  int sizeLocals = scopeSize;
+
+  for(int i = 0; i < node->parameters->size(); i++) {
+    node->parameters->operator[](i)->accept(this);
   }
   
-  
-  for (int i=0; i < node->block->table->variables->size(); i++) {
-      node->block->table->variables->operator[](i)->accept(this);
-  }
   node->block->accept(this);
     middle << "  ADD sp, sp, #" << sizeLocals << "\n";
     middle << "  POP {pc}" << "\n"
@@ -158,7 +151,7 @@ void CodeGenVisitor::visit(Assignment *node) {
   CharTypeId *charType = new CharTypeId();
   ArrayElem *arrLhs = dynamic_cast<ArrayElem*>(node->lhs);
   if(arrLhs) {
-    middle << "  ADD r5, sp ,#" << varMap->operator[](node->lhs->getId()) << "\n";
+    middle << "  ADD r5, sp ,#" << currentScope->searchOffset(node->lhs->getId()) << "\n";
     for (int i=0; i < arrLhs->idxs->size(); i++) {
       arrLhs->idxs->operator[](i)->accept(this, "r6");
       middle << "  LDR r5, [r5]\n"
@@ -177,17 +170,17 @@ void CodeGenVisitor::visit(Assignment *node) {
     
     
   } else if(node->lhs->type->equals(boolType) || node->lhs->type->equals(charType)) {
-    if (varMap->operator[](node->lhs->getId()) == 0) {
+    if (currentScope->searchOffset(node->lhs->getId()) == 0) {
       middle << "  STRB r4, [sp]\n";
     } else {
-      middle << "  STRB r4, [sp, #" << varMap->operator[](node->lhs->getId()) 
+      middle << "  STRB r4, [sp, #" << currentScope->searchOffset(node->lhs->getId())
              << "]\n";
     }
   } else {
-      if (varMap->operator[](node->lhs->getId()) == 0) {
+      if (currentScope->searchOffset(node->lhs->getId()) == 0) {
         middle << "  STR r4, [sp]\n";
       } else {
-        middle << "  STR r4, [sp, #" << varMap->operator[](node->lhs->getId()) 
+        middle << "  STR r4, [sp, #" << currentScope->searchOffset(node->lhs->getId())
                << "]\n";
       }
   }
@@ -238,7 +231,6 @@ void CodeGenVisitor::visit(ReturnStatement *node) {
 }
 
 void CodeGenVisitor::visit(ExitStatement *node) {
-
   node->expr->accept(this, "r0");
 
   middle << "  BL exit"    << "\n";
@@ -731,22 +723,22 @@ void CodeGenVisitor::visit(Identifier *node) {
 void CodeGenVisitor::visit(Identifier *node, std::string reg) {
   //std::cout<< "visit Identifier1" << std::endl;
 	if(adr) {
-		middle << "  ADD " << reg << ", sp, #" << varMap->operator[](node->id) << "\n";
+		middle << "  ADD " << reg << ", sp, #" << currentScope->searchOffset(node->id) << "\n";
     return;
 	}
   if(node->type->equals(new CharTypeId) || node->type->equals(new BoolTypeId())) {
-    if(varMap->operator[](node->id) == 0) {
+    if(currentScope->searchOffset(node->id) == 0) {
       middle << "  LDRB " << reg << ", [sp]\n";
     } else { 
       middle << "  LDRB " << reg 
-             << ", [sp, #" << varMap->operator[](node->id) << "]\n";
+             << ", [sp, #" << currentScope->searchOffset(node->id) << "]\n";
     }
   } else {
-    if(varMap->operator[](node->id) == 0) {
+    if(currentScope->searchOffset(node->id) == 0) {
       middle << "  LDR " << reg << ", [sp]\n";
     } else { 
       middle << "  LDR " << reg
-             << ", [sp, #" << varMap->operator[](node->id) << "]\n";
+             << ", [sp, #" << currentScope->searchOffset(node->id) << "]\n";
     }
   }
 }
@@ -798,7 +790,7 @@ void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {
       printAssemblyCheckArrayBounds();
   }
   //std::cout << "visit ArrayElem" << std::endl;
-  middle << "  ADD " << reg << ", sp ,#" << varMap->operator[](node->getId()) << "\n";
+  middle << "  ADD " << reg << ", sp ,#" << currentScope->searchOffset(node->getId()) << "\n";
   for (int i=0; i < node->idxs->size(); i++) {
     node->idxs->operator[](i)->accept(this, "r6");
     if ( reg == "r0") {
@@ -915,7 +907,10 @@ void CodeGenVisitor::visit(NewPair *node, std::string reg) {
 
 }
 
-void CodeGenVisitor::visit(Param *node) { }
+void CodeGenVisitor::visit(Param *node) {
+  scopeSize += node->type->size();
+  currentScope->addOffset(node->id->id, scopeSize);
+}
 
 void CodeGenVisitor::p_check_divide_by_zero(void){ 
     if(!p_check_divide_by_zerob){
