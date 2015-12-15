@@ -72,6 +72,12 @@ void SemanticVisitor::visit(FunctionDeclaration *node) {
   SemanticId *retType  = returnType;
   std::vector<ParamId> params;
 
+  for(int i=0; i < node->parameters->size(); i++) {
+      TypeId *paramType = node->parameters->operator[](i)->type;
+      ParamId id(paramType);
+      params.push_back(id);
+  }
+
   FunctionId *func = new FunctionId(returnType, params);
   scope->add(node->id->id, *func);
   scope = new SymbolTable(scope);
@@ -79,12 +85,12 @@ void SemanticVisitor::visit(FunctionDeclaration *node) {
   
   for(int i=0; i < node->parameters->size(); i++) {
     TypeId *paramType = node->parameters->operator[](i)->type;
-    params.push_back(ParamId(paramType));
+    ParamId *id = new ParamId(paramType);
+    scope->add(node->parameters->operator[](i)->id->id, *id);
   }
   
-
-  node->block->accept(this);
   node->block->table = scope;
+  node->block->accept(this);
   scope = scope->getEncScope();
 }
 
@@ -408,12 +414,17 @@ void SemanticVisitor::visit(Null *node) {
 void SemanticVisitor::visit(Identifier *node) {
   SemanticId *type = scope->lookUpAll(node->id);
   VariableId *idType = dynamic_cast<VariableId*>(type);
-  if(!idType) {
+  ParamId *idParamType = dynamic_cast<ParamId*>(type);
+  if(!idType && !idParamType) {
     std::cerr << "semantic error: variable is not declared " << node->id
               << std::endl;
     exit(200);
   }
-  node->type = idType->type;
+  if(idType) {
+    node->type = idType->type;
+  } else {
+    node->type = idParamType->type;
+  }
 }
 
 void SemanticVisitor::visit(Param *node) {
