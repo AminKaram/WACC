@@ -6,10 +6,10 @@ std::string CodeGenVisitor::allocateStack(int bytes) {
   std::string res = "";
   int tmp = bytes;
   while(tmp > 1024) {
-    res += "  SUB sp, sp, #1024";
+    res += "  SUB sp, sp, #1024\n";
   }
   if(tmp > 0) {
-    res += "  SUB sp, sp, #" + std::to_string(tmp); 
+    res += "  SUB sp, sp, #" + std::to_string(tmp) + "\n";
   }
   return res;
 }
@@ -18,10 +18,10 @@ std::string CodeGenVisitor::deallocateStack(int bytes) {
   std::string res = "";
   int tmp = bytes;
   while(tmp > 1024) {
-    res += "  ADD sp, sp, #1024";
+    res += "  ADD sp, sp, #1024\n";
   }
   if(tmp > 0) {
-    res += "  ADD sp, sp, #" + std::to_string(tmp); 
+    res += "  ADD sp, sp, #" + std::to_string(tmp) + "\n";
   }
   return res;
 }
@@ -88,9 +88,9 @@ void CodeGenVisitor::visit(VariableDeclaration *node) {
   int sizeSoFar = 0;
   for (int i = currentScope->variables->size()-1; i >=0; i++) {
     if(currentScope->variables->operator[](i)->id->id.compare(node->id->id) == 0) {
-     break;
+    sizeSoFar += currentScope->variables->operator[](i)->type->size();
+    break;
    }
-   std::cout << currentScope->variables->operator [](i)->id->id << std::endl;
    sizeSoFar += currentScope->variables->operator[](i)->type->size();
   }
   int offset = scopeSize - sizeSoFar;
