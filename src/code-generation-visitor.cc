@@ -118,7 +118,25 @@ void CodeGenVisitor::visit(FunctionDecList *node) {
   }
 }
 void CodeGenVisitor::visit(VariableDeclaration *node) {
-  
+  std::cout << "variable declaration\n ";
+  if(node->rhs) {
+   node->rhs->accept(this, "r4");
+  }
+  int sizeSoFar = 0;
+  for (int i = 0; i < node->table->variables->size(); i++) {
+   if(node->table->variables->operator[](i)->id->id.compare(node->id->id) == 0) {
+     sizeSoFar += node->type->size();
+     break;
+   }
+   sizeSoFar += node->table->variables->operator[](i)->type->size();
+  }
+  int offset = scopeSize - sizeSoFar;
+   if (node->type->equals(new BoolTypeId()) || node->type->equals(new CharTypeId())) {
+     middle << "  STRB r4, [sp" << (offset == 0 ? "" : ", #" + std::to_string(offset)) << "]\n";
+   } else {
+     middle << "  STR r4 ,[sp"<< (offset == 0 ? "" : ", #" + std::to_string(offset)) << "]\n";
+   }
+  varMap->operator[](node->id->id) = offset;
 }
 void CodeGenVisitor::visit(FunctionDeclaration *node) {
 
