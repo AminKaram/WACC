@@ -71,13 +71,13 @@ Maybe<int> SymbolTable::getOffsetScope(std::string varName) {
   return res;
 }
 
-Maybe<int>SymbolTable::searchOffset(std::string id) {
+int SymbolTable::searchOffset(std::string id) {
   SymbolTable *s = this;
   while(s) {
     Maybe<int> val = s->getOffsetScope(id);
-    if(val.data) return val;
+    if(val.data) return val.data;
     s = s->encScope;
   }
   Maybe<int> defaultRes = {0, false};
-  return defaultRes;
+  return defaultRes.data;
 }
