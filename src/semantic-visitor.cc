@@ -89,8 +89,8 @@ void SemanticVisitor::visit(FunctionDeclaration *node) {
     scope->add(node->parameters->operator[](i)->id->id, *id);
   }
   
-  node->block->table = scope;
   node->block->accept(this);
+  node->block->table = scope;
   scope = scope->getEncScope();
 }
 
@@ -142,8 +142,8 @@ void SemanticVisitor::visit(Assignment *node) {
 
 void SemanticVisitor::visit(BeginStatement *node) {
   scope = new SymbolTable(scope);;
-  node->scope->table = scope;
   node->scope->accept(this);
+  node->scope->table = scope;
   scope = scope->getEncScope();
 }
 

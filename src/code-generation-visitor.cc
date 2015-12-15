@@ -51,8 +51,9 @@ void CodeGenVisitor::visit(Program *node) {
          << "  PUSH {lr}\n";
 
   middle << allocateStack(scopeSize);
-
+  int temp = scopeSize;
   node->statements->accept(this);
+  scopeSize = temp;
   middle << deallocateStack(scopeSize)
          << "  LDR r0, =0" << "\n"
          << "  POP {pc}" << "\n"
@@ -238,14 +239,16 @@ void CodeGenVisitor::visit(ExitStatement *node) {
 }
 
 void CodeGenVisitor::visit(BeginStatement *node) {
+  currentScope = node->scope->table;
   scopeSize = 0;
   for (int i = 0; i < node->scope->table->variables->size(); i++) {
     scopeSize += node->scope->table->variables->operator[](i)->type->size();
   }
 
     middle << allocateStack(scopeSize);
-
+    int temp = scopeSize;
     node->scope->accept(this);
+    scopeSize= temp;
     middle << deallocateStack(scopeSize);
 }
 
