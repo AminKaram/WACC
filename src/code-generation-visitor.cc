@@ -86,7 +86,7 @@ void CodeGenVisitor::visit(VariableDeclaration *node) {
    node->rhs->accept(this, "r4");
   }
   int sizeSoFar = 0;
-  for (int i = currentScope->variables->size()-1; i >=0; i++) {
+  for (int i = currentScope->variables->size()-1; i >=0; i--) {
     if(currentScope->variables->operator[](i)->id->id.compare(node->id->id) == 0) {
     sizeSoFar += currentScope->variables->operator[](i)->type->size();
     break;
