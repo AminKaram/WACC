@@ -1,9 +1,12 @@
 #!/bin/bash
 #command line testing utility wor the wacc front-end.
+parent_path=$( cd "$(dirname "${BASH_SOURCE}")" ; pwd -P )
+suffix="/wacc_10"
+parent_path=${parent_path%$suffix}
 
-VALID="$HOME/second_year/labs/wacc_examples/valid/"
-SYNTAX="$HOME/second_year/labs/wacc_examples/invalid/syntaxErr/"
-SEMANTIC="$HOME/second_year/labs/wacc_examples/invalid/semanticErr/"
+VALID="${parent_path}/wacc_examples/valid/"
+SYNTAX="${parent_path}/wacc_examples/invalid/syntaxErr/"
+SEMANTIC="${parent_path}/wacc_examples/invalid/semanticErr/"
 
 VFAIL=0
 SYFAIL=0
