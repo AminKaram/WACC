@@ -639,7 +639,6 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
            
            if(oper == tok :: TOK_STAR){
               //Implementation code gen for MULTIPLY
-
              middle << "  SMULL "<< firstReg << ", " << secondReg << ", "
                     << firstReg << ", " << secondReg << "\n"
                      
@@ -825,10 +824,33 @@ void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {
   }
   middle << "  LDR " << reg << ", ["<< reg << "]\n";
 }
+//LHS PairElem
+void CodeGenVisitor::visit(PairElem *node){
+  middle   << "  LDR  r5, [sp]"           << std::endl
+           << "  MOV r0, r5"              << std::endl 
+           << "  BL p_check_null_pointer" << std::endl;
+  if (node->fst){
+	middle << "  LDR r5, [r5]"            << std::endl;
+  } else {
+	middle << "  LDR r5, [r5, #4]"        << std::endl;
+  }
+  middle   << "  STR r4, [r5]"            << std::endl;
+}
 
-void CodeGenVisitor::visit(PairElem *node){}
+//RHS PairElem
+// there is more to do here
 void CodeGenVisitor::visit(PairElem *node, std::string reg) {
-
+  middle   
+           << "  MOV r0, " << reg                        << std::endl 
+           << "  BL p_check_null_pointer"                << std::endl;
+  if (node->fst){
+	middle << "  LDR " << reg << ", [" << reg << "]"     << std::endl
+	       << "  STR " << reg << ", [sp, #4]"            << std::endl;
+  } else {
+	middle << "  LDR " << reg << ", [" << reg << ", #4]" << std::endl
+	       << "  STR " << reg << ", [sp]"                << std::endl;
+  }
+  
 }
 
 void CodeGenVisitor::visit(ArrayLiter *node, std::string reg) {
