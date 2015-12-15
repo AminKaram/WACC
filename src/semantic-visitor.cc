@@ -417,5 +417,5 @@ void SemanticVisitor::visit(Identifier *node) {
 }
 
 void SemanticVisitor::visit(Param *node) {
-
+  
 }

@@ -43,6 +43,10 @@ int SymbolTable::add(std::string id, SemanticId& val) {
   exit(200);
 }
 
+void SymbolTable::addOffset(std::string id, int offset) {
+  varMap->insert(std::pair<std::string, int>(id, offset));
+}
+
 int SymbolTable::addVariable(VariableDeclaration *var) {
   VariableId *variable = new VariableId(var->type);
   int res = add(var->id->id, *variable);

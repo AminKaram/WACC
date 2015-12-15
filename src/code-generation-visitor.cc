@@ -82,46 +82,39 @@ void CodeGenVisitor::visit(FunctionDecList *node) {
   }
 }
 void CodeGenVisitor::visit(VariableDeclaration *node) {
-  std::cout << "variable declaration\n ";
   if(node->rhs) {
    node->rhs->accept(this, "r4");
   }
   int sizeSoFar = 0;
-  for (int i = 0; i < currentScope->variables->size(); i++) {
+  for (int i = currentScope->variables->size()-1; i >=0; i++) {
     if(currentScope->variables->operator[](i)->id->id.compare(node->id->id) == 0) {
-     sizeSoFar += node->type->size();
      break;
    }
    std::cout << currentScope->variables->operator [](i)->id->id << std::endl;
    sizeSoFar += currentScope->variables->operator[](i)->type->size();
   }
   int offset = scopeSize - sizeSoFar;
-   if (node->type->equals(new BoolTypeId()) || node->type->equals(new CharTypeId())) {
+  if (node->type->equals(new BoolTypeId()) || node->type->equals(new CharTypeId())) {
      middle << "  STRB r4, [sp" << (offset == 0 ? "" : ", #" + std::to_string(offset)) << "]\n";
-   } else {
-     middle << "  STR r4 ,[sp"<< (offset == 0 ? "" : ", #" + std::to_string(offset)) << "]\n";
-   }
-  varMap->operator[](node->id->id) = offset;
+  } else {
+    middle << "  STR r4 ,[sp"<< (offset == 0 ? "" : ", #" + std::to_string(offset)) << "]\n";
+  }
+  currentScope->addOffset(node->id->id, offset);
 }
 void CodeGenVisitor::visit(FunctionDeclaration *node) {
-
-  scopeSize = 0;
   middle << "f_" << node->id->id << ":\n"
          << "  PUSH {lr}" << "\n";
-  int sizeLocals = 0;
+  int scopeSize = 4;
   for (int i=0; i < node->block->table->variables->size(); i++) {
-        sizeLocals = node->block->table->variables->operator[](i)->type->size();
+        scopeSize += node->block->table->variables->operator[](i)->type->size();
   }
-  middle << "  SUB sp, sp, #" << sizeLocals << "\n"; 
-  
-  for (int i=0; i < node->block->table->variables->size(); i++) {
-    scopeSize += node->block->table->variables->operator[](i)->type->size();
+  middle << "  SUB sp, sp, #" << scopeSize << "\n"; 
+  int sizeLocals = scopeSize;
+
+  for(int i = 0; i < node->parameters->size(); i++) {
+    node->parameters->operator[](i)->accept(this);
   }
   
-  
-  for (int i=0; i < node->block->table->variables->size(); i++) {
-      node->block->table->variables->operator[](i)->accept(this);
-  }
   node->block->accept(this);
     middle << "  ADD sp, sp, #" << sizeLocals << "\n";
     middle << "  POP {pc}" << "\n"
@@ -893,7 +886,10 @@ void CodeGenVisitor::visit(NewPair *node, std::string reg) {
 
 }
 
-void CodeGenVisitor::visit(Param *node) { }
+void CodeGenVisitor::visit(Param *node) {
+  scopeSize += node->type->size();
+  currentScope->addOffset(node->id->id, scopeSize);
+}
 
 void CodeGenVisitor::p_check_divide_by_zero(void){ 
     if(!p_check_divide_by_zerob){
