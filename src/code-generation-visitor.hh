@@ -80,10 +80,13 @@ private:
   std::stringstream begin;
   std::stringstream middle;
   std::stringstream end;
+
   std::map<std::string, bool> *regTable;
+
   int labelNum   = 0;
   int messageNum = 0;
-	bool adr = false;
+
+  bool adr = false;
   
   bool p_print_string = false;
   bool p_print_bool   = false;
@@ -122,8 +125,11 @@ private:
   void p_throw_runtime_error(void);
   void p_throw_overflow_error(void);
   void p_check_divide_by_zero(void);
+
   int scopeSize = 0;
+
   std::map <std::string, int> *varMap;
+  SymbolTable* currentScope;
 };
 
 

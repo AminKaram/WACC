@@ -30,7 +30,6 @@ std::string CodeGenVisitor::deallocateStack(int bytes) {
 CodeGenVisitor::CodeGenVisitor(std::ostream* stream) {
   file   = stream;
   regTable = new std::map<std::string, bool>();
-  varMap = new std::map<std::string, int>();
   populateRegMap();
 }
 
@@ -38,14 +37,15 @@ CodeGenVisitor::~CodeGenVisitor() { }
 
 void CodeGenVisitor::visit(Program *node) {
 
+  currentScope = node->statements->table;
   middle << ".text" << std::endl<< "\n"
          << ".global main" << "\n";
 
   node->functions->accept(this);
  
   scopeSize = 0;
-  for (int i = 0; i < node->table->variables->size(); i++) {
-    scopeSize += node->table->variables->operator[](i)->type->size();
+  for (int i = 0; i < node->statements->table->variables->size(); i++) {
+    scopeSize += node->statements->table->variables->operator[](i)->type->size();
   }
   middle << "main:"       << "\n"
          << "  PUSH {lr}\n";
@@ -118,8 +118,6 @@ void CodeGenVisitor::visit(FunctionDecList *node) {
   }
 }
 void CodeGenVisitor::visit(VariableDeclaration *node) {
-// simpliest version for implementing variable declaration
-
   
 }
 void CodeGenVisitor::visit(FunctionDeclaration *node) {
@@ -128,18 +126,18 @@ void CodeGenVisitor::visit(FunctionDeclaration *node) {
   middle << "f_" << node->id->id << ":\n"
          << "  PUSH {lr}" << "\n";
   int sizeLocals = 0;
-  for (int i=0; i < node->table->variables->size(); i++) {
-        sizeLocals = node->table->variables->operator[](i)->type->size();
+  for (int i=0; i < node->block->table->variables->size(); i++) {
+        sizeLocals = node->block->table->variables->operator[](i)->type->size();
   }
   middle << "  SUB sp, sp, #" << sizeLocals << "\n"; 
   
-  for (int i=0; i < node->table->variables->size(); i++) {
-    scopeSize += node->table->variables->operator[](i)->type->size();
+  for (int i=0; i < node->block->table->variables->size(); i++) {
+    scopeSize += node->block->table->variables->operator[](i)->type->size();
   }
   
   
-  for (int i=0; i < node->table->variables->size(); i++) {
-      node->table->variables->operator[](i)->accept(this);
+  for (int i=0; i < node->block->table->variables->size(); i++) {
+      node->block->table->variables->operator[](i)->accept(this);
   }
   node->block->accept(this);
     middle << "  ADD sp, sp, #" << sizeLocals << "\n";

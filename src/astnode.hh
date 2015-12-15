@@ -55,6 +55,7 @@ typedef std::vector<Statement*> StatementList;
 
 class StatSeq : public Statement {
 public:
+  SymbolTable *table;
   StatementList statements;
   StatSeq();
   ~StatSeq();
@@ -80,8 +81,7 @@ class VariableDeclaration : public Statement {
 public:
   Identifier *id = NULL;
   AssignRhs *rhs = NULL;
-  SymbolTable *table = NULL;
-
+  SymbolTable* table;
   VariableDeclaration(TypeId *type, Identifier *id);
 
   VariableDeclaration(TypeId *type, Identifier *id, AssignRhs *rhs);
@@ -109,7 +109,6 @@ public:
   Identifier *id = NULL;
   ParamList *parameters = NULL;
   StatSeq *block = NULL;
-  SymbolTable *table = NULL;
   
   FunctionDeclaration(TypeId *type, Identifier *id, StatSeq *block);
 
@@ -150,7 +149,6 @@ class Program : public ASTnode{
 public:  
   FunctionDecList* functions;
   StatSeq* statements;
-  SymbolTable *table = NULL;
   
   Program(FunctionDecList* fs, StatSeq* stats);
   ~Program();
@@ -211,7 +209,6 @@ class BeginStatement : public Statement {
 public:
   
   StatSeq *scope = NULL;
-  SymbolTable *table = NULL;
 
   BeginStatement(StatSeq *scope);
   ~BeginStatement();
