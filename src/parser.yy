@@ -70,8 +70,8 @@
 %type <Expression *> 			    expr int_liter bool_liter char_liter str_liter
 %type <Expression *>          pair_liter array_elem_exp unary_op binary_op
 %type <ExpressionList*>       arg_list expr_list array_index
-%type <VariableList*>         param_list
-%type <VariableDeclaration*>  param
+%type <ParamList*>            param_list
+%type <Param*>                param
 %type <FunctionDeclaration*>  function_declaration
 %type <FunctionDecList*>      func_list
 
@@ -119,7 +119,7 @@ function_declaration:
 param_list:
     param
 		{
-      $$ = new VariableList();
+      $$ = new ParamList();
       $$->push_back($1); }
   | param_list COMMA param
 		{
@@ -129,7 +129,7 @@ param_list:
 param:
 		type ident
 		{
-      $$ = new VariableDeclaration($1, $2); }
+      $$ = new Param($1, $2); }
     ;
 statement_seq:
 		statement

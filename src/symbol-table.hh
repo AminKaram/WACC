@@ -3,6 +3,7 @@
 #include "semantic-id.hh"
 #include <map>
 #include <string>
+#include "maybe.hh"
 
 class VariableDeclaration;
 
@@ -13,15 +14,18 @@ public:
 
   SemanticId* lookUp(std::string);
   SemanticId* lookUpAll(std::string);
+  Maybe<int> searchOffset(std::string);
   int add(std::string, SemanticId&);
+  void addOffset(std::string, int);
   int addVariable(VariableDeclaration*);
   SymbolTable* getEncScope();
   std::vector<VariableDeclaration*> *variables = NULL;
-  std::map<VariableDeclaration*, bool> *isParam = NULL;
 
 private:
+  Maybe<int> getOffsetScope(std::string);
   SymbolTable *encScope = NULL;
   std::map<std::string, SemanticId&> *dictionary = NULL;
+  std::map<std::string, int> *varMap = NULL;
   
   
 };

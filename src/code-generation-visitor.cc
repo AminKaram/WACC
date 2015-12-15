@@ -2,6 +2,31 @@
 #include "parser.hh"
 #define tok yy::parser::token::yytokentype
 
+std::string CodeGenVisitor::allocateStack(int bytes) {
+  std::string res = "";
+  int tmp = bytes;
+  while(tmp > 1024) {
+    res += "  SUB sp, sp, #1024";
+  }
+  if(tmp > 0) {
+    res += "  SUB sp, sp, #" + std::to_string(tmp); 
+  }
+  return res;
+}
+
+std::string CodeGenVisitor::deallocateStack(int bytes) {
+  std::string res = "";
+  int tmp = bytes;
+  while(tmp > 1024) {
+    res += "  ADD sp, sp, #1024";
+  }
+  if(tmp > 0) {
+    res += "  ADD sp, sp, #" + std::to_string(tmp); 
+  }
+  return res;
+}
+
+
 CodeGenVisitor::CodeGenVisitor(std::ostream* stream) {
   file   = stream;
   regTable = new std::map<std::string, bool>();
@@ -24,19 +49,11 @@ void CodeGenVisitor::visit(Program *node) {
   }
   middle << "main:"       << "\n"
          << "  PUSH {lr}\n";
-  int tmp = scopeSize;
-  std::string toEnd("");
-  while (tmp > 1024) {
-    middle << "  SUB sp, sp, #1024\n";
-    toEnd += "  ADD sp, sp, #1024\n";
-    tmp -=1024;
-  }
-        
-  middle << "  SUB sp, sp, #" << tmp << "\n";
-  toEnd +=  "  ADD sp, sp, #" + std::to_string(tmp) + "\n";
+
+  middle << allocateStack(scopeSize);
 
   node->statements->accept(this);
-  middle << toEnd
+  middle << deallocateStack(scopeSize)
          << "  LDR r0, =0" << "\n"
          << "  POP {pc}" << "\n"
          << "  .ltorg";
@@ -102,31 +119,6 @@ void CodeGenVisitor::visit(FunctionDecList *node) {
 }
 void CodeGenVisitor::visit(VariableDeclaration *node) {
 // simpliest version for implementing variable declaration
-     std::cout << "variable declaration\n "; 
-  if(node->rhs) {
-    node->rhs->accept(this, "r4");
-  }
-  int sizeSoFar = 0;
-  for (int i = 0; i < node->table->variables->size(); i++) {
-    if(node->table->variables->operator[](i)->id->id.compare(node->id->id) == 0) {
-      if (node->table->isParam->operator[](node->table->variables->operator[](i))) {
-          break;
-      } else {
-      sizeSoFar += node->type->size();
-      break;
-      }
-    }
-    sizeSoFar += node->table->variables->operator[](i)->type->size();
-  }
-  int offset = scopeSize - sizeSoFar;
-  if (!node->isParam) {
-    if (node->type->equals(new BoolTypeId()) || node->type->equals(new CharTypeId())) {
-      middle << "  STRB r4, [sp" << (offset == 0 ? "" : ", #" + std::to_string(offset)) << "]\n"; 
-    } else {
-      middle << "  STR r4 ,[sp"<< (offset == 0 ? "" : ", #" + std::to_string(offset)) << "]\n"; 
-    }
-  }
-  varMap->operator[](node->id->id) = offset;
 
   
 }
@@ -137,20 +129,17 @@ void CodeGenVisitor::visit(FunctionDeclaration *node) {
          << "  PUSH {lr}" << "\n";
   int sizeLocals = 0;
   for (int i=0; i < node->table->variables->size(); i++) {
-    if(!node->table->isParam->operator[](node->table->variables->operator[](i))) {
         sizeLocals = node->table->variables->operator[](i)->type->size();
-    } 
   }
   middle << "  SUB sp, sp, #" << sizeLocals << "\n"; 
+  
   for (int i=0; i < node->table->variables->size(); i++) {
     scopeSize += node->table->variables->operator[](i)->type->size();
   }
   
   
   for (int i=0; i < node->table->variables->size(); i++) {
-    if(node->table->isParam->operator[](node->table->variables->operator[](i))) {
       node->table->variables->operator[](i)->accept(this);
-    }
   }
   node->block->accept(this);
     middle << "  ADD sp, sp, #" << sizeLocals << "\n";
@@ -636,7 +625,6 @@ void CodeGenVisitor::visit(Null *node, std::string reg) {
 void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
    //std::cout<< "visit Binop" << std::endl;
    int oper = node -> op;
-         
          std::string firstReg  = reg;
          int tmp = atoi(reg.erase(0,1).c_str()) + 1;
          std::string secondReg = "r" + std::to_string(tmp);
@@ -923,6 +911,8 @@ void CodeGenVisitor::visit(NewPair *node, std::string reg) {
    middle << "  STR r0, [r4, #4]\n";
 
 }
+
+void CodeGenVisitor::visit(Param *node) { }
 
 void CodeGenVisitor::p_check_divide_by_zero(void){ 
     if(!p_check_divide_by_zerob){

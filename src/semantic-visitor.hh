@@ -41,6 +41,7 @@ public:
   void visit(ArrayLiter *node);
   void visit(NewPair *node);
   void visit(UnaryOperator *node);
+  void visit(Param *node);
 
 
 private:

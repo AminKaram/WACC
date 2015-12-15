@@ -110,26 +110,18 @@ void SemanticVisitor::visit(FunctionDeclaration *node) {
   TypeId *returnType   = node->type;
   SemanticId *retType  = returnType;
   std::vector<ParamId> params;
-  
-  for(int i=0; i < node->parameters->size(); i++) {
-    TypeId *paramType = node->parameters->operator[](i)->type;
-    params.push_back(ParamId(paramType));
-    node->parameters->operator[](i)->isParam = true;
-  }
-  
+
   FunctionId *func = new FunctionId(returnType, params);
   scope->add(node->id->id, *func);
   scope = new SymbolTable(scope);
   scope->add("", *retType);
   
-  for(int i = 0; i < node->parameters->size(); i++) {
-    //std::string id = node->parameters->operator[](i)->id->id;
-    scope->addVariable(node->parameters->operator[](i));
-    scope->isParam->operator[](node->parameters->operator[](i)) = true;
-    //VariableId *var = new VariableId(params[i].type);
-    //scope->add(id, *var);
+  for(int i=0; i < node->parameters->size(); i++) {
+    TypeId *paramType = node->parameters->operator[](i)->type;
+    params.push_back(ParamId(paramType));
   }
   
+
   node->block->accept(this);
   node->table = scope;
   scope = scope->getEncScope();
@@ -461,4 +453,8 @@ void SemanticVisitor::visit(Identifier *node) {
     exit(200);
   }
   node->type = idType->type;
+}
+
+void SemanticVisitor::visit(Param *node) {
+
 }
