@@ -81,7 +81,6 @@ class VariableDeclaration : public Statement {
 public:
   Identifier *id = NULL;
   AssignRhs *rhs = NULL;
-  SymbolTable* table;
   VariableDeclaration(TypeId *type, Identifier *id);
 
   VariableDeclaration(TypeId *type, Identifier *id, AssignRhs *rhs);

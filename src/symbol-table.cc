@@ -47,7 +47,6 @@ int SymbolTable::addVariable(VariableDeclaration *var) {
   VariableId *variable = new VariableId(var->type);
   int res = add(var->id->id, *variable);
   variables->push_back(var);
-  var->table = this;
   return res;
 }
 

@@ -13,11 +13,7 @@ public:
   CodeGenVisitor(std::ostream *stream);
   ~CodeGenVisitor();
 
-  //void visit(ASTnode *node);
   void visit(Program *node);
- // void visit(AssignRhs *node);
- // void visit(AssignLhs *node);
- // void visit(Expression *node);
   void visit(StatSeq *node);
   void visit(FunctionDecList *node);
   void visit(VariableDeclaration *node);
