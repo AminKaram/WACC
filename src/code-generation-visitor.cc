@@ -237,7 +237,17 @@ void CodeGenVisitor::visit(ExitStatement *node) {
 
 }
 
-void CodeGenVisitor::visit(BeginStatement *node) {}
+void CodeGenVisitor::visit(BeginStatement *node) {
+  scopeSize = 0;
+  for (int i = 0; i < node->scope->table->variables->size(); i++) {
+    scopeSize += node->scope->table->variables->operator[](i)->type->size();
+  }
+
+    middle << allocateStack(scopeSize);
+
+    node->scope->accept(this);
+    middle << deallocateStack(scopeSize);
+}
 
 void CodeGenVisitor::visit(IfStatement *node) {
   node->expr->accept(this, "r4");
