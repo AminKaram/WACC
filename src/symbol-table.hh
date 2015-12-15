@@ -14,7 +14,7 @@ public:
 
   SemanticId* lookUp(std::string);
   SemanticId* lookUpAll(std::string);
-  Maybe<int> searchOffset(std::string);
+  int searchOffset(std::string);
   int add(std::string, SemanticId&);
   void addOffset(std::string, int);
   int addVariable(VariableDeclaration*);
