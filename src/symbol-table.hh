@@ -2,6 +2,7 @@
 #define SYMBOL_TABLE_HH
 #include "semantic-id.hh"
 #include <map>
+#include <set>
 #include <string>
 #include "maybe.hh"
 
@@ -20,7 +21,7 @@ public:
   int addVariable(VariableDeclaration*);
   SymbolTable* getEncScope();
   std::vector<VariableDeclaration*> *variables = NULL;
-
+  std::set<std::string> *isDefined = NULL;
 private:
   Maybe<int> getOffsetScope(std::string);
   SymbolTable *encScope = NULL;

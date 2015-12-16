@@ -100,8 +100,10 @@ void CodeGenVisitor::visit(VariableDeclaration *node) {
   } else {
     middle << "  STR r4 ,[sp"<< (offset == 0 ? "" : ", #" + std::to_string(offset)) << "]\n";
   }
+  currentScope->isDefined->insert(node->id->id);
   currentScope->addOffset(node->id->id, offset);
 }
+
 void CodeGenVisitor::visit(FunctionDeclaration *node) {
   middle << "f_" << node->id->id << ":\n"
          << "  PUSH {lr}" << "\n";
@@ -151,8 +153,19 @@ void CodeGenVisitor::visit(Assignment *node) {
   BoolTypeId *boolType = new BoolTypeId();
   CharTypeId *charType = new CharTypeId();
   ArrayElem *arrLhs = dynamic_cast<ArrayElem*>(node->lhs);
+  SymbolTable *requiredScope = currentScope;
+
+  int temp = 0;
+  while (requiredScope->isDefined->find(node->lhs->getId()) == requiredScope->isDefined->end()) {
+    for (int i = 0; i < requiredScope->variables->size(); i++) {
+      temp += requiredScope->variables->operator[](i)->type->size();
+    }
+    requiredScope = requiredScope->getEncScope();
+  }
+
+
   if(arrLhs) {
-    middle << "  ADD r5, sp ,#" << currentScope->searchOffset(node->lhs->getId()) << "\n";
+    middle << "  ADD r5, sp ,#" << requiredScope->searchOffset(node->lhs->getId()) << "\n";
     for (int i=0; i < arrLhs->idxs->size(); i++) {
       arrLhs->idxs->operator[](i)->accept(this, "r6");
       middle << "  LDR r5, [r5]\n"
@@ -168,20 +181,18 @@ void CodeGenVisitor::visit(Assignment *node) {
                << "  STR r4, [r5]\n";
       } 
     }
-    
-    
   } else if(node->lhs->type->equals(boolType) || node->lhs->type->equals(charType)) {
-    if (currentScope->searchOffset(node->lhs->getId()) == 0) {
+    if (requiredScope->searchOffset(node->lhs->getId()) == 0 + temp) {
       middle << "  STRB r4, [sp]\n";
     } else {
-      middle << "  STRB r4, [sp, #" << currentScope->searchOffset(node->lhs->getId())
+      middle << "  STRB r4, [sp, #" << requiredScope->searchOffset(node->lhs->getId()) + temp
              << "]\n";
     }
   } else {
-      if (currentScope->searchOffset(node->lhs->getId()) == 0) {
+      if (requiredScope->searchOffset(node->lhs->getId()) + temp == 0) {
         middle << "  STR r4, [sp]\n";
       } else {
-        middle << "  STR r4, [sp, #" << currentScope->searchOffset(node->lhs->getId())
+        middle << "  STR r4, [sp, #" << requiredScope->searchOffset(node->lhs->getId()) + temp
                << "]\n";
       }
   }
