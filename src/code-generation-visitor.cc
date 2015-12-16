@@ -97,7 +97,7 @@ void CodeGenVisitor::visit(VariableDeclaration *node) {
   if (node->type->equals(new BoolTypeId()) || node->type->equals(new CharTypeId())) {
      middle << "  STRB r4, [sp" << (offset == 0 ? "" : ", #" + std::to_string(offset)) << "]\n";
   } else {
-    middle << "  STR r4 ,[sp"<< (offset == 0 ? "" : ", #" + std::to_string(offset)) << "]\n";
+    middle << "  STR r4, [sp"<< (offset == 0 ? "" : ", #" + std::to_string(offset)) << "]\n";
   }
   currentScope->isDefined->insert(node->id->id);
   currentScope->addOffset(node->id->id, offset);
@@ -857,29 +857,42 @@ void CodeGenVisitor::visit(PairElem *node){
            << "  BL p_check_null_pointer" << std::endl;
   p_check_null_pointer();
   if (node->fst){
-	middle   << "  LDR r5, [r5]"            << std::endl;
+	  middle   << "  LDR r5, [r5]"            << std::endl;
   } else {
-	middle   << "  LDR r5, [r5, #4]"        << std::endl;
+	  middle   << "  LDR r5, [r5, #4]"        << std::endl;
   }
-  middle   << "  STR r4, [r5]"            << std::endl;
+  middle     << "  STR r4, [r5]"            << std::endl;
 }
 
 //RHS PairElem
 // there is more to do here
 void CodeGenVisitor::visit(PairElem *node, std::string reg) {
   node->type->size();
-  middle   
+  middle   // LDR reg, [sp, #n] the location on stack
            << "  MOV r0, " << reg                        << std::endl 
            << "  BL p_check_null_pointer"                << std::endl;
   p_check_null_pointer();
   if (node->fst){
-	middle   << "  LDR " << reg << ", [" << reg << "]"     << std::endl
-	         << "  STR " << reg << ", [sp, #4]"            << std::endl;
+    //if INT do this
+	  middle   << "  LDR " << reg << ", [" << reg << "]"     << std::endl
+             << "  LDR " << reg << ", [" << reg << "]"     << std::endl;
+	          // << "  STR " << reg << ", [sp, #4]" /*4 should be the proper location on stack*/          << std::endl;
   } else {
-	middle   << "  LDR " << reg << ", [" << reg << ", #4]" << std::endl
-	         << "  STR " << reg << ", [sp]"                << std::endl;
+	  middle   << "  LDR " << reg << ", [" << reg << "]"     << std::endl
+             << "  LDR " << reg << ", [" << reg << ", #4]" << std::endl;
+	           //<< "  STR " << reg << ", [sp]"                << std::endl;
   }
-  
+  /*Else if bool or char
+  if (node->fst){
+    middle   << "  LDR " << reg << ", [" << reg << "]"     << std::endl
+             << "  LDRSB " << reg << ", [" << reg << "]"     << std::endl
+             << "  STRB " << reg << ", [sp, #n]" n is the proper location on stack          << std::endl;
+  } else {
+    middle   << "  LDR " << reg << ", [" << reg << ", #4]"     << std::endl
+             << "  LDRSB " << reg << ", [" << reg << "]" << std::endl
+             << "  STRB " << reg << ", [sp, #n]" n is the proper location on stack                      << std::endl;
+  }
+  */
 }
 
 void CodeGenVisitor::visit(ArrayLiter *node, std::string reg) {
