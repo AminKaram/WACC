@@ -27,7 +27,7 @@ private:
   SymbolTable *encScope = NULL;
   std::map<std::string, SemanticId&> *dictionary = NULL;
   std::map<std::string, int> *varMap = NULL;
-  
+
   
 };
 
