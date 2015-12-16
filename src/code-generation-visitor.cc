@@ -107,11 +107,11 @@ void CodeGenVisitor::visit(VariableDeclaration *node) {
 void CodeGenVisitor::visit(FunctionDeclaration *node) {
   middle << "f_" << node->id->id << ":\n"
          << "  PUSH {lr}" << "\n";
-  int scopeSize = 4;
+  int scopeSize = 0;
   for (int i=0; i < node->block->table->variables->size(); i++) {
         scopeSize += node->block->table->variables->operator[](i)->type->size();
   }
-  middle << "  SUB sp, sp, #" << scopeSize << "\n"; 
+  allocateStack(scopeSize);
   int sizeLocals = scopeSize;
 
   for(int i = 0; i < node->parameters->size(); i++) {
@@ -119,8 +119,8 @@ void CodeGenVisitor::visit(FunctionDeclaration *node) {
   }
   
   node->block->accept(this);
-    middle << "  ADD sp, sp, #" << sizeLocals << "\n";
-    middle << "  POP {pc}" << "\n"
+  deallocateStack(sizeLocals);
+  middle << "  POP {pc}" << "\n"
            << "  POP {pc}"  << "\n"
            << "  .ltorg"   << "\n";
 }
