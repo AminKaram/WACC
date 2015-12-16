@@ -37,12 +37,11 @@ CodeGenVisitor::~CodeGenVisitor() { }
 
 void CodeGenVisitor::visit(Program *node) {
 
-  currentScope = node->statements->table;
   middle << ".text" << std::endl<< "\n"
          << ".global main" << "\n";
 
   node->functions->accept(this);
- 
+  currentScope = node->statements->table;
   scopeSize = 0;
   for (int i = 0; i < node->statements->table->variables->size(); i++) {
     scopeSize += node->statements->table->variables->operator[](i)->type->size();
@@ -107,6 +106,7 @@ void CodeGenVisitor::visit(VariableDeclaration *node) {
 void CodeGenVisitor::visit(FunctionDeclaration *node) {
   middle << "f_" << node->id->id << ":\n"
          << "  PUSH {lr}" << "\n";
+  currentScope = node->block->table;
   int scopeSize = 0;
   for (int i=0; i < node->block->table->variables->size(); i++) {
         scopeSize += node->block->table->variables->operator[](i)->type->size();
@@ -745,7 +745,6 @@ void CodeGenVisitor::visit(Identifier *node) {
 }
 
 void CodeGenVisitor::visit(Identifier *node, std::string reg) {
-  //std::cout<< "visit Identifier1" << std::endl;
 	if(adr) {
 		middle << "  ADD " << reg << ", sp, #" << currentScope->searchOffset(node->id) << "\n";
     return;
