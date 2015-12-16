@@ -79,6 +79,7 @@ void CodeGenVisitor::visit(StatSeq *node) {
 void CodeGenVisitor::visit(FunctionDecList *node) {
   for(int i = 0; i < node->funcs.size(); i++) {
     (node->funcs)[i]->accept(this);
+
   }
 }
 void CodeGenVisitor::visit(VariableDeclaration *node) {
@@ -88,12 +89,11 @@ void CodeGenVisitor::visit(VariableDeclaration *node) {
   int sizeSoFar = 0;
   for (int i = currentScope->variables->size()-1; i >=0; i--) {
     if(currentScope->variables->operator[](i)->id->id.compare(node->id->id) == 0) {
-    sizeSoFar += currentScope->variables->operator[](i)->type->size();
     break;
    }
    sizeSoFar += currentScope->variables->operator[](i)->type->size();
   }
-  int offset = scopeSize - sizeSoFar;
+  int offset = sizeSoFar;
   if (node->type->equals(new BoolTypeId()) || node->type->equals(new CharTypeId())) {
      middle << "  STRB r4, [sp" << (offset == 0 ? "" : ", #" + std::to_string(offset)) << "]\n";
   } else {
@@ -117,7 +117,7 @@ void CodeGenVisitor::visit(FunctionDeclaration *node) {
   for(int i = 0; i < node->parameters->size(); i++) {
     node->parameters->operator[](i)->accept(this);
   }
-  
+
   node->block->accept(this);
   deallocateStack(sizeLocals);
   middle << "  POP {pc}" << "\n"
@@ -149,6 +149,7 @@ void CodeGenVisitor::visit(FunctionCall *node, std::string reg) {
 }
 
 void CodeGenVisitor::visit(Assignment *node) {
+
   node->rhs->accept(this, "r4");
   BoolTypeId *boolType = new BoolTypeId();
   CharTypeId *charType = new CharTypeId();
@@ -161,6 +162,10 @@ void CodeGenVisitor::visit(Assignment *node) {
       temp += requiredScope->variables->operator[](i)->type->size();
     }
     requiredScope = requiredScope->getEncScope();
+    if (!requiredScope) {
+      requiredScope = currentScope;
+      break;
+    }
   }
 
 
