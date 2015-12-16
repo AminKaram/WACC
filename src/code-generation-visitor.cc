@@ -840,15 +840,17 @@ void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {
   }
   middle << "  LDR " << reg << ", ["<< reg << "]\n";
 }
+
 //LHS PairElem
 void CodeGenVisitor::visit(PairElem *node){
   middle   << "  LDR  r5, [sp]"           << std::endl
            << "  MOV r0, r5"              << std::endl 
            << "  BL p_check_null_pointer" << std::endl;
+  p_check_null_pointer();
   if (node->fst){
-	middle << "  LDR r5, [r5]"            << std::endl;
+	middle   << "  LDR r5, [r5]"            << std::endl;
   } else {
-	middle << "  LDR r5, [r5, #4]"        << std::endl;
+	middle   << "  LDR r5, [r5, #4]"        << std::endl;
   }
   middle   << "  STR r4, [r5]"            << std::endl;
 }
@@ -856,15 +858,17 @@ void CodeGenVisitor::visit(PairElem *node){
 //RHS PairElem
 // there is more to do here
 void CodeGenVisitor::visit(PairElem *node, std::string reg) {
+  node->type->size();
   middle   
            << "  MOV r0, " << reg                        << std::endl 
            << "  BL p_check_null_pointer"                << std::endl;
+  p_check_null_pointer();
   if (node->fst){
-	middle << "  LDR " << reg << ", [" << reg << "]"     << std::endl
-	       << "  STR " << reg << ", [sp, #4]"            << std::endl;
+	middle   << "  LDR " << reg << ", [" << reg << "]"     << std::endl
+	         << "  STR " << reg << ", [sp, #4]"            << std::endl;
   } else {
-	middle << "  LDR " << reg << ", [" << reg << ", #4]" << std::endl
-	       << "  STR " << reg << ", [sp]"                << std::endl;
+	middle   << "  LDR " << reg << ", [" << reg << ", #4]" << std::endl
+	         << "  STR " << reg << ", [sp]"                << std::endl;
   }
   
 }
@@ -984,35 +988,66 @@ void CodeGenVisitor::p_throw_overflow_error(void){
 }
 
 void CodeGenVisitor::p_throw_runtime_error(void){
-    if(!p_throw_runtime_errorb){
-      if (!beginInitialisation) {
+  if(!p_throw_runtime_errorb){
+    if (!beginInitialisation) {
       beginInitialisation = true;
       begin <<
         ".data" << "\n"
             << "\n";
-      }
-         end    << "p_throw_runtime_error:" << "\n"
-         "  BL p_print_string" << "\n";
-             if (!msgString) {
-               msgString  = true;
-               begin <<
-                  "msg_" << messageNum << ":" << std::endl <<
-                  "  .word 5" << std::endl <<
-                  "  .ascii  \"%.*s\\0\"" << std::endl;
-                 stringMessageNum = messageNum;
-                 messageNum ++ ;
-
-              }
-               end << "  MOV r0, #-1" << "\n"
-                << "  BL exit"<< "\n";
-
-        p_throw_runtime_errorb = true;
-        if (!p_print_string) {
-          p_print_string = true;
-          printAssemblyOfPrintString();
-        }
     }
+    end << "p_throw_runtime_error:" << "\n"
+           "  BL p_print_string" << "\n";
+     if (!msgString) {
+       msgString  = true;
+       begin <<
+          "msg_" << messageNum << ":" << std::endl <<
+          "  .word 5" << std::endl <<
+          "  .ascii  \"%.*s\\0\"" << std::endl;
+         stringMessageNum = messageNum;
+         messageNum ++ ;
+      }
+         end << "  MOV r0, #-1" << "\n"
+          << "  BL exit"<< "\n";
 
+      p_throw_runtime_errorb = true;
+      if (!p_print_string) {
+        p_print_string = true;
+        printAssemblyOfPrintString();
+      }
+  }
+
+}
+
+void CodeGenVisitor::p_check_null_pointer(void){
+  if (!p_check_null_pointerb){
+    p_check_null_pointerb = true;
+
+    if (!beginInitialisation) {
+      beginInitialisation = true;
+      begin <<
+        ".data" << "\n"
+            << "\n";
+    }
+    
+    if (!msgNullPointer){
+      msgNullPointer = true; 
+      begin << "msg_" << messageNum << ":"                   << std::endl <<
+               "  .word 50"                                  << std::endl <<
+               "  .ascii  \"NullReferenceError: dereference" << 
+                                 " a null reference\n\0\""   << std::endl;
+      nullMessageNum = messageNum;
+      messageNum++ ;
+    }
+    end << "p_check_null_pointer:"               << "\n"
+           "  PUSH {lr}"                         << "\n"
+           "  CMP r0, #0"                        << "\n"
+           "  LDREQ r0, =msg_" << nullMessageNum << "\n"
+           "  BLEQ p_throw_runtime_error"        << "\n"
+           "  POP {pc}"                          << "\n";
+    if (!p_throw_runtime_errorb) {
+      p_throw_runtime_error();
+    }
+  }
 }
 
 void CodeGenVisitor::populateRegMap() {
