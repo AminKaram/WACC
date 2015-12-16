@@ -37,12 +37,11 @@ CodeGenVisitor::~CodeGenVisitor() { }
 
 void CodeGenVisitor::visit(Program *node) {
 
-  currentScope = node->statements->table;
   middle << ".text" << std::endl<< "\n"
          << ".global main" << "\n";
 
   node->functions->accept(this);
- 
+  currentScope = node->statements->table;
   scopeSize = 0;
   for (int i = 0; i < node->statements->table->variables->size(); i++) {
     scopeSize += node->statements->table->variables->operator[](i)->type->size();
@@ -80,6 +79,7 @@ void CodeGenVisitor::visit(StatSeq *node) {
 void CodeGenVisitor::visit(FunctionDecList *node) {
   for(int i = 0; i < node->funcs.size(); i++) {
     (node->funcs)[i]->accept(this);
+
   }
 }
 void CodeGenVisitor::visit(VariableDeclaration *node) {
@@ -89,12 +89,11 @@ void CodeGenVisitor::visit(VariableDeclaration *node) {
   int sizeSoFar = 0;
   for (int i = currentScope->variables->size()-1; i >=0; i--) {
     if(currentScope->variables->operator[](i)->id->id.compare(node->id->id) == 0) {
-    sizeSoFar += currentScope->variables->operator[](i)->type->size();
     break;
    }
    sizeSoFar += currentScope->variables->operator[](i)->type->size();
   }
-  int offset = scopeSize - sizeSoFar;
+  int offset = sizeSoFar;
   if (node->type->equals(new BoolTypeId()) || node->type->equals(new CharTypeId())) {
      middle << "  STRB r4, [sp" << (offset == 0 ? "" : ", #" + std::to_string(offset)) << "]\n";
   } else {
@@ -107,20 +106,21 @@ void CodeGenVisitor::visit(VariableDeclaration *node) {
 void CodeGenVisitor::visit(FunctionDeclaration *node) {
   middle << "f_" << node->id->id << ":\n"
          << "  PUSH {lr}" << "\n";
-  int scopeSize = 4;
+  currentScope = node->block->table;
+  int scopeSize = 0;
   for (int i=0; i < node->block->table->variables->size(); i++) {
         scopeSize += node->block->table->variables->operator[](i)->type->size();
   }
-  middle << "  SUB sp, sp, #" << scopeSize << "\n"; 
+  allocateStack(scopeSize);
   int sizeLocals = scopeSize;
 
   for(int i = 0; i < node->parameters->size(); i++) {
     node->parameters->operator[](i)->accept(this);
   }
-  
+
   node->block->accept(this);
-    middle << "  ADD sp, sp, #" << sizeLocals << "\n";
-    middle << "  POP {pc}" << "\n"
+  deallocateStack(sizeLocals);
+  middle << "  POP {pc}" << "\n"
            << "  POP {pc}"  << "\n"
            << "  .ltorg"   << "\n";
 }
@@ -149,6 +149,7 @@ void CodeGenVisitor::visit(FunctionCall *node, std::string reg) {
 }
 
 void CodeGenVisitor::visit(Assignment *node) {
+
   node->rhs->accept(this, "r4");
   BoolTypeId *boolType = new BoolTypeId();
   CharTypeId *charType = new CharTypeId();
@@ -161,6 +162,10 @@ void CodeGenVisitor::visit(Assignment *node) {
       temp += requiredScope->variables->operator[](i)->type->size();
     }
     requiredScope = requiredScope->getEncScope();
+    if (!requiredScope) {
+      requiredScope = currentScope;
+      break;
+    }
   }
 
 
@@ -579,7 +584,11 @@ void CodeGenVisitor::visit(Number *node, std::string reg) {
 }
 void CodeGenVisitor::visit(Boolean *node, std::string reg) {
   //std::cout<< "Boolean" << std::endl;
-  middle << "  MOV " << reg << ", #" << node->value << std::endl;
+  bool val = node -> value;
+  //middle << "  MOV " << reg << ", #" << node->value << std::endl;
+  if(val == 0 ){
+    middle << "  MOV" << reg << ", #0" << std::endl;
+  }
 }
 void CodeGenVisitor::visit(Char *node, std::string reg) {
   //std::cout<< "visit char" << std::endl;
@@ -620,7 +629,7 @@ void CodeGenVisitor::visit(Null *node, std::string reg) {
 
 
 void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
-   //std::cout<< "visit Binop" << std::endl;
+   
    int oper = node -> op;
          std::string firstReg  = reg;
          int tmp = atoi(reg.erase(0,1).c_str()) + 1;
@@ -639,7 +648,8 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
            secondReg = "r11";
          }
      if(oper == tok::TOK_LOGOR || oper == tok::TOK_LOGAND){
-
+        // if node left and right are both not constant
+       
       if (oper == tok::TOK_LOGOR){
       //Implementation code-gen for OR
          middle << "  ORR "<< firstReg << ", " << firstReg << ", "
@@ -745,7 +755,6 @@ void CodeGenVisitor::visit(Identifier *node) {
 }
 
 void CodeGenVisitor::visit(Identifier *node, std::string reg) {
-  //std::cout<< "visit Identifier1" << std::endl;
 	if(adr) {
 		middle << "  ADD " << reg << ", sp, #" << currentScope->searchOffset(node->id) << "\n";
     return;
