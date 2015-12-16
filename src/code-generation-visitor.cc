@@ -579,7 +579,11 @@ void CodeGenVisitor::visit(Number *node, std::string reg) {
 }
 void CodeGenVisitor::visit(Boolean *node, std::string reg) {
   //std::cout<< "Boolean" << std::endl;
-  middle << "  MOV " << reg << ", #" << node->value << std::endl;
+  bool val = node -> value;
+  //middle << "  MOV " << reg << ", #" << node->value << std::endl;
+  if(val == 0 ){
+    middle << "  MOV" << reg << ", #0" << std::endl;
+  }
 }
 void CodeGenVisitor::visit(Char *node, std::string reg) {
   //std::cout<< "visit char" << std::endl;
@@ -620,7 +624,7 @@ void CodeGenVisitor::visit(Null *node, std::string reg) {
 
 
 void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
-   //std::cout<< "visit Binop" << std::endl;
+   
    int oper = node -> op;
          std::string firstReg  = reg;
          int tmp = atoi(reg.erase(0,1).c_str()) + 1;
@@ -639,7 +643,8 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
            secondReg = "r11";
          }
      if(oper == tok::TOK_LOGOR || oper == tok::TOK_LOGAND){
-
+        // if node left and right are both not constant
+       
       if (oper == tok::TOK_LOGOR){
       //Implementation code-gen for OR
          middle << "  ORR "<< firstReg << ", " << firstReg << ", "
