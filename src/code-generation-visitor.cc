@@ -1025,6 +1025,7 @@ void CodeGenVisitor::visit(NewPair *node, std::string reg) {
 
 int CodeGenVisitor::visit(Param *node, int scope) {
    currentScope->addOffset(node->id->id, scope);
+   currentScope->isDefined->insert(node->id->id);
    return scope + node->type->size();
 }
 
