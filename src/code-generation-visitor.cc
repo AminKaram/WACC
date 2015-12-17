@@ -71,7 +71,6 @@ void CodeGenVisitor::visit(Program *node) {
 }
 
 void CodeGenVisitor::visit(StatSeq *node) {
-
   for(int i = 0; i < node->statements.size(); i++) {
     (node->statements)[i]->accept(this);
   }
@@ -127,7 +126,7 @@ void CodeGenVisitor::visit(FunctionDeclaration *node) {
 
 
 void CodeGenVisitor::visit(FunctionCall *node, std::string reg) {
-    int sizeParam = 0; 
+  int sizeParam = 0;
     for(int i = node->parameters->size() - 1; i >= 0; i--) {
       node->parameters->operator[](i)->accept(this, reg);
       if(node->parameters->operator[](i)->type->size() > 1) {
@@ -255,6 +254,7 @@ void CodeGenVisitor::visit(ExitStatement *node) {
 }
 
 void CodeGenVisitor::visit(BeginStatement *node) {
+  SymbolTable *prevScope = currentScope;
   currentScope = node->scope->table;
   scopeSize = 0;
   for (int i = 0; i < node->scope->table->variables->size(); i++) {
@@ -266,6 +266,7 @@ void CodeGenVisitor::visit(BeginStatement *node) {
     node->scope->accept(this);
     scopeSize= temp;
     middle << deallocateStack(scopeSize);
+    currentScope = prevScope;
 }
 
 void CodeGenVisitor::visit(IfStatement *node) {
@@ -274,13 +275,12 @@ void CodeGenVisitor::visit(IfStatement *node) {
   int tmp = labelNum;
   middle << "  CMP r4, #0\n"
          << "  BEQ L" << std::to_string(labelNum - 2)     << "\n";
-
+  SymbolTable *prevScope = currentScope;
   currentScope = node->thenS->table;
     scopeSize = 0;
     for (int i = 0; i < node->thenS->table->variables->size(); i++) {
       scopeSize += node->thenS->table->variables->operator[](i)->type->size();
     }
-std::cout << "hello world" << std::endl;
   middle << allocateStack(scopeSize);
       int temp = scopeSize;
       node->thenS->accept(this);
@@ -305,6 +305,7 @@ std::cout << "hello world" << std::endl;
   labelNum = tmp;
 
   middle << "L" << std::to_string(labelNum -1) << ":"  << "\n";
+  currentScope = prevScope;
 }
 
 void CodeGenVisitor::visit(WhileStatement *node) {
@@ -313,13 +314,26 @@ void CodeGenVisitor::visit(WhileStatement *node) {
   int temp = labelNum;
   middle << "  B L" << std::to_string(labelNum - 2) << "\n";
   middle << "L" << std::to_string(labelNum - 1) << ":" << "\n";
+  SymbolTable *prevScope = currentScope;
+  currentScope = node->doS->table;
+      scopeSize = 0;
+      for (int i = 0; i < node->doS->table->variables->size(); i++) {
+        scopeSize += node->doS->table->variables->operator[](i)->type->size();
+      }
+
+    middle << allocateStack(scopeSize);
+        int tmp = scopeSize;
+        node->doS->accept(this);
+        scopeSize = tmp;
+        middle << deallocateStack(scopeSize);
   node->doS->accept(this);
-   labelNum = temp;
+   labelNum = tmp;
   middle << "L" << std::to_string(labelNum - 2) << ": " << "\n";
       node->expr->accept(this, "r4");
   middle << "  CMP r4, #1"                                << "\n"
 
           << "  BEQ L" << std::to_string(labelNum - 1)         << "\n";
+  currentScope = prevScope;
 }
 
 void CodeGenVisitor::printAssemblyOfReadInt() {
@@ -770,23 +784,35 @@ void CodeGenVisitor::visit(Identifier *node) {
 }
 
 void CodeGenVisitor::visit(Identifier *node, std::string reg) {
+SymbolTable* requiredScope = currentScope;
+int temp = 0;
+  while (requiredScope->isDefined->find(node->id) == requiredScope->isDefined->end()) {
+    for (int i = 0; i < requiredScope->variables->size(); i++) {
+      temp += requiredScope->variables->operator[](i)->type->size();
+    }
+    requiredScope = requiredScope->getEncScope();
+    if (!requiredScope) {
+      requiredScope = currentScope;
+      break;
+    }
+  }
 	if(adr) {
 		middle << "  ADD " << reg << ", sp, #" << currentScope->searchOffset(node->id) << "\n";
     return;
 	}
   if(node->type->equals(new CharTypeId) || node->type->equals(new BoolTypeId())) {
-    if(currentScope->searchOffset(node->id) == 0) {
+    if(requiredScope->searchOffset(node->id) + temp == 0) {
       middle << "  LDRB " << reg << ", [sp]\n";
     } else { 
       middle << "  LDRB " << reg 
-             << ", [sp, #" << currentScope->searchOffset(node->id) << "]\n";
+             << ", [sp, #" << requiredScope->searchOffset(node->id) + temp << "]\n";
     }
   } else {
-    if(currentScope->searchOffset(node->id) == 0) {
+    if(requiredScope->searchOffset(node->id) + temp == 0) {
       middle << "  LDR " << reg << ", [sp]\n";
     } else { 
       middle << "  LDR " << reg
-             << ", [sp, #" << currentScope->searchOffset(node->id) << "]\n";
+             << ", [sp, #" << requiredScope->searchOffset(node->id) + temp << "]\n";
     }
   }
 }
