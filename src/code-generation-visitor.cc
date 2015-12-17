@@ -608,6 +608,8 @@ void CodeGenVisitor::visit(Boolean *node, std::string reg) {
   //middle << "  MOV " << reg << ", #" << node->value << std::endl;
   if(val == 0 ){
     middle << "  MOV " << reg << ", #0" << std::endl;
+  } else {
+    middle << "  MOV " << reg << ", #1" << std::endl;
   }
 }
 void CodeGenVisitor::visit(Char *node, std::string reg) {
