@@ -151,8 +151,10 @@ void CodeGenVisitor::visit(FunctionCall *node, std::string reg) {
 void CodeGenVisitor::visit(Assignment *node) {
 
   node->rhs->accept(this, "r4");
+  node->lhs->accept(this); //might be wrong
   BoolTypeId *boolType = new BoolTypeId();
   CharTypeId *charType = new CharTypeId();
+  PairElem   *pairlhs = dynamic_cast<PairElem*>(node->lhs);
   ArrayElem *arrLhs = dynamic_cast<ArrayElem*>(node->lhs);
   SymbolTable *requiredScope = currentScope;
 
@@ -186,7 +188,15 @@ void CodeGenVisitor::visit(Assignment *node) {
                << "  STR r4, [r5]\n";
       } 
     }
-  } else if(node->lhs->type->equals(boolType) || node->lhs->type->equals(charType)) {
+  } else if (pairlhs) {
+      if (node->lhs->type->equals(boolType) || node->lhs->type->equals(charType)) {
+        middle << "  STRB r4, [r5]\n";
+    } else {
+      middle << "  STR r4, [r5]\n";
+    }
+  }
+
+   else if(node->lhs->type->equals(boolType) || node->lhs->type->equals(charType)) {
     if (requiredScope->searchOffset(node->lhs->getId()) == 0 + temp) {
       middle << "  STRB r4, [sp]\n";
     } else {
@@ -903,20 +913,22 @@ void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {
 
 //LHS PairElem
 void CodeGenVisitor::visit(PairElem *node){
-  adr = true;
-  node->expr->accept(this, "r0");
-  adr = false;
-  middle   << "  MOV r0, r5"              << std::endl 
-           << "  BL p_check_null_pointer" << std::endl;
+  //adr = true;
+  node->expr->accept(this, "r5");
+  //adr = false;
+  middle    << "  MOV r0, r5"              << std::endl   
+            << "  BL p_check_null_pointer" << std::endl;
+
   p_check_null_pointer();
   
   if (node->fst){
-    middle   << "  LDR r5, [r5]"          << std::endl;
+    middle       << "  LDR r5, [r5]"          << std::endl;
+    
   } else {
     middle   << "  LDR r5, [r5, #4]"      << std::endl;
   }
 
-  middle     << "  STR r4, [r5]"          << std::endl;
+  
 }
 
 //RHS PairElem
