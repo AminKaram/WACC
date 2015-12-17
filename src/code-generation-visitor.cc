@@ -874,8 +874,10 @@ void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {
   }
   //std::cout << "visit ArrayElem" << std::endl;
   middle << "  ADD " << reg << ", sp ,#" << currentScope->searchOffset(node->getId()) << "\n";
+  std::string tmpreg = "r4";
   for (int i=0; i < node->idxs->size(); i++) {
-    node->idxs->operator[](i)->accept(this, "r6");
+/*    node->idxs->operator[](i)->accept(this, "r6");
+
     if ( reg == "r0") {
       middle << "  PUSH {r0}\n";
     }
@@ -898,7 +900,24 @@ void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {
     }
   }
   middle << "  LDR " << reg << ", ["<< reg << "]\n";
-  middle << " MOV r0, r4" << std ::endl;
+*/
+
+node->idxs->operator[](i)->accept(this, "r6");
+    middle << "  MOV r0, r6\n"
+           << "  MOV r1, " << tmpreg << "\n";
+    printMsgCheckArrayBounds();
+
+
+    middle << "  LDR " << tmpreg << ", [" << tmpreg << "]\n"
+           << "  ADD " << tmpreg << ", " << tmpreg << ", #4\n";
+    if(node->type->size() == 1) {
+      middle << "  ADD " << tmpreg << ", " << tmpreg << ", r6\n";
+    } else {
+      middle << "  ADD " << tmpreg << ", " << tmpreg << ", r6, LSL #2\n";
+    }
+  }
+  middle << "  LDR " << tmpreg << ", ["<< tmpreg << "]\n";
+  middle << "  MOV " << reg << " " << tmpreg <<std::endl;
 }
 
 //LHS PairElem
