@@ -806,7 +806,7 @@ int temp = 0;
   }
 	if(adr) {
     middle << "  LDR " << reg << ", #0\n";
-		middle << "  ADD " << reg << ", sp, #" << currentScope->searchOffset(node->id) + 4<< "\n";
+		middle << "  ADD " << reg << ", sp, #" << currentScope->searchOffset(node->id) << "\n";
     return;
 	}
   if(node->type->equals(new CharTypeId) || node->type->equals(new BoolTypeId())) {
