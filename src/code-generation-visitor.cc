@@ -165,6 +165,11 @@ void CodeGenVisitor::visit(Assignment *node) {
   ArrayElem *arrLhs = dynamic_cast<ArrayElem*>(node->lhs);
 
   if(arrLhs) {
+    printMsgCheckArrayBounds();
+      if(!p_print_array_elem ) {
+          p_print_array_elem = true;
+          printAssemblyCheckArrayBounds();
+      }
     middle << "  ADD r5, sp ,#" << currentScope->searchOffset(node->lhs->getId()) << "\n";
     for (int i=0; i < arrLhs->idxs->size(); i++) {
       arrLhs->idxs->operator[](i)->accept(this, "r6");
@@ -841,6 +846,12 @@ void CodeGenVisitor::printMsgCheckArrayBounds() {
   //  std::cout<< "print check" << std::endl;
   //if(arrayTypeId -> elementType) {
    // std::cout<< "print check" << std::endl;
+  if (!beginInitialisation) {
+      beginInitialisation = true;
+      begin <<
+        ".data" << "\n"
+            << "\n";
+   }
     if (!msgCheckArrayBound) {
       msgCheckArrayBound = true;
       begin << 
