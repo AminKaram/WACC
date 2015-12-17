@@ -869,7 +869,7 @@ void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {
 
   std::string tmpreg = "R4";
   for (int i=0; i < node->idxs->size(); i++) {
-/*    node->idxs->operator[](i)->accept(this, "r6");
+    node->idxs->operator[](i)->accept(this, "r6");
 
     if ( reg == "r0") {
       middle << "  PUSH {r0}\n";
@@ -893,9 +893,9 @@ void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {
     }
   }
   middle << "  LDR " << reg << ", ["<< reg << "]\n";
-*/
 
-node->idxs->operator[](i)->accept(this, "r6");
+
+/*node->idxs->operator[](i)->accept(this, "r6");
     middle << "  MOV r0, r6\n"
            << "  MOV r1, " << tmpreg << "\n";
     middle << "  BL p_check_array_bounds" << "\n";
@@ -910,6 +910,7 @@ node->idxs->operator[](i)->accept(this, "r6");
   }
   middle << "  LDR " << tmpreg << ", ["<< tmpreg << "]\n";
   middle << "  MOV " << reg << ", " << tmpreg <<std::endl;
+*/
 }
 
 //LHS PairElem
