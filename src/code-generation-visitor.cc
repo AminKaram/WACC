@@ -315,7 +315,6 @@ void CodeGenVisitor::visit(WhileStatement *node) {
   int temp = labelNum;
   middle << "  B L" << std::to_string(labelNum - 2) << "\n";
   middle << "L" << std::to_string(labelNum - 1) << ":" << "\n";
-  SymbolTable *prevScope = currentScope;
   currentScope = node->doS->table;
       scopeSize = 0;
       for (int i = 0; i < node->doS->table->variables->size(); i++) {
@@ -334,7 +333,7 @@ void CodeGenVisitor::visit(WhileStatement *node) {
   middle << "  CMP r4, #1"                                << "\n"
 
           << "  BEQ L" << std::to_string(labelNum - 1)         << "\n";
-  currentScope = prevScope;
+  currentScope = currentScope->getEncScope();
 }
 
 void CodeGenVisitor::printAssemblyOfReadInt() {

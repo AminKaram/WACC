@@ -173,6 +173,7 @@ void SemanticVisitor::visit(WhileStatement *node) {
 	}
   scope = new SymbolTable(scope);	
 	node->doS->accept(this);
+  node->doS->table = scope;
   scope = scope->getEncScope();
 }
 
