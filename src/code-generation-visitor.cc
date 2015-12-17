@@ -805,6 +805,7 @@ void CodeGenVisitor::printAssemblyCheckArrayBounds(){
   p_throw_runtime_error();
   end <<
     "p_check_array_bounds: " << std::endl <<
+    "  PUSH {lr}" << std::endl <<
     "  CMP r0, #0" << std::endl<<
     "  LDRLT r0, =msg_" << checkArrayBoundMessageNum << std::endl <<
     "  BLLT p_throw_runtime_error" << std::endl <<
@@ -840,7 +841,6 @@ void CodeGenVisitor::printMsgCheckArrayBounds() {
 
 void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {
   //TypeId *type = node->type;
-  printMsgCheckArrayBounds();
   if(!p_print_array_elem ) {
       p_print_array_elem = true;
       printAssemblyCheckArrayBounds();
@@ -855,8 +855,8 @@ void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {
 
 
     middle << "  MOV r0, r6\n"
-           << "  MOV r1, " << reg << "\n"
-           << "BL p_check_array_bounds" << "\n";
+           << "  MOV r1, " << reg << "\n";
+    printMsgCheckArrayBounds();
     if(reg == "r0") {
       middle << "  POP {r0}\n";        
     }
@@ -871,6 +871,7 @@ void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {
     }
   }
   middle << "  LDR " << reg << ", ["<< reg << "]\n";
+  middle << " MOV r0, r4" << std ::endl;
 }
 
 //LHS PairElem
