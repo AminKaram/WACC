@@ -326,8 +326,7 @@ void CodeGenVisitor::visit(WhileStatement *node) {
         node->doS->accept(this);
         scopeSize = tmp;
         middle << deallocateStack(scopeSize);
-  node->doS->accept(this);
-   labelNum = temp;
+  labelNum = temp;
   middle << "L" << std::to_string(labelNum - 2) << ": " << "\n";
       node->expr->accept(this, "r4");
   middle << "  CMP r4, #1"                                << "\n"
