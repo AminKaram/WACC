@@ -884,15 +884,15 @@ void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {
     }
 
 
-    middle << "  LDR " << reg << ", [" << reg << "]\n"
-           << "  ADD " << reg << ", " << reg << ", #4\n";
+    middle << "  LDR " << "r4" << ", [r4]\n"
+           << "  ADD " << "r4" << ", " << "r4" << ", #4\n";
     if(node->type->size() == 1) {
-      middle << "  ADD " << reg << ", " << reg << ", r6\n";
+      middle << "  ADD " << "r4" << ", " << "r4" << ", r6\n";
     } else {
-      middle << "  ADD " << reg << ", " << reg << ", r6, LSL #2\n";
+      middle << "  ADD " << "r4" << ", " << "r4" << ", r6, LSL #2\n";
     }
   }
-  middle << "  LDR " << reg << ", ["<< reg << "]\n";
+  middle << "  LDR " << "r4" << ", ["<< "r4" << "]\n";
 
 
 /*node->idxs->operator[](i)->accept(this, "r6");
