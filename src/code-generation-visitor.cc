@@ -903,41 +903,47 @@ void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {
 
 //LHS PairElem
 void CodeGenVisitor::visit(PairElem *node){
-  middle   << "  LDR  r5, [sp]"           << std::endl
-           << "  MOV r0, r5"              << std::endl 
+  adr = true;
+  node->expr->accept(this, "r0");
+  adr = false;
+  middle   << "  MOV r0, r5"              << std::endl 
            << "  BL p_check_null_pointer" << std::endl;
   p_check_null_pointer();
+  
   if (node->fst){
-	  middle   << "  LDR r5, [r5]"            << std::endl;
+    middle   << "  LDR r5, [r5]"          << std::endl;
   } else {
-	  middle   << "  LDR r5, [r5, #4]"        << std::endl;
+    middle   << "  LDR r5, [r5, #4]"      << std::endl;
   }
-  middle     << "  STR r4, [r5]"            << std::endl;
+
+  middle     << "  STR r4, [r5]"          << std::endl;
 }
 
 //RHS PairElem
 // there is more to do here
 void CodeGenVisitor::visit(PairElem *node, std::string reg) {
-  adr = true;
+  //adr = true;
   node->expr->accept(this, reg);
-  adr = false;
+  //adr = false;
 
   middle   << "  MOV r0, " << reg                        << std::endl 
            << "  BL p_check_null_pointer"                << std::endl;
   p_check_null_pointer();
+
   IntTypeId *intTypeId       = dynamic_cast<IntTypeId*>(node->type);
   StringTypeId *stringTypeId = dynamic_cast<StringTypeId*>(node->type);
   CharTypeId *charTypeId     = dynamic_cast<CharTypeId*>(node->type);
   BoolTypeId *boolTypeId     = dynamic_cast<BoolTypeId*>(node->type);
+
   if (node->fst){
     if(intTypeId || stringTypeId){
       middle << "  LDR " << reg << ", [" << reg << "]"     << std::endl
              << "  LDR " << reg << ", [" << reg << "]"     << std::endl;
     } else if(charTypeId || boolTypeId){
-        middle << "  LDR " << reg << ", [" << reg << "]"     << std::endl
-               << "  LDRSB " << reg << ", [" << reg << "]"     << std::endl;
+        middle << "  LDR "   << reg << ", [" << reg << "]" << std::endl
+               << "  LDRSB " << reg << ", [" << reg << "]" << std::endl;
     }
-	  
+    
   } else {
     if (intTypeId || stringTypeId) {
       middle << "  LDR " << reg << ", [" << reg << ", #4]"     << std::endl
@@ -945,21 +951,8 @@ void CodeGenVisitor::visit(PairElem *node, std::string reg) {
     } else if (charTypeId || boolTypeId) {
       middle << "  LDR "   << reg << ", [" << reg << ", #4]"   << std::endl
              << "  LDRSB " << reg << ", [" << reg << "]"       << std::endl;
-    }
-	  
-	          
+    }           
   }
-  /*Else if bool or char
-  if (node->fst){
-    middle   << "  LDR " << reg << ", [" << reg << "]"     << std::endl
-             << "  LDRSB " << reg << ", [" << reg << "]"     << std::endl
-             << "  STRB " << reg << ", [sp, #n]" n is the proper location on stack          << std::endl;
-  } else {
-    middle   << "  LDR " << reg << ", [" << reg << ", #4]"     << std::endl
-             << "  LDRSB " << reg << ", [" << reg << "]" << std::endl
-             << "  STRB " << reg << ", [sp, #n]" n is the proper location on stack                      << std::endl;
-  }
-  */
 }
 
 void CodeGenVisitor::visit(ArrayLiter *node, std::string reg) {
