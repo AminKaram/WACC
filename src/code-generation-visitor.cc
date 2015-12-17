@@ -275,13 +275,33 @@ void CodeGenVisitor::visit(IfStatement *node) {
   middle << "  CMP r4, #0\n"
          << "  BEQ L" << std::to_string(labelNum - 2)     << "\n";
 
-  node->thenS->accept(this);
+  currentScope = node->thenS->table;
+    scopeSize = 0;
+    for (int i = 0; i < node->thenS->table->variables->size(); i++) {
+      scopeSize += node->thenS->table->variables->operator[](i)->type->size();
+    }
+std::cout << "hello world" << std::endl;
+  middle << allocateStack(scopeSize);
+      int temp = scopeSize;
+      node->thenS->accept(this);
+      scopeSize = temp;
+      middle << deallocateStack(scopeSize);
   labelNum = tmp;
 
   middle << "  B L"  << std::to_string(labelNum - 1)              << "\n"
           << "L"      << std::to_string(labelNum - 2)   << ":" << "\n";
 
-  node->elseS->accept(this);
+  currentScope = node->elseS->table;
+    scopeSize = 0;
+    for (int i = 0; i < node->elseS->table->variables->size(); i++) {
+      scopeSize += node->elseS->table->variables->operator[](i)->type->size();
+    }
+
+  middle << allocateStack(scopeSize);
+      temp = scopeSize;
+      node->elseS->accept(this);
+      scopeSize = temp;
+      middle << deallocateStack(scopeSize);
   labelNum = tmp;
 
   middle << "L" << std::to_string(labelNum -1) << ":"  << "\n";
