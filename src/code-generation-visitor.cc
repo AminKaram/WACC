@@ -51,6 +51,7 @@ void CodeGenVisitor::visit(Program *node) {
 
   middle << allocateStack(scopeSize);
   int temp = scopeSize;
+  scopeSize += 4;
   node->statements->accept(this);
   scopeSize = temp;
   middle << deallocateStack(scopeSize)
@@ -85,7 +86,7 @@ void CodeGenVisitor::visit(VariableDeclaration *node) {
   if(node->rhs) {
    node->rhs->accept(this, "r4");
   }
-  int sizeSoFar = 0;
+  int sizeSoFar = 4;
   for (int i = currentScope->variables->size()-1; i >=0; i--) {
     if(currentScope->variables->operator[](i)->id->id.compare(node->id->id) == 0) {
     break;
