@@ -116,6 +116,7 @@ void CodeGenVisitor::visit(FunctionDeclaration *node) {
   std::cout << "scope size" << scopeSize << std::endl;
   allocateStack(scopeSize);
   int sizeLocals = scopeSize;
+  scopeSize+=4;
   int scope = scopeSize;
   for(int i = 0; i < node->parameters->size(); i++) {
     scope = node->parameters->operator[](i)->accept(this, scope);
