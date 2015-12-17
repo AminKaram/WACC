@@ -848,7 +848,6 @@ void CodeGenVisitor::printMsgCheckArrayBounds() {
   //  std::cout<< "print check" << std::endl;
   //if(arrayTypeId -> elementType) {
    // std::cout<< "print check" << std::endl;
-    middle << "  BL p_check_array_bounds" << "\n";
     if (!msgCheckArrayBound) {
       msgCheckArrayBound = true;
       begin << 
@@ -867,13 +866,15 @@ void CodeGenVisitor::printMsgCheckArrayBounds() {
 
 void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {
   //TypeId *type = node->type;
+  printMsgCheckArrayBounds();
   if(!p_print_array_elem ) {
       p_print_array_elem = true;
       printAssemblyCheckArrayBounds();
   }
   //std::cout << "visit ArrayElem" << std::endl;
   middle << "  ADD " << reg << ", sp ,#" << currentScope->searchOffset(node->getId()) << "\n";
-  std::string tmpreg = "r4";
+
+  std::string tmpreg = "R4";
   for (int i=0; i < node->idxs->size(); i++) {
 /*    node->idxs->operator[](i)->accept(this, "r6");
 
@@ -904,8 +905,7 @@ void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {
 node->idxs->operator[](i)->accept(this, "r6");
     middle << "  MOV r0, r6\n"
            << "  MOV r1, " << tmpreg << "\n";
-    printMsgCheckArrayBounds();
-
+    middle << "  BL p_check_array_bounds" << "\n";
 
     middle << "  LDR " << tmpreg << ", [" << tmpreg << "]\n"
            << "  ADD " << tmpreg << ", " << tmpreg << ", #4\n";
