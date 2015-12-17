@@ -311,7 +311,7 @@ void CodeGenVisitor::visit(IfStatement *node) {
 
 void CodeGenVisitor::visit(WhileStatement *node) {
 
-  labelNum+= 2;
+  labelNum += 2;
   int temp = labelNum;
   middle << "  B L" << std::to_string(labelNum - 2) << "\n";
   middle << "L" << std::to_string(labelNum - 1) << ":" << "\n";
@@ -327,7 +327,7 @@ void CodeGenVisitor::visit(WhileStatement *node) {
         scopeSize = tmp;
         middle << deallocateStack(scopeSize);
   node->doS->accept(this);
-   labelNum = tmp;
+   labelNum = temp;
   middle << "L" << std::to_string(labelNum - 2) << ": " << "\n";
       node->expr->accept(this, "r4");
   middle << "  CMP r4, #1"                                << "\n"
