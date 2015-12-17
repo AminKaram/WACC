@@ -892,7 +892,8 @@ void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {
       middle << "  ADD " << "r4" << ", " << "r4" << ", r6, LSL #2\n";
     }
   }
-  middle << "  LDR " << "r4" << ", ["<< "r4" << "]\n";
+  middle << "  LDR " << "r4" << ", ["<< "r4" << "]\n"
+         << "  MOV " << reg << ", r4\n";
 
 
 /*node->idxs->operator[](i)->accept(this, "r6");
