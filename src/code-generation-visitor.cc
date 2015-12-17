@@ -776,7 +776,7 @@ void CodeGenVisitor::visit(Identifier *node) {
 
 void CodeGenVisitor::visit(Identifier *node, std::string reg) {
 	if(adr) {
-		middle << "  ADD " << reg << ", sp, #" << currentScope->searchOffset(node->id) << "\n";
+		middle << "  LDR " << reg << ", sp, #" << currentScope->searchOffset(node->id) << "\n";
     return;
 	}
   if(node->type->equals(new CharTypeId) || node->type->equals(new BoolTypeId())) {
@@ -887,20 +887,36 @@ void CodeGenVisitor::visit(PairElem *node){
 //RHS PairElem
 // there is more to do here
 void CodeGenVisitor::visit(PairElem *node, std::string reg) {
-  node->type->size();
-  middle   // LDR reg, [sp, #n] the location on stack
-           << "  MOV r0, " << reg                        << std::endl 
+  adr = true;
+  node->expr->accept(this, reg);
+  adr = false;
+
+  middle   << "  MOV r0, " << reg                        << std::endl 
            << "  BL p_check_null_pointer"                << std::endl;
   p_check_null_pointer();
+  IntTypeId *intTypeId       = dynamic_cast<IntTypeId*>(node->type);
+  StringTypeId *stringTypeId = dynamic_cast<StringTypeId*>(node->type);
+  CharTypeId *charTypeId     = dynamic_cast<CharTypeId*>(node->type);
+  BoolTypeId *boolTypeId     = dynamic_cast<BoolTypeId*>(node->type);
   if (node->fst){
-    //if INT do this
-	  middle   << "  LDR " << reg << ", [" << reg << "]"     << std::endl
+    if(intTypeId || stringTypeId){
+      middle << "  LDR " << reg << ", [" << reg << "]"     << std::endl
              << "  LDR " << reg << ", [" << reg << "]"     << std::endl;
-	          // << "  STR " << reg << ", [sp, #4]" /*4 should be the proper location on stack*/          << std::endl;
+    } else if(charTypeId || boolTypeId){
+        middle << "  LDR " << reg << ", [" << reg << "]"     << std::endl
+               << "  LDRSB " << reg << ", [" << reg << "]"     << std::endl;
+    }
+	  
   } else {
-	  middle   << "  LDR " << reg << ", [" << reg << "]"     << std::endl
-             << "  LDR " << reg << ", [" << reg << ", #4]" << std::endl;
-	           //<< "  STR " << reg << ", [sp]"                << std::endl;
+    if (intTypeId || stringTypeId) {
+      middle << "  LDR " << reg << ", [" << reg << ", #4]"     << std::endl
+             << "  LDR " << reg << ", [" << reg << "]"         << std::endl;
+    } else if (charTypeId || boolTypeId) {
+      middle << "  LDR "   << reg << ", [" << reg << ", #4]"   << std::endl
+             << "  LDRSB " << reg << ", [" << reg << "]"       << std::endl;
+    }
+	  
+	          
   }
   /*Else if bool or char
   if (node->fst){
