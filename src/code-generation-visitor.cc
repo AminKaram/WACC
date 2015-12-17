@@ -427,6 +427,7 @@ void CodeGenVisitor::printMsg(TypeId *type) {
     BoolTypeId *boolTypeId     = dynamic_cast<BoolTypeId*> (type);
     CharTypeId *charTypeId     = dynamic_cast<CharTypeId*> (type);
     ArrayId *arrayTypeId       = dynamic_cast<ArrayId*> (type);
+    PairId *pairTypeId         = dynamic_cast<PairId*> (type);
 
     if (!beginInitialisation) {
 		beginInitialisation = true;
@@ -475,7 +476,7 @@ void CodeGenVisitor::printMsg(TypeId *type) {
         boolMessageNum = messageNum;
         messageNum+=2;
   		}
-	  } else if(arrayTypeId) {
+	  } else if(arrayTypeId || pairTypeId) {
       //std::cout << "  BL p_print_reference" << "\n";
       middle << "  BL p_print_reference" << "\n";
       
