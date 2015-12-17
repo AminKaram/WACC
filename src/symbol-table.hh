@@ -22,13 +22,12 @@ public:
   SymbolTable* getEncScope();
   std::vector<VariableDeclaration*> *variables = NULL;
   std::set<std::string> *isDefined = NULL;
+  std::map<std::string, int> *varMap = NULL;
+
 private:
   Maybe<int> getOffsetScope(std::string);
   SymbolTable *encScope = NULL;
   std::map<std::string, SemanticId&> *dictionary = NULL;
-  std::map<std::string, int> *varMap = NULL;
-
-  
 };
 
 #endif
