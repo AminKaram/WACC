@@ -7,6 +7,7 @@ std::string CodeGenVisitor::allocateStack(int bytes) {
   int tmp = bytes;
   while(tmp > 1024) {
     res += "  SUB sp, sp, #1024\n";
+    tmp -= 1024;
   }
   if(tmp > 0) {
     res += "  SUB sp, sp, #" + std::to_string(tmp) + "\n";
@@ -19,6 +20,7 @@ std::string CodeGenVisitor::deallocateStack(int bytes) {
   int tmp = bytes;
   while(tmp > 1024) {
     res += "  ADD sp, sp, #1024\n";
+    tmp -= 1024;
   }
   if(tmp > 0) {
     res += "  ADD sp, sp, #" + std::to_string(tmp) + "\n";
@@ -107,19 +109,20 @@ void CodeGenVisitor::visit(FunctionDeclaration *node) {
   middle << "f_" << node->id->id << ":\n"
          << "  PUSH {lr}" << "\n";
   currentScope = node->block->table;
-  int scopeSize = 4;
+  int scopeSize = 0;
   for (int i=0; i < node->block->table->variables->size(); i++) {
         scopeSize += node->block->table->variables->operator[](i)->type->size();
   }
-  allocateStack(scopeSize);
+  middle << allocateStack(scopeSize);
   int sizeLocals = scopeSize;
+  scopeSize+=4;
   int scope = scopeSize;
   for(int i = 0; i < node->parameters->size(); i++) {
     scope = node->parameters->operator[](i)->accept(this, scope);
   }
 
   node->block->accept(this);
-  deallocateStack(sizeLocals);
+  middle << deallocateStack(sizeLocals);
   middle << "  POP {pc}" << "\n"
            << "  POP {pc}"  << "\n"
            << "  .ltorg"   << "\n";
