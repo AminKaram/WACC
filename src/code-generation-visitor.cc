@@ -778,7 +778,8 @@ void CodeGenVisitor::visit(Identifier *node) {
 
 void CodeGenVisitor::visit(Identifier *node, std::string reg) {
 	if(adr) {
-		middle << "  LDR " << reg << ", sp, #" << currentScope->searchOffset(node->id) << "\n";
+    middle << "  LDR " << reg << ", #0\n";
+		middle << "  ADD " << reg << ", sp, #" << currentScope->searchOffset(node->id) << "\n";
     return;
 	}
   if(node->type->equals(new CharTypeId) || node->type->equals(new BoolTypeId())) {
