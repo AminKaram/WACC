@@ -85,6 +85,7 @@ void CodeGenVisitor::visit(FunctionDecList *node) {
   }
 }
 void CodeGenVisitor::visit(VariableDeclaration *node) {
+  std::cout << "variablecall you son of a bitch " <<node->id->id<<std::endl;
   if(node->rhs) {
    node->rhs->accept(this, "r4");
   }
@@ -103,6 +104,7 @@ void CodeGenVisitor::visit(VariableDeclaration *node) {
   }
   currentScope->isDefined->insert(node->id->id);
   currentScope->addOffset(node->id->id, offset);
+  std::cout << "end of var " <<node->id->id <<std::endl;
 }
 
 void CodeGenVisitor::visit(FunctionDeclaration *node) {
@@ -114,7 +116,7 @@ void CodeGenVisitor::visit(FunctionDeclaration *node) {
         scopeSize += node->block->table->variables->operator[](i)->type->size();
   }
   middle << allocateStack(scopeSize);
-  int sizeLocals = scopeSize;
+  sizeLocals = scopeSize;
   scopeSize+=4;
   int scope = scopeSize;
   for(int i = 0; i < node->parameters->size(); i++) {
@@ -122,9 +124,7 @@ void CodeGenVisitor::visit(FunctionDeclaration *node) {
   }
 
   node->block->accept(this);
-  middle << deallocateStack(sizeLocals);
   middle << "  POP {pc}" << "\n"
-           << "  POP {pc}"  << "\n"
            << "  .ltorg"   << "\n";
 }
 
@@ -244,6 +244,9 @@ void CodeGenVisitor::visit(FreeStatement *node) {
 
 void CodeGenVisitor::visit(ReturnStatement *node) {
   node->expr->accept(this, "r0");
+  middle << deallocateStack(sizeLocals);
+  middle << "  POP {pc}" << std::endl;
+
 }
 
 void CodeGenVisitor::visit(ExitStatement *node) {
