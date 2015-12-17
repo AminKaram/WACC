@@ -141,7 +141,7 @@ void SemanticVisitor::visit(Assignment *node) {
 }
 
 void SemanticVisitor::visit(BeginStatement *node) {
-  scope = new SymbolTable(scope);;
+  scope = new SymbolTable(scope);
   node->scope->accept(this);
   node->scope->table = scope;
   scope = scope->getEncScope();
@@ -156,8 +156,10 @@ void SemanticVisitor::visit(IfStatement *node) {
 	}
   scope = new SymbolTable(scope);
   node->thenS->accept(this);
+  node->thenS->table = scope;
   scope = new SymbolTable(scope->getEncScope());
 	node->elseS->accept(this);
+	node->elseS->table = scope;
   scope = scope->getEncScope();
 }
 
