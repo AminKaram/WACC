@@ -916,7 +916,7 @@ node->idxs->operator[](i)->accept(this, "r6");
     }
   }
   middle << "  LDR " << tmpreg << ", ["<< tmpreg << "]\n";
-  middle << "  MOV " << reg << " " << tmpreg <<std::endl;
+  middle << "  MOV " << reg << ", " << tmpreg <<std::endl;
 }
 
 //LHS PairElem
