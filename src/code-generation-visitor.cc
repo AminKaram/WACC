@@ -859,6 +859,7 @@ void CodeGenVisitor::printMsgCheckArrayBounds() {
 
 void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {
   //TypeId *type = node->type;
+  std::cout<<"into array "<< std::endl;
   printMsgCheckArrayBounds();
   if(!p_print_array_elem ) {
       p_print_array_elem = true;
@@ -877,7 +878,8 @@ void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {
 
 
     middle << "  MOV r0, r6\n"
-           << "  MOV r1, " << reg << "\n";
+           << "  MOV r1, " << reg << "\n"
+           << "  p_check_array_bounds" <<std::endl;
     printMsgCheckArrayBounds();
     if(reg == "r0") {
       middle << "  POP {r0}\n";        
