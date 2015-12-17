@@ -74,9 +74,15 @@ Maybe<int> SymbolTable::getOffsetScope(std::string varName) {
 
 int SymbolTable::searchOffset(std::string id) {
   SymbolTable *s = this;
+  int offset = 0;
   while(s) {
     Maybe<int> val = s->getOffsetScope(id);
-    if(val.data) return val.data;
+    if(val.data)  {
+      return offset + val.data;
+    }
+    for (int i = 0; i < s->variables->size(); i++) {
+      offset += s->variables->operator[](i)->type->size();
+    }
     s = s->encScope;
   }
   Maybe<int> defaultRes = {0, false};
