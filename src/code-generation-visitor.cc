@@ -158,7 +158,7 @@ void CodeGenVisitor::visit(FunctionCall *node, std::string reg) {
 void CodeGenVisitor::visit(Assignment *node) {
 
   node->rhs->accept(this, "r4");
-  node->lhs->accept(this); //might be wrong
+  //node->lhs->accept(this); //might be wrong
   BoolTypeId *boolType = new BoolTypeId();
   CharTypeId *charType = new CharTypeId();
   PairElem   *pairlhs = dynamic_cast<PairElem*>(node->lhs);
@@ -865,23 +865,16 @@ void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {
       printAssemblyCheckArrayBounds();
   }
   //std::cout << "visit ArrayElem" << std::endl;
-  middle << "  ADD " << reg << ", sp ,#" << currentScope->searchOffset(node->getId()) << "\n";
+  middle << "  ADD " << "r4" << ", sp ,#" << currentScope->searchOffset(node->getId()) << "\n";
 
   std::string tmpreg = "R4";
   for (int i=0; i < node->idxs->size(); i++) {
     node->idxs->operator[](i)->accept(this, "r6");
 
-    if ( reg == "r0") {
-      middle << "  PUSH {r0}\n";
-    }
-
 
     middle << "  MOV r0, r6\n"
-           << "  MOV r1, " << reg << "\n";
+           << "  MOV r1, " << "r4" << "\n";
     printMsgCheckArrayBounds();
-    if(reg == "r0") {
-      middle << "  POP {r0}\n";        
-    }
 
 
     middle << "  LDR " << "r4" << ", [r4]\n"
