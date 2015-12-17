@@ -107,15 +107,15 @@ void CodeGenVisitor::visit(FunctionDeclaration *node) {
   middle << "f_" << node->id->id << ":\n"
          << "  PUSH {lr}" << "\n";
   currentScope = node->block->table;
-  int scopeSize = 0;
+  int scopeSize = 4;
   for (int i=0; i < node->block->table->variables->size(); i++) {
         scopeSize += node->block->table->variables->operator[](i)->type->size();
   }
   allocateStack(scopeSize);
   int sizeLocals = scopeSize;
-
+  int scope = scopeSize;
   for(int i = 0; i < node->parameters->size(); i++) {
-    node->parameters->operator[](i)->accept(this);
+    scope = node->parameters->operator[](i)->accept(this, scope);
   }
 
   node->block->accept(this);
@@ -776,9 +776,9 @@ void CodeGenVisitor::visit(Identifier *node, std::string reg) {
 	}
   if(node->type->equals(new CharTypeId) || node->type->equals(new BoolTypeId())) {
     if(currentScope->searchOffset(node->id) == 0) {
-      middle << "  LDRB " << reg << ", [sp]\n";
+      middle << "  LDRSB " << reg << ", [sp]\n";
     } else { 
-      middle << "  LDRB " << reg 
+      middle << "  LDRSB " << reg 
              << ", [sp, #" << currentScope->searchOffset(node->id) << "]\n";
     }
   } else {
@@ -955,9 +955,10 @@ void CodeGenVisitor::visit(NewPair *node, std::string reg) {
 
 }
 
-void CodeGenVisitor::visit(Param *node) {
-  scopeSize += node->type->size();
-  currentScope->addOffset(node->id->id, scopeSize);
+int CodeGenVisitor::visit(Param *node, int scope) {
+  currentScope->addOffset(node->id->id, scope);
+  scope += node->type->size();
+  return scope;
 }
 
 void CodeGenVisitor::p_check_divide_by_zero(void){ 

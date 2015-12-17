@@ -97,7 +97,7 @@ public:
   Param(TypeId *type, Identifier *id);
   ~Param();
   void accept(SemanticVisitor *visitor);
-  void accept(CodeGenVisitor *visitor);
+  int accept(CodeGenVisitor *visitor, int scope);
 };
 typedef std::vector<Param*> ParamList;
 

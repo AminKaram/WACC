@@ -227,7 +227,7 @@ void FunctionDecList::accept(CodeGenVisitor *visitor) { visitor->visit(this); }
 void VariableDeclaration::accept(SemanticVisitor *visitor) { visitor->visit(this); }
 void VariableDeclaration::accept(CodeGenVisitor *visitor) { visitor->visit(this); }
 void Param::accept(SemanticVisitor *visitor) { visitor->visit(this); }
-void Param::accept(CodeGenVisitor *visitor) { visitor->visit(this); }
+int Param::accept(CodeGenVisitor *visitor, int scope) { return visitor->visit(this, scope); }
 void FunctionDeclaration::accept(SemanticVisitor *visitor) { visitor->visit(this); }
 void FunctionDeclaration::accept(CodeGenVisitor *visitor) { visitor->visit(this); }
 void FunctionCall::accept(SemanticVisitor *visitor) { visitor->visit(this); }

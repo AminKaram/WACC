@@ -60,7 +60,7 @@ public:
   void visit(ArrayLiter *node, std::string reg);
   void visit(NewPair *node, std::string reg);
   void visit(UnaryOperator *node, std::string reg);
-  void visit(Param *node);
+  int  visit(Param *node, int scope);
 
   void populateRegMap();
   std::string getAvailableRegister();
