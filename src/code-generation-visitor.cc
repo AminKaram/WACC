@@ -113,8 +113,7 @@ void CodeGenVisitor::visit(FunctionDeclaration *node) {
   for (int i=0; i < node->block->table->variables->size(); i++) {
         scopeSize += node->block->table->variables->operator[](i)->type->size();
   }
-  std::cout << "scope size" << scopeSize << std::endl;
-  allocateStack(scopeSize);
+  middle << allocateStack(scopeSize);
   int sizeLocals = scopeSize;
   scopeSize+=4;
   int scope = scopeSize;
@@ -123,7 +122,7 @@ void CodeGenVisitor::visit(FunctionDeclaration *node) {
   }
 
   node->block->accept(this);
-  deallocateStack(sizeLocals);
+  middle << deallocateStack(sizeLocals);
   middle << "  POP {pc}" << "\n"
            << "  POP {pc}"  << "\n"
            << "  .ltorg"   << "\n";
