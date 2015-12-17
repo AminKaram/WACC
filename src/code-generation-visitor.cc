@@ -38,12 +38,12 @@ CodeGenVisitor::CodeGenVisitor(std::ostream* stream) {
 CodeGenVisitor::~CodeGenVisitor() { }
 
 void CodeGenVisitor::visit(Program *node) {
-
   middle << ".text" << std::endl<< "\n"
          << ".global main" << "\n";
 
   node->functions->accept(this);
   currentScope = node->statements->table;
+  currentScope->callOffset = 0;
   scopeSize = 0;
   for (int i = 0; i < node->statements->table->variables->size(); i++) {
     scopeSize += node->statements->table->variables->operator[](i)->type->size();
@@ -70,7 +70,7 @@ void CodeGenVisitor::visit(Program *node) {
   if (end.rdbuf()->in_avail() != 0) {
       *file << end.rdbuf() << "\n" ;
     }
-
+  currentScope->callOffset = 0;
 }
 
 void CodeGenVisitor::visit(StatSeq *node) {
@@ -111,6 +111,7 @@ void CodeGenVisitor::visit(FunctionDeclaration *node) {
   middle << "f_" << node->id->id << ":\n"
          << "  PUSH {lr}" << "\n";
   currentScope = node->block->table;
+  currentScope->callOffset = 0;
   int scopeSize = 0;
   for (int i=0; i < node->block->table->variables->size(); i++) {
         scopeSize += node->block->table->variables->operator[](i)->type->size();
@@ -122,10 +123,10 @@ void CodeGenVisitor::visit(FunctionDeclaration *node) {
   for(int i = 0; i < node->parameters->size(); i++) {
     scope = node->parameters->operator[](i)->accept(this, scope);
   }
-
   node->block->accept(this);
   middle << "  POP {pc}" << "\n"
            << "  .ltorg"   << "\n";
+  currentScope->callOffset = 0;
 }
 
 
@@ -137,18 +138,21 @@ void CodeGenVisitor::visit(FunctionCall *node, std::string reg) {
         middle << "  STR " << reg << ", [sp, #-" 
                <<  node->parameters->operator[](i)->type->size() 
                << "]!\n";
+
       } else {
         middle << "  STRB " << reg << ", [sp, #-" 
                <<  node->parameters->operator[](i)->type->size() 
                << "]!\n";
       }
       sizeParam += node->parameters->operator[](i)->type->size();
+      currentScope->callOffset += sizeParam;
     }
 
 
     middle << "  BL f_" << node->id->id << "\n"
            << "  ADD sp, sp, #" << sizeParam << "\n" 
            << "  MOV " << reg << ",r0 \n";
+    currentScope->callOffset = 0;
 }
 
 void CodeGenVisitor::visit(Assignment *node) {

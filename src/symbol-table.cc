@@ -79,7 +79,7 @@ int SymbolTable::searchOffset(std::string id) {
   while(s) {
     Maybe<int> val = s->getOffsetScope(id);
     if(val.valid)  {
-      return offset + val.data;
+      return offset + val.data + callOffset;
     }
     for (int i = 0; i < s->variables->size(); i++) {
       offset += s->variables->operator[](i)->type->size();
