@@ -11,6 +11,7 @@ std::string CodeGenVisitor::allocateStack(int bytes) {
   if(tmp > 0) {
     res += "  SUB sp, sp, #" + std::to_string(tmp); 
   }
+  res += "\n";
   return res;
 }
 
@@ -23,6 +24,7 @@ std::string CodeGenVisitor::deallocateStack(int bytes) {
   if(tmp > 0) {
     res += "  ADD sp, sp, #" + std::to_string(tmp); 
   }
+  res += "\n";
   return res;
 }
 
