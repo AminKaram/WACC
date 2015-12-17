@@ -7,6 +7,7 @@ std::string CodeGenVisitor::allocateStack(int bytes) {
   int tmp = bytes;
   while(tmp > 1024) {
     res += "  SUB sp, sp, #1024\n";
+    tmp -= 1024;
   }
   if(tmp > 0) {
     res += "  SUB sp, sp, #" + std::to_string(tmp) + "\n";
@@ -19,6 +20,7 @@ std::string CodeGenVisitor::deallocateStack(int bytes) {
   int tmp = bytes;
   while(tmp > 1024) {
     res += "  ADD sp, sp, #1024\n";
+    tmp -= 1024;
   }
   if(tmp > 0) {
     res += "  ADD sp, sp, #" + std::to_string(tmp) + "\n";
@@ -111,6 +113,7 @@ void CodeGenVisitor::visit(FunctionDeclaration *node) {
   for (int i=0; i < node->block->table->variables->size(); i++) {
         scopeSize += node->block->table->variables->operator[](i)->type->size();
   }
+  std::cout << "scope size" << scopeSize << std::endl;
   allocateStack(scopeSize);
   int sizeLocals = scopeSize;
   int scope = scopeSize;
