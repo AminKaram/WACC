@@ -7,6 +7,7 @@ std::string CodeGenVisitor::allocateStack(int bytes) {
   int tmp = bytes;
   while(tmp > 1024) {
     res += "  SUB sp, sp, #1024\n";
+    tmp -= 1024;
   }
   if(tmp > 0) {
     res += "  SUB sp, sp, #" + std::to_string(tmp) + "\n";
@@ -19,6 +20,7 @@ std::string CodeGenVisitor::deallocateStack(int bytes) {
   int tmp = bytes;
   while(tmp > 1024) {
     res += "  ADD sp, sp, #1024\n";
+    tmp -= 1024;
   }
   if(tmp > 0) {
     res += "  ADD sp, sp, #" + std::to_string(tmp) + "\n";
@@ -107,19 +109,20 @@ void CodeGenVisitor::visit(FunctionDeclaration *node) {
   middle << "f_" << node->id->id << ":\n"
          << "  PUSH {lr}" << "\n";
   currentScope = node->block->table;
-  int scopeSize = 4;
+  int scopeSize = 0;
   for (int i=0; i < node->block->table->variables->size(); i++) {
         scopeSize += node->block->table->variables->operator[](i)->type->size();
   }
-  allocateStack(scopeSize);
+  middle << allocateStack(scopeSize);
   int sizeLocals = scopeSize;
+  scopeSize+=4;
   int scope = scopeSize;
   for(int i = 0; i < node->parameters->size(); i++) {
     scope = node->parameters->operator[](i)->accept(this, scope);
   }
 
   node->block->accept(this);
-  deallocateStack(sizeLocals);
+  middle << deallocateStack(sizeLocals);
   middle << "  POP {pc}" << "\n"
            << "  POP {pc}"  << "\n"
            << "  .ltorg"   << "\n";
@@ -336,8 +339,7 @@ void CodeGenVisitor::visit(WhileStatement *node) {
         node->doS->accept(this);
         scopeSize = tmp;
         middle << deallocateStack(scopeSize);
-  node->doS->accept(this);
-   labelNum = temp;
+  labelNum = temp;
   middle << "L" << std::to_string(labelNum - 2) << ": " << "\n";
       node->expr->accept(this, "r4");
   middle << "  CMP r4, #1"                                << "\n"
@@ -859,7 +861,6 @@ void CodeGenVisitor::printMsgCheckArrayBounds() {
   //  std::cout<< "print check" << std::endl;
   //if(arrayTypeId -> elementType) {
    // std::cout<< "print check" << std::endl;
-    middle << "  BL p_check_array_bounds" << "\n";
     if (!msgCheckArrayBound) {
       msgCheckArrayBound = true;
       begin << 
@@ -878,14 +879,18 @@ void CodeGenVisitor::printMsgCheckArrayBounds() {
 
 void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {
   //TypeId *type = node->type;
+  printMsgCheckArrayBounds();
   if(!p_print_array_elem ) {
       p_print_array_elem = true;
       printAssemblyCheckArrayBounds();
   }
   //std::cout << "visit ArrayElem" << std::endl;
   middle << "  ADD " << reg << ", sp ,#" << currentScope->searchOffset(node->getId()) << "\n";
+
+  std::string tmpreg = "R4";
   for (int i=0; i < node->idxs->size(); i++) {
-    node->idxs->operator[](i)->accept(this, "r6");
+/*    node->idxs->operator[](i)->accept(this, "r6");
+
     if ( reg == "r0") {
       middle << "  PUSH {r0}\n";
     }
@@ -908,7 +913,23 @@ void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {
     }
   }
   middle << "  LDR " << reg << ", ["<< reg << "]\n";
-  middle << " MOV r0, r4" << std ::endl;
+*/
+
+node->idxs->operator[](i)->accept(this, "r6");
+    middle << "  MOV r0, r6\n"
+           << "  MOV r1, " << tmpreg << "\n";
+    middle << "  BL p_check_array_bounds" << "\n";
+
+    middle << "  LDR " << tmpreg << ", [" << tmpreg << "]\n"
+           << "  ADD " << tmpreg << ", " << tmpreg << ", #4\n";
+    if(node->type->size() == 1) {
+      middle << "  ADD " << tmpreg << ", " << tmpreg << ", r6\n";
+    } else {
+      middle << "  ADD " << tmpreg << ", " << tmpreg << ", r6, LSL #2\n";
+    }
+  }
+  middle << "  LDR " << tmpreg << ", ["<< tmpreg << "]\n";
+  middle << "  MOV " << reg << ", " << tmpreg <<std::endl;
 }
 
 //LHS PairElem
