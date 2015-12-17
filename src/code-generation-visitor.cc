@@ -87,7 +87,7 @@ void CodeGenVisitor::visit(VariableDeclaration *node) {
   if(node->rhs) {
    node->rhs->accept(this, "r4");
   }
-  int sizeSoFar = 4;
+  int sizeSoFar = 0;
   for (int i = currentScope->variables->size()-1; i >=0; i--) {
     if(currentScope->variables->operator[](i)->id->id.compare(node->id->id) == 0) {
     break;
@@ -780,7 +780,7 @@ void CodeGenVisitor::visit(Identifier *node) {
 void CodeGenVisitor::visit(Identifier *node, std::string reg) {
 	if(adr) {
     middle << "  LDR " << reg << ", #0\n";
-		middle << "  ADD " << reg << ", sp, #" << currentScope->searchOffset(node->id) << "\n";
+		middle << "  ADD " << reg << ", sp, #" << currentScope->searchOffset(node->id) + 4<< "\n";
     return;
 	}
   if(node->type->equals(new CharTypeId) || node->type->equals(new BoolTypeId())) {
