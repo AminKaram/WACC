@@ -97,7 +97,7 @@ void CodeGenVisitor::visit(VariableDeclaration *node) {
   if (node->type->equals(new BoolTypeId()) || node->type->equals(new CharTypeId())) {
      middle << "  STRB r4, [sp" << (offset == 0 ? "" : ", #" + std::to_string(offset)) << "]\n";
   } else {
-    middle << "  STR r4 ,[sp"<< (offset == 0 ? "" : ", #" + std::to_string(offset)) << "]\n";
+    middle << "  STR r4, [sp"<< (offset == 0 ? "" : ", #" + std::to_string(offset)) << "]\n";
   }
   currentScope->isDefined->insert(node->id->id);
   currentScope->addOffset(node->id->id, offset);
@@ -604,7 +604,11 @@ void CodeGenVisitor::visit(Number *node, std::string reg) {
 }
 void CodeGenVisitor::visit(Boolean *node, std::string reg) {
   //std::cout<< "Boolean" << std::endl;
-  middle << "  MOV " << reg << ", #" << node->value << std::endl;
+  bool val = node -> value;
+  //middle << "  MOV " << reg << ", #" << node->value << std::endl;
+  if(val == 0 ){
+    middle << "  MOV " << reg << ", #0" << std::endl;
+  }
 }
 void CodeGenVisitor::visit(Char *node, std::string reg) {
   //std::cout<< "visit char" << std::endl;
@@ -645,7 +649,7 @@ void CodeGenVisitor::visit(Null *node, std::string reg) {
 
 
 void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
-   //std::cout<< "visit Binop" << std::endl;
+   
    int oper = node -> op;
          std::string firstReg  = reg;
          int tmp = atoi(reg.erase(0,1).c_str()) + 1;
@@ -664,7 +668,8 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
            secondReg = "r11";
          }
      if(oper == tok::TOK_LOGOR || oper == tok::TOK_LOGAND){
-
+        // if node left and right are both not constant
+       
       if (oper == tok::TOK_LOGOR){
       //Implementation code-gen for OR
          middle << "  ORR "<< firstReg << ", " << firstReg << ", "
@@ -771,7 +776,7 @@ void CodeGenVisitor::visit(Identifier *node) {
 
 void CodeGenVisitor::visit(Identifier *node, std::string reg) {
 	if(adr) {
-		middle << "  ADD " << reg << ", sp, #" << currentScope->searchOffset(node->id) << "\n";
+		middle << "  LDR " << reg << ", sp, #" << currentScope->searchOffset(node->id) << "\n";
     return;
 	}
   if(node->type->equals(new CharTypeId) || node->type->equals(new BoolTypeId())) {
@@ -864,33 +869,66 @@ void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {
   }
   middle << "  LDR " << reg << ", ["<< reg << "]\n";
 }
+
 //LHS PairElem
 void CodeGenVisitor::visit(PairElem *node){
   middle   << "  LDR  r5, [sp]"           << std::endl
            << "  MOV r0, r5"              << std::endl 
            << "  BL p_check_null_pointer" << std::endl;
+  p_check_null_pointer();
   if (node->fst){
-	middle << "  LDR r5, [r5]"            << std::endl;
+	  middle   << "  LDR r5, [r5]"            << std::endl;
   } else {
-	middle << "  LDR r5, [r5, #4]"        << std::endl;
+	  middle   << "  LDR r5, [r5, #4]"        << std::endl;
   }
-  middle   << "  STR r4, [r5]"            << std::endl;
+  middle     << "  STR r4, [r5]"            << std::endl;
 }
 
 //RHS PairElem
 // there is more to do here
 void CodeGenVisitor::visit(PairElem *node, std::string reg) {
-  middle   
-           << "  MOV r0, " << reg                        << std::endl 
+  adr = true;
+  node->expr->accept(this, reg);
+  adr = false;
+
+  middle   << "  MOV r0, " << reg                        << std::endl 
            << "  BL p_check_null_pointer"                << std::endl;
+  p_check_null_pointer();
+  IntTypeId *intTypeId       = dynamic_cast<IntTypeId*>(node->type);
+  StringTypeId *stringTypeId = dynamic_cast<StringTypeId*>(node->type);
+  CharTypeId *charTypeId     = dynamic_cast<CharTypeId*>(node->type);
+  BoolTypeId *boolTypeId     = dynamic_cast<BoolTypeId*>(node->type);
   if (node->fst){
-	middle << "  LDR " << reg << ", [" << reg << "]"     << std::endl
-	       << "  STR " << reg << ", [sp, #4]"            << std::endl;
+    if(intTypeId || stringTypeId){
+      middle << "  LDR " << reg << ", [" << reg << "]"     << std::endl
+             << "  LDR " << reg << ", [" << reg << "]"     << std::endl;
+    } else if(charTypeId || boolTypeId){
+        middle << "  LDR " << reg << ", [" << reg << "]"     << std::endl
+               << "  LDRSB " << reg << ", [" << reg << "]"     << std::endl;
+    }
+	  
   } else {
-	middle << "  LDR " << reg << ", [" << reg << ", #4]" << std::endl
-	       << "  STR " << reg << ", [sp]"                << std::endl;
+    if (intTypeId || stringTypeId) {
+      middle << "  LDR " << reg << ", [" << reg << ", #4]"     << std::endl
+             << "  LDR " << reg << ", [" << reg << "]"         << std::endl;
+    } else if (charTypeId || boolTypeId) {
+      middle << "  LDR "   << reg << ", [" << reg << ", #4]"   << std::endl
+             << "  LDRSB " << reg << ", [" << reg << "]"       << std::endl;
+    }
+	  
+	          
   }
-  
+  /*Else if bool or char
+  if (node->fst){
+    middle   << "  LDR " << reg << ", [" << reg << "]"     << std::endl
+             << "  LDRSB " << reg << ", [" << reg << "]"     << std::endl
+             << "  STRB " << reg << ", [sp, #n]" n is the proper location on stack          << std::endl;
+  } else {
+    middle   << "  LDR " << reg << ", [" << reg << ", #4]"     << std::endl
+             << "  LDRSB " << reg << ", [" << reg << "]" << std::endl
+             << "  STRB " << reg << ", [sp, #n]" n is the proper location on stack                      << std::endl;
+  }
+  */
 }
 
 void CodeGenVisitor::visit(ArrayLiter *node, std::string reg) {
@@ -1009,35 +1047,66 @@ void CodeGenVisitor::p_throw_overflow_error(void){
 }
 
 void CodeGenVisitor::p_throw_runtime_error(void){
-    if(!p_throw_runtime_errorb){
-      if (!beginInitialisation) {
+  if(!p_throw_runtime_errorb){
+    if (!beginInitialisation) {
       beginInitialisation = true;
       begin <<
         ".data" << "\n"
             << "\n";
-      }
-         end    << "p_throw_runtime_error:" << "\n"
-         "  BL p_print_string" << "\n";
-             if (!msgString) {
-               msgString  = true;
-               begin <<
-                  "msg_" << messageNum << ":" << std::endl <<
-                  "  .word 5" << std::endl <<
-                  "  .ascii  \"%.*s\\0\"" << std::endl;
-                 stringMessageNum = messageNum;
-                 messageNum ++ ;
-
-              }
-               end << "  MOV r0, #-1" << "\n"
-                << "  BL exit"<< "\n";
-
-        p_throw_runtime_errorb = true;
-        if (!p_print_string) {
-          p_print_string = true;
-          printAssemblyOfPrintString();
-        }
     }
+    end << "p_throw_runtime_error:" << "\n"
+           "  BL p_print_string" << "\n";
+     if (!msgString) {
+       msgString  = true;
+       begin <<
+          "msg_" << messageNum << ":" << std::endl <<
+          "  .word 5" << std::endl <<
+          "  .ascii  \"%.*s\\0\"" << std::endl;
+         stringMessageNum = messageNum;
+         messageNum ++ ;
+      }
+         end << "  MOV r0, #-1" << "\n"
+          << "  BL exit"<< "\n";
 
+      p_throw_runtime_errorb = true;
+      if (!p_print_string) {
+        p_print_string = true;
+        printAssemblyOfPrintString();
+      }
+  }
+
+}
+
+void CodeGenVisitor::p_check_null_pointer(void){
+  if (!p_check_null_pointerb){
+    p_check_null_pointerb = true;
+
+    if (!beginInitialisation) {
+      beginInitialisation = true;
+      begin <<
+        ".data" << "\n"
+            << "\n";
+    }
+    
+    if (!msgNullPointer){
+      msgNullPointer = true; 
+      begin << "msg_" << messageNum << ":"                   << std::endl <<
+               "  .word 50"                                  << std::endl <<
+               "  .ascii  \"NullReferenceError: dereference" << 
+                                 " a null reference\n\0\""   << std::endl;
+      nullMessageNum = messageNum;
+      messageNum++ ;
+    }
+    end << "p_check_null_pointer:"               << "\n"
+           "  PUSH {lr}"                         << "\n"
+           "  CMP r0, #0"                        << "\n"
+           "  LDREQ r0, =msg_" << nullMessageNum << "\n"
+           "  BLEQ p_throw_runtime_error"        << "\n"
+           "  POP {pc}"                          << "\n";
+    if (!p_throw_runtime_errorb) {
+      p_throw_runtime_error();
+    }
+  }
 }
 
 void CodeGenVisitor::populateRegMap() {

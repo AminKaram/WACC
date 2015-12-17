@@ -100,7 +100,8 @@ private:
   int intMessageNum             = -1;
   int charMessageNum            = -1;
   int referenceMessageNum       = -1;
-  int checkArrayBoundMessageNum = -1;      
+  int checkArrayBoundMessageNum = -1;
+  int nullMessageNum            = -1;      
   
   bool msgInt             = false;
   bool msgString          = false;
@@ -108,11 +109,14 @@ private:
   bool msgChar            = false;
   bool msgNewLine         = false;
   bool msgReference       = false;
-  bool msgCheckArrayBound = false;      
+  bool msgCheckArrayBound = false;
+  bool msgNullPointer     = false;      
 
   bool p_throw_overflow_errorb = false;
   bool p_throw_runtime_errorb  = false;
   bool p_check_divide_by_zerob = false;
+  bool p_check_null_pointerb   = false;
+
   bool p_print_reference       = false;
   bool p_print_array_elem      = false;
 
@@ -121,6 +125,7 @@ private:
   void p_throw_runtime_error(void);
   void p_throw_overflow_error(void);
   void p_check_divide_by_zero(void);
+  void p_check_null_pointer(void);
 
   int scopeSize = 0;
 
