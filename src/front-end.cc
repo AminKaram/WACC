@@ -12,7 +12,7 @@ FrontEnd::~FrontEnd() {
   semanticAnalyzer = NULL;
 }
 
-int FrontEnd::run(char *fileName) {
+int FrontEnd::run(std::string fileName) {
   int res = driver->parse(fileName);
   if(res) {
     return 100;

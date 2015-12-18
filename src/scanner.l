@@ -39,6 +39,7 @@ comment       #[^\n]*
 charlit       \'[^\\\'\"]\'
 escapedchar   \'(\\\\|\\\"|\\r|\\n|\\b|\\0)\'
 stringlit     \"(\\.|[^\\"])*\"
+import        [import].*.wacc
 
 %{
   // Code run each time a pattern is matched.
@@ -55,6 +56,7 @@ stringlit     \"(\\.|[^\\"])*\"
 {whitespace}+     loc.step();
 [\n]+             loc.lines(yyleng); loc.step();
 {comment}         loc.step();
+{import}          loc.step();
 
 begin         return (token::make_BEGIN(loc));
 end           return (token::make_END(loc));

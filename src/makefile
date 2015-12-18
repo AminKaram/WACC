@@ -1,10 +1,13 @@
 all: main 
 
-OBJS = scanner.o parser.o main.o parsing-driver.o astnode.o symbol-table.o front-end.o back-end.o semantic-id.o code-generation-visitor.o semantic-visitor.o
+OBJS = scanner.o parser.o preprocessor.o main.o parsing-driver.o astnode.o symbol-table.o front-end.o back-end.o semantic-id.o code-generation-visitor.o semantic-visitor.o
 
 CPPFLAGS = -fmax-errors=20 -std=c++11 -Wno-deprecated-register -g
 
-main.o: main.cc front-end.o back-end.o
+main.o: main.cc front-end.o back-end.o preprocessor.o
+	g++ -c -g $(CPPFLAGS) -o $@ $<
+
+preprocessor.o: preprocessor.cc preprocessor.hh
 	g++ -c -g $(CPPFLAGS) -o $@ $<
 
 code-generation-visitor.o: code-generation-visitor.cc ast-node-visitor.hh	

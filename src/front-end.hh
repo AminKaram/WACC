@@ -2,13 +2,14 @@
 #define FRONT_END_HH
 #include "parsing-driver.hh"
 #include "semantic-visitor.hh"
+#include <string>
 
 class FrontEnd{
 public:
   FrontEnd();
   ~FrontEnd();
   int check(Program*);
-  int run(char*);
+  int run(std::string fileName);
   Program *getProgram();
 
 private:
