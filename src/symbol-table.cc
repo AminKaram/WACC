@@ -62,7 +62,6 @@ SymbolTable* SymbolTable::getEncScope() {
 Maybe<int> SymbolTable::getOffsetScope(std::string varName) {
   Maybe<int> res;
   auto it = varMap->find(varName);
-  std::cout<< this << std::endl;
   if (it != varMap->end() && isDefined->find(varName) != isDefined->end()) {
     res.valid = true;
     res.data = (it->second);

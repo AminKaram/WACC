@@ -1146,7 +1146,7 @@ void CodeGenVisitor::p_check_null_pointer(void){
       begin << "msg_" << messageNum << ":"                   << std::endl <<
                "  .word 50"                                  << std::endl <<
                "  .ascii  \"NullReferenceError: dereference" << 
-                                 " a null reference\n\0\""   << std::endl;
+                                 " a null reference\\n\\0\""   << std::endl;
       nullMessageNum = messageNum;
       messageNum++ ;
     }
