@@ -1,4 +1,5 @@
 #include "semantic-id.hh"
+#include <iostream>
 
 SemanticId::SemanticId() { }
 
@@ -105,7 +106,7 @@ int PairId::size() {
 PairKeyId::PairKeyId() : PairId(NULL, NULL) { }
 bool PairKeyId::equals(TypeId *other) {
   PairId *pairOther = dynamic_cast<PairId*>(other);
-  return other != NULL;
+  return pairOther != NULL;
 }
 std::string PairKeyId::name() {
   return std::string("pair");
@@ -119,8 +120,9 @@ FunctionId::FunctionId(TypeId *ret, std::vector<ParamId> params)
 
 NullId::NullId() : PairId(NULL, NULL){}
 bool NullId::equals(TypeId* other) {
-  PairId *pairOther = dynamic_cast<PairId*>(other);
-  return other != NULL;
+  std::cout << "after but why" << std::endl;
+  NullId *nullOther = dynamic_cast<NullId*>(new StringTypeId());
+  return nullOther != NULL;
 }
 std::string NullId::name() {
   return std::string("null");

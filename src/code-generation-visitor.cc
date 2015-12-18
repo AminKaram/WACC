@@ -586,7 +586,7 @@ void CodeGenVisitor::printAssemblyOfPrintInt() {
 void CodeGenVisitor::printStatement(TypeId *type) {
   //std::cout << "printStatement" << "\n";
 	if (!p_print_string && type->equals(new StringTypeId())) {
-		p_print_string = true;
+	  p_print_string = true;
 		printAssemblyOfPrintString();
 	} else if (!p_print_bool && type->equals(new BoolTypeId())) {
 			p_print_bool = true;
@@ -687,8 +687,7 @@ void CodeGenVisitor::visit(String *node, std::string reg) {
 }
 
 void CodeGenVisitor::visit(Null *node, std::string reg) {
-  //std::cout<< "visit Null" << std::endl;
-  middle << "  MOV " << reg << ", #0" << std::endl;
+   middle << "  MOV " << reg << ", #0" << std::endl;
 }
 
 
