@@ -9,6 +9,7 @@
 
 class CodeGenVisitor {
 public:
+  int sizeLocals = 0;
   const int MAX_REG_NUMBER = 16;
   CodeGenVisitor(std::ostream *stream);
   ~CodeGenVisitor();

@@ -44,6 +44,7 @@ void CodeGenVisitor::visit(Program *node) {
 
   node->functions->accept(this);
   currentScope = node->statements->table;
+  currentScope->callOffset = 0;
   scopeSize = 0;
   for (int i = 0; i < node->statements->table->variables->size(); i++) {
     scopeSize += node->statements->table->variables->operator[](i)->type->size();
@@ -70,7 +71,7 @@ void CodeGenVisitor::visit(Program *node) {
   if (end.rdbuf()->in_avail() != 0) {
       *file << end.rdbuf() << "\n" ;
     }
-
+  currentScope->callOffset = 0;
 }
 
 void CodeGenVisitor::visit(StatSeq *node) {
@@ -87,6 +88,14 @@ void CodeGenVisitor::visit(FunctionDecList *node) {
 void CodeGenVisitor::visit(VariableDeclaration *node) {
   if(node->rhs) {
    node->rhs->accept(this, "r4");
+  }
+  PairElem   *pairrhs = dynamic_cast<PairElem*>(node->rhs);
+  if (pairrhs) {
+    if(pairrhs->type->size() == 1) {
+                middle << "  LDRSB r4, [r4]\n";
+              } else {
+                middle << "  LDR r4, [r4]\n";
+              }
   }
   int sizeSoFar = 0;
   for (int i = currentScope->variables->size()-1; i >=0; i--) {
@@ -109,23 +118,22 @@ void CodeGenVisitor::visit(FunctionDeclaration *node) {
   middle << "f_" << node->id->id << ":\n"
          << "  PUSH {lr}" << "\n";
   currentScope = node->block->table;
+  currentScope->callOffset = 0;
   int scopeSize = 0;
   for (int i=0; i < node->block->table->variables->size(); i++) {
         scopeSize += node->block->table->variables->operator[](i)->type->size();
   }
   middle << allocateStack(scopeSize);
-  int sizeLocals = scopeSize;
+  sizeLocals = scopeSize;
   scopeSize+=4;
   int scope = scopeSize;
   for(int i = 0; i < node->parameters->size(); i++) {
     scope = node->parameters->operator[](i)->accept(this, scope);
   }
-
   node->block->accept(this);
-  middle << deallocateStack(sizeLocals);
   middle << "  POP {pc}" << "\n"
-           << "  POP {pc}"  << "\n"
            << "  .ltorg"   << "\n";
+  currentScope->callOffset = 0;
 }
 
 
@@ -137,30 +145,56 @@ void CodeGenVisitor::visit(FunctionCall *node, std::string reg) {
         middle << "  STR " << reg << ", [sp, #-" 
                <<  node->parameters->operator[](i)->type->size() 
                << "]!\n";
+
       } else {
         middle << "  STRB " << reg << ", [sp, #-" 
                <<  node->parameters->operator[](i)->type->size() 
                << "]!\n";
       }
       sizeParam += node->parameters->operator[](i)->type->size();
+      currentScope->callOffset += sizeParam;
     }
 
 
     middle << "  BL f_" << node->id->id << "\n"
            << "  ADD sp, sp, #" << sizeParam << "\n" 
            << "  MOV " << reg << ",r0 \n";
+    currentScope->callOffset = 0;
 }
 
 void CodeGenVisitor::visit(Assignment *node) {
 
   node->rhs->accept(this, "r4");
-  node->lhs->accept(this); //might be wrong
+  //node->lhs->accept(this); //might be wrong
   BoolTypeId *boolType = new BoolTypeId();
   CharTypeId *charType = new CharTypeId();
   PairElem   *pairlhs = dynamic_cast<PairElem*>(node->lhs);
+  PairElem   *pairrhs = dynamic_cast<PairElem*>(node->rhs);
   ArrayElem *arrLhs = dynamic_cast<ArrayElem*>(node->lhs);
 
-  if(arrLhs) {
+
+
+  if (pairrhs) {
+    if(pairrhs->type->size() == 1) {
+                middle << "  LDRSB r4, [r4]\n";
+              } else {
+                middle << "  LDR r4, [r4]\n";
+              }
+  }
+
+  if (pairlhs) {
+    node->lhs->accept(this, "r5");
+    if(pairlhs->type->size() == 1) {
+            middle << "  STRB r4, [r5]\n";
+          } else {
+            middle << "  STR r4, [r5]\n";
+          }
+  } else if(arrLhs) {
+    printMsgCheckArrayBounds();
+      if(!p_print_array_elem ) {
+          p_print_array_elem = true;
+          printAssemblyCheckArrayBounds();
+      }
     middle << "  ADD r5, sp ,#" << currentScope->searchOffset(node->lhs->getId()) << "\n";
     for (int i=0; i < arrLhs->idxs->size(); i++) {
       arrLhs->idxs->operator[](i)->accept(this, "r6");
@@ -177,14 +211,7 @@ void CodeGenVisitor::visit(Assignment *node) {
                << "  STR r4, [r5]\n";
       } 
     }
-  } else if (pairlhs) {
-      if (node->lhs->type->equals(boolType) || node->lhs->type->equals(charType)) {
-        middle << "  STRB r4, [r5]\n";
-    } else {
-      middle << "  STR r4, [r5]\n";
-    }
   }
-
    else if(node->lhs->type->equals(boolType) || node->lhs->type->equals(charType)) {
     if (currentScope->searchOffset(node->lhs->getId()) == 0) {
       middle << "  STRB r4, [sp]\n";
@@ -244,6 +271,9 @@ void CodeGenVisitor::visit(FreeStatement *node) {
 
 void CodeGenVisitor::visit(ReturnStatement *node) {
   node->expr->accept(this, "r0");
+  middle << deallocateStack(sizeLocals);
+  middle << "  POP {pc}" << std::endl;
+
 }
 
 void CodeGenVisitor::visit(ExitStatement *node) {
@@ -420,6 +450,7 @@ void CodeGenVisitor::printMsg(TypeId *type) {
     BoolTypeId *boolTypeId     = dynamic_cast<BoolTypeId*> (type);
     CharTypeId *charTypeId     = dynamic_cast<CharTypeId*> (type);
     ArrayId *arrayTypeId       = dynamic_cast<ArrayId*> (type);
+    PairId *pairTypeId         = dynamic_cast<PairId*> (type);
 
     if (!beginInitialisation) {
 		beginInitialisation = true;
@@ -468,7 +499,7 @@ void CodeGenVisitor::printMsg(TypeId *type) {
         boolMessageNum = messageNum;
         messageNum+=2;
   		}
-	  } else if(arrayTypeId) {
+	  } else if(arrayTypeId || pairTypeId) {
       //std::cout << "  BL p_print_reference" << "\n";
       middle << "  BL p_print_reference" << "\n";
       
@@ -556,7 +587,7 @@ void CodeGenVisitor::printAssemblyOfPrintInt() {
 void CodeGenVisitor::printStatement(TypeId *type) {
   //std::cout << "printStatement" << "\n";
 	if (!p_print_string && type->equals(new StringTypeId())) {
-		p_print_string = true;
+	  p_print_string = true;
 		printAssemblyOfPrintString();
 	} else if (!p_print_bool && type->equals(new BoolTypeId())) {
 			p_print_bool = true;
@@ -657,8 +688,7 @@ void CodeGenVisitor::visit(String *node, std::string reg) {
 }
 
 void CodeGenVisitor::visit(Null *node, std::string reg) {
-  //std::cout<< "visit Null" << std::endl;
-  middle << "  MOV " << reg << ", #0" << std::endl;
+   middle << "  MOV " << reg << ", #0" << std::endl;
 }
 
 
@@ -834,16 +864,22 @@ void CodeGenVisitor::printMsgCheckArrayBounds() {
   //  std::cout<< "print check" << std::endl;
   //if(arrayTypeId -> elementType) {
    // std::cout<< "print check" << std::endl;
+  if (!beginInitialisation) {
+      beginInitialisation = true;
+      begin <<
+        ".data" << "\n"
+            << "\n";
+   }
     if (!msgCheckArrayBound) {
       msgCheckArrayBound = true;
       begin << 
          "msg_" << messageNum << ":" << std::endl <<
          "  .word 44" << std::endl <<
-         "  .ascii  \"ArrayIndexOutOfBoundsError: negative index\"\n\0" << std::endl;
+         "  .ascii  \"ArrayIndexOutOfBoundsError: negative index\\n\\0\"" << std::endl;
       begin << 
          "msg_" << messageNum + 1 << ":" << std::endl <<
          "  .word 45" << std::endl <<
-         "  .ascii  \"ArrayIndexOutOfBoundsError: index too large\"\n\0" << std::endl;
+         "  .ascii  \"ArrayIndexOutOfBoundsError: index too large\\n\\0\"" << std::endl;
       checkArrayBoundMessageNum = messageNum;
       messageNum+=2;
     }
@@ -852,61 +888,42 @@ void CodeGenVisitor::printMsgCheckArrayBounds() {
 
 void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {
   //TypeId *type = node->type;
-  printMsgCheckArrayBounds();
-  if(!p_print_array_elem ) {
-      p_print_array_elem = true;
-      printAssemblyCheckArrayBounds();
-  }
-  //std::cout << "visit ArrayElem" << std::endl;
-  middle << "  ADD " << reg << ", sp ,#" << currentScope->searchOffset(node->getId()) << "\n";
-
-  std::string tmpreg = "R4";
-  for (int i=0; i < node->idxs->size(); i++) {
-/*    node->idxs->operator[](i)->accept(this, "r6");
-
-    if ( reg == "r0") {
-      middle << "  PUSH {r0}\n";
-    }
-
-
-    middle << "  MOV r0, r6\n"
-           << "  MOV r1, " << reg << "\n";
     printMsgCheckArrayBounds();
-    if(reg == "r0") {
-      middle << "  POP {r0}\n";        
+    if(!p_print_array_elem ) {
+        p_print_array_elem = true;
+        printAssemblyCheckArrayBounds();
     }
+    //std::cout << "visit ArrayElem" << std::endl;
+    middle << "  ADD " << "r4" << ", sp ,#" << currentScope->searchOffset(node->getId()) << "\n";
+
+    std::string tmpreg = "R4";
+    for (int i=0; i < node->idxs->size(); i++) {
+      node->idxs->operator[](i)->accept(this, "r5");
 
 
-    middle << "  LDR " << reg << ", [" << reg << "]\n"
-           << "  ADD " << reg << ", " << reg << ", #4\n";
-    if(node->type->size() == 1) {
-      middle << "  ADD " << reg << ", " << reg << ", r6\n";
-    } else {
-      middle << "  ADD " << reg << ", " << reg << ", r6, LSL #2\n";
+      middle << "  MOV r0, r5\n"
+             << "  MOV r1, " << "r4" << "\n";
+
+    middle << "  BL p_check_array_bounds" << std::endl; 
+      printMsgCheckArrayBounds();
+
+
+      middle << "  LDR " << "r4" << ", [r4]\n"
+             << "  ADD " << "r4" << ", " << "r4" << ", #4\n";
+      if(node->type->size() == 1) {
+        middle << "  ADD " << "r4" << ", " << "r4" << ", r5\n";
+      } else {
+        middle << "  ADD " << "r4" << ", " << "r4" << ", r5, LSL #2\n";
+      }
     }
-  }
-  middle << "  LDR " << reg << ", ["<< reg << "]\n";
-*/
+    middle << "  LDR " << "r4" << ", ["<< "r4" << "]\n"
+           << "  MOV " << reg << ", r4\n";
 
-node->idxs->operator[](i)->accept(this, "r6");
-    middle << "  MOV r0, r6\n"
-           << "  MOV r1, " << tmpreg << "\n";
-    middle << "  BL p_check_array_bounds" << "\n";
-
-    middle << "  LDR " << tmpreg << ", [" << tmpreg << "]\n"
-           << "  ADD " << tmpreg << ", " << tmpreg << ", #4\n";
-    if(node->type->size() == 1) {
-      middle << "  ADD " << tmpreg << ", " << tmpreg << ", r6\n";
-    } else {
-      middle << "  ADD " << tmpreg << ", " << tmpreg << ", r6, LSL #2\n";
-    }
-  }
-  middle << "  LDR " << tmpreg << ", ["<< tmpreg << "]\n";
-  middle << "  MOV " << reg << ", " << tmpreg <<std::endl;
 }
 
 //LHS PairElem
 void CodeGenVisitor::visit(PairElem *node){
+
   //adr = true;
   node->expr->accept(this, "r5");
   //adr = false;
@@ -942,29 +959,22 @@ void CodeGenVisitor::visit(PairElem *node, std::string reg) {
   BoolTypeId *boolTypeId     = dynamic_cast<BoolTypeId*>(node->type);
 
   if (node->fst){
-    if(intTypeId || stringTypeId){
-      middle << "  LDR " << reg << ", [" << reg << "]"     << std::endl
-             << "  LDR " << reg << ", [" << reg << "]"     << std::endl;
-    } else if(charTypeId || boolTypeId){
-        middle << "  LDR "   << reg << ", [" << reg << "]" << std::endl
-               << "  LDRSB " << reg << ", [" << reg << "]" << std::endl;
-    }
-    
+      middle << "  LDR " << reg << ", [" << reg << "]"     << std::endl;
+
   } else {
-    if (intTypeId || stringTypeId) {
-      middle << "  LDR " << reg << ", [" << reg << ", #4]"     << std::endl
-             << "  LDR " << reg << ", [" << reg << "]"         << std::endl;
-    } else if (charTypeId || boolTypeId) {
-      middle << "  LDR "   << reg << ", [" << reg << ", #4]"   << std::endl
-             << "  LDRSB " << reg << ", [" << reg << "]"       << std::endl;
-    }           
+      middle << "  LDR " << reg << ", [" << reg << ", #4]"     << std::endl;
   }
 }
 
 void CodeGenVisitor::visit(ArrayLiter *node, std::string reg) {
   ArrayId *arrType = dynamic_cast<ArrayId*>(node->type);
-  int elemSize = arrType->elementType->size();
-  int mallocSize = (node->elems->size() * elemSize) + 4;
+  int elemSize = 0;
+  int typeSize = 0;
+  if (!node->type->equals(new NullId())) {
+    elemSize = arrType->elementType->size();
+    typeSize = node->elems->size();
+  }
+  int mallocSize = (typeSize * elemSize) + 4;
   middle << "  LDR r0,=" <<  mallocSize << "\n"
          << "  BL malloc\n"
          << "  MOV " << reg << ", r0\n";
@@ -1123,7 +1133,7 @@ void CodeGenVisitor::p_check_null_pointer(void){
       begin << "msg_" << messageNum << ":"                   << std::endl <<
                "  .word 50"                                  << std::endl <<
                "  .ascii  \"NullReferenceError: dereference" << 
-                                 " a null reference\n\0\""   << std::endl;
+                                 " a null reference\\n\\0\""   << std::endl;
       nullMessageNum = messageNum;
       messageNum++ ;
     }

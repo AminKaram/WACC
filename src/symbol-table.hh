@@ -23,6 +23,7 @@ public:
   std::vector<VariableDeclaration*> *variables = NULL;
   std::set<std::string> *isDefined = NULL;
   std::map<std::string, int> *varMap = NULL;
+  int callOffset = 0;
 
 private:
   Maybe<int> getOffsetScope(std::string);

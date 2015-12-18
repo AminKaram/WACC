@@ -64,7 +64,7 @@ public:
 
 class ArrayId : public TypeId {
 public:
-  TypeId *elementType;
+  TypeId *elementType ;
   ArrayId(TypeId *elementType);
   bool equals(TypeId *other);
   std::string name(); 
