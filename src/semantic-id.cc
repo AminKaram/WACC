@@ -120,7 +120,7 @@ FunctionId::FunctionId(TypeId *ret, std::vector<ParamId> params)
 
 NullId::NullId() : PairId(NULL, NULL){}
 bool NullId::equals(TypeId* other) {
-  PairId *pairOther = dynamic_cast<PairId*>(new StringTypeId());
+  PairId *pairOther = dynamic_cast<PairId*>(other);
   return pairOther != NULL;
 }
 std::string NullId::name() {
