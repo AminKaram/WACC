@@ -887,55 +887,35 @@ void CodeGenVisitor::printMsgCheckArrayBounds() {
 
 void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {
   //TypeId *type = node->type;
-  printMsgCheckArrayBounds();
-  if(!p_print_array_elem ) {
-      p_print_array_elem = true;
-      printAssemblyCheckArrayBounds();
-  }
-  //std::cout << "visit ArrayElem" << std::endl;
-  middle << "  ADD " << "r4" << ", sp ,#" << currentScope->searchOffset(node->getId()) << "\n";
-
-  std::string tmpreg = "R4";
-  for (int i=0; i < node->idxs->size(); i++) {
-    node->idxs->operator[](i)->accept(this, "r6");
-
-
-    middle << "  MOV r0, r6\n"
-
-           << "  MOV r1, " << "r4" << "\n"
-           << "  p_check_array_bounds" <<std::endl;
-
     printMsgCheckArrayBounds();
-
-
-    middle << "  LDR " << "r4" << ", [r4]\n"
-           << "  ADD " << "r4" << ", " << "r4" << ", #4\n";
-    if(node->type->size() == 1) {
-      middle << "  ADD " << "r4" << ", " << "r4" << ", r6\n";
-    } else {
-      middle << "  ADD " << "r4" << ", " << "r4" << ", r6, LSL #2\n";
+    if(!p_print_array_elem ) {
+        p_print_array_elem = true;
+        printAssemblyCheckArrayBounds();
     }
-  }
-  middle << "  LDR " << "r4" << ", ["<< "r4" << "]\n"
-         << "  MOV " << reg << ", r4\n";
+    //std::cout << "visit ArrayElem" << std::endl;
+    middle << "  ADD " << "r4" << ", sp ,#" << currentScope->searchOffset(node->getId()) << "\n";
+
+    std::string tmpreg = "R4";
+    for (int i=0; i < node->idxs->size(); i++) {
+      node->idxs->operator[](i)->accept(this, "r6");
 
 
-/*node->idxs->operator[](i)->accept(this, "r6");
-    middle << "  MOV r0, r6\n"
-           << "  MOV r1, " << tmpreg << "\n";
-    middle << "  BL p_check_array_bounds" << "\n";
+      middle << "  MOV r0, r6\n"
+             << "  MOV r1, " << "r4" << "\n";
+      printMsgCheckArrayBounds();
 
-    middle << "  LDR " << tmpreg << ", [" << tmpreg << "]\n"
-           << "  ADD " << tmpreg << ", " << tmpreg << ", #4\n";
-    if(node->type->size() == 1) {
-      middle << "  ADD " << tmpreg << ", " << tmpreg << ", r6\n";
-    } else {
-      middle << "  ADD " << tmpreg << ", " << tmpreg << ", r6, LSL #2\n";
+
+      middle << "  LDR " << "r4" << ", [r4]\n"
+             << "  ADD " << "r4" << ", " << "r4" << ", #4\n";
+      if(node->type->size() == 1) {
+        middle << "  ADD " << "r4" << ", " << "r4" << ", r6\n";
+      } else {
+        middle << "  ADD " << "r4" << ", " << "r4" << ", r6, LSL #2\n";
+      }
     }
-  }
-  middle << "  LDR " << tmpreg << ", ["<< tmpreg << "]\n";
-  middle << "  MOV " << reg << ", " << tmpreg <<std::endl;
-*/
+    middle << "  LDR " << "r4" << ", ["<< "r4" << "]\n"
+           << "  MOV " << reg << ", r4\n";
+
 }
 
 //LHS PairElem
