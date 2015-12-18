@@ -38,6 +38,7 @@ CodeGenVisitor::CodeGenVisitor(std::ostream* stream) {
 CodeGenVisitor::~CodeGenVisitor() { }
 
 void CodeGenVisitor::visit(Program *node) {
+
   middle << ".text" << std::endl<< "\n"
          << ".global main" << "\n";
 
@@ -965,8 +966,13 @@ void CodeGenVisitor::visit(PairElem *node, std::string reg) {
 
 void CodeGenVisitor::visit(ArrayLiter *node, std::string reg) {
   ArrayId *arrType = dynamic_cast<ArrayId*>(node->type);
-  int elemSize = arrType->elementType->size();
-  int mallocSize = (node->elems->size() * elemSize) + 4;
+  int elemSize = 0;
+  int typeSize = 0;
+  if (!node->type->equals(new NullId())) {
+    elemSize = arrType->elementType->size();
+    typeSize = node->elems->size();
+  }
+  int mallocSize = (typeSize * elemSize) + 4;
   middle << "  LDR r0,=" <<  mallocSize << "\n"
          << "  BL malloc\n"
          << "  MOV " << reg << ", r0\n";
