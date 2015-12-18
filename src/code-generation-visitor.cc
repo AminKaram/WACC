@@ -875,11 +875,11 @@ void CodeGenVisitor::printMsgCheckArrayBounds() {
       begin << 
          "msg_" << messageNum << ":" << std::endl <<
          "  .word 44" << std::endl <<
-         "  .ascii  \"ArrayIndexOutOfBoundsError: negative index\"\n\0" << std::endl;
+         "  .ascii  \"ArrayIndexOutOfBoundsError: negative index\\n\\0\"" << std::endl;
       begin << 
          "msg_" << messageNum + 1 << ":" << std::endl <<
          "  .word 45" << std::endl <<
-         "  .ascii  \"ArrayIndexOutOfBoundsError: index too large\"\n\0" << std::endl;
+         "  .ascii  \"ArrayIndexOutOfBoundsError: index too large\\n\\0\"" << std::endl;
       checkArrayBoundMessageNum = messageNum;
       messageNum+=2;
     }
