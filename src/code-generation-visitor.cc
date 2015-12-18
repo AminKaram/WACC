@@ -902,6 +902,8 @@ void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {
 
       middle << "  MOV r0, r6\n"
              << "  MOV r1, " << "r4" << "\n";
+
+    middle << "  BL p_check_array_bounds" << std::endl; 
       printMsgCheckArrayBounds();
 
 
