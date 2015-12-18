@@ -898,10 +898,10 @@ void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {
 
     std::string tmpreg = "R4";
     for (int i=0; i < node->idxs->size(); i++) {
-      node->idxs->operator[](i)->accept(this, "r6");
+      node->idxs->operator[](i)->accept(this, "r5");
 
 
-      middle << "  MOV r0, r6\n"
+      middle << "  MOV r0, r5\n"
              << "  MOV r1, " << "r4" << "\n";
 
     middle << "  BL p_check_array_bounds" << std::endl; 
@@ -911,9 +911,9 @@ void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {
       middle << "  LDR " << "r4" << ", [r4]\n"
              << "  ADD " << "r4" << ", " << "r4" << ", #4\n";
       if(node->type->size() == 1) {
-        middle << "  ADD " << "r4" << ", " << "r4" << ", r6\n";
+        middle << "  ADD " << "r4" << ", " << "r4" << ", r5\n";
       } else {
-        middle << "  ADD " << "r4" << ", " << "r4" << ", r6, LSL #2\n";
+        middle << "  ADD " << "r4" << ", " << "r4" << ", r5, LSL #2\n";
       }
     }
     middle << "  LDR " << "r4" << ", ["<< "r4" << "]\n"
