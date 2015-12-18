@@ -1,7 +1,8 @@
 #include "astnode.hh"
 #include "semantic-visitor.hh"
 #include "code-generation-visitor.hh"
-
+#include "parser.hh"
+#define tok yy::parser::token::yytokentype
 ASTnode::~ASTnode() { };
 void ASTnode::accept(SemanticVisitor *visitor) { };
 void ASTnode::accept(CodeGenVisitor *visitor) { };
@@ -151,11 +152,82 @@ Char::Char(char value) : value(value) {}
 String::String(std::string value) : value(value) {}
 
 
-BinaryOperator::BinaryOperator(Expression *left, int op, Expression *right)
-  : left(left), right(right), op(op) { }
+BinaryOperator::BinaryOperator(Expression *left, int op, Expression *right): 
+                    left(left), right(right), op(op) { }
 BinaryOperator::~BinaryOperator() {freePtr(left); freePtr(right);}
+Expression* BinaryOperator::optimise(){
+  this->left = this->left->optimise();
+  this->right = this->right->optimise();
 
-ArrayElem::ArrayElem(Identifier *id, ExpressionList *idxs) : id(id), idxs(idxs) {}
+  Number *numberLeft     = dynamic_cast<Number*>(left);
+  Boolean *boolLeft      = dynamic_cast<Boolean*>(left);
+  //StringTypeId *stringTypeIdLeft  = dynamic_cast<StringTypeId*>(left);
+  //CharTypeId *charTypeIdLeft      = dynamic_cast<CharTypeId*>(left);  
+  
+
+  Number *numberRight    = dynamic_cast<Number*>(right);
+  Boolean *boolRight     = dynamic_cast<Boolean*>(right);
+  //StringTypeId *stringTypeIdRight = dynamic_cast<StringTypeId*>(right);
+  //CharTypeId *charTypeIdRight     = dynamic_cast<CharTypeId*>(right);
+
+
+  int oper = op;
+  if(oper == tok::TOK_LOGOR || oper == tok::TOK_LOGAND){
+        // if node left and right are both not constant
+      if (oper == tok::TOK_LOGOR){
+          return new Boolean(boolLeft->value || boolRight->value);
+       } else if (oper == tok::TOK_LOGAND){
+          //Implementation code-gen for AND 
+          return new Boolean(boolLeft->value && boolRight->value);
+      }      
+   } else if (oper >= tok::TOK_STAR && oper <= tok::TOK_MINUS){
+           if(oper == tok :: TOK_STAR){
+               //Implementation code gen for MULTIPLY
+               return new Number(numberLeft->value * numberRight->value);
+           } else if (oper == tok::TOK_SLASH){
+               //Implementation code gen for DIVIDE
+               return new Number(numberLeft->value / numberRight->value);
+           } else if (oper == tok::TOK_MODULO){
+               //Implementation code-gen for MODULO
+               return new Number(numberLeft->value % numberRight->value);
+           } else if (oper == tok::TOK_PLUS){
+               // Implementation code-gen for PLUS 
+            return new Number(numberLeft->value + numberRight->value);
+           } else if (oper == tok::TOK_MINUS){
+               // Implementation code-gen for MINUS
+            return new Number(numberLeft->value - numberRight->value);
+           } 
+        }else if (oper >= tok::TOK_LESS && oper <= tok::TOK_NOTEQUALS){
+             if (oper == tok::TOK_LESS){
+               // Implementation code-gen for LESS 
+                  return new Boolean(numberLeft->value < numberRight->value);
+
+           } else if (oper == tok::TOK_LESSEQUALS){
+               //Implementation code-gen for LESSEQUALS
+               return new Boolean(numberLeft->value <= numberRight->value);
+                     
+           } else if (oper == tok::TOK_GREATER){
+               // Implementation code-gen for GREATER
+               return new Boolean(numberLeft->value >= numberRight->value);
+ 
+           } else if (oper == tok::TOK_GREATEREQUALS){
+               // Implementation code-gen for GREATEREQUALS 
+               return new Number(numberLeft->value / numberRight->value);
+ 
+           } else if (oper == tok::TOK_EQUALS){
+               //Implementation code-gen for EQUALS 
+ 
+           } else if (oper == tok::TOK_NOTEQUALS){
+               // Implementation code-gen for Not EQUAL
+                     
+           }
+    }
+    return this;
+}
+
+
+ArrayElem::ArrayElem(Identifier *id, ExpressionList *idxs) : id(id), 
+              idxs(idxs) {}
 ArrayElem::~ArrayElem() {
   freePtr(id);
   for(int i=0; i < idxs->size(); i++) {

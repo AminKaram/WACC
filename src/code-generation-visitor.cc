@@ -693,6 +693,8 @@ void CodeGenVisitor::visit(Null *node, std::string reg) {
 
 
 void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
+
+
    int oper = node -> op;
          std::string firstReg  = reg;
          int tmp = atoi(reg.erase(0,1).c_str()) + 1;
