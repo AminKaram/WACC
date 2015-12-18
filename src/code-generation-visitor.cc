@@ -87,6 +87,12 @@ void CodeGenVisitor::visit(FunctionDecList *node) {
 }
 void CodeGenVisitor::visit(VariableDeclaration *node) {
   if(node->rhs) {
+    Expression* expr = dynamic_cast <Expression*> (node->rhs);
+    std::cout << "wtf" << std::endl;
+    if (expr) {
+      std::cout<<"why" << std::endl;
+      node->rhs = expr->optimise();
+    }
    node->rhs->accept(this, "r4");
   }
   PairElem   *pairrhs = dynamic_cast<PairElem*>(node->rhs);
@@ -140,6 +146,7 @@ void CodeGenVisitor::visit(FunctionDeclaration *node) {
 void CodeGenVisitor::visit(FunctionCall *node, std::string reg) {
   int sizeParam = 0;
     for(int i = node->parameters->size() - 1; i >= 0; i--) {
+      node->parameters->operator[](i) = node->parameters->operator[](i)->optimise();
       node->parameters->operator[](i)->accept(this, reg);
       if(node->parameters->operator[](i)->type->size() > 1) {
         middle << "  STR " << reg << ", [sp, #-" 
@@ -231,6 +238,7 @@ void CodeGenVisitor::visit(Assignment *node) {
 
 
 void CodeGenVisitor::visit(FreeStatement *node) {
+         node->expr = node->expr->optimise();
          node -> expr -> accept(this,"r4");
          middle << "  Mov r0, r4\n"
                 << "  BL p_free_pair\n";
@@ -270,6 +278,7 @@ void CodeGenVisitor::visit(FreeStatement *node) {
 
 
 void CodeGenVisitor::visit(ReturnStatement *node) {
+  node->expr = node->expr->optimise();
   node->expr->accept(this, "r0");
   middle << deallocateStack(sizeLocals);
   middle << "  POP {pc}" << std::endl;
@@ -277,6 +286,7 @@ void CodeGenVisitor::visit(ReturnStatement *node) {
 }
 
 void CodeGenVisitor::visit(ExitStatement *node) {
+  node->expr = node->expr->optimise();
   node->expr->accept(this, "r0");
 
   middle << "  BL exit"    << "\n";
@@ -300,6 +310,7 @@ void CodeGenVisitor::visit(BeginStatement *node) {
 }
 
 void CodeGenVisitor::visit(IfStatement *node) {
+  node->expr = node->expr->optimise();
   node->expr->accept(this, "r4");
   labelNum+= 2;
   int tmp = labelNum;
@@ -339,7 +350,7 @@ void CodeGenVisitor::visit(IfStatement *node) {
 }
 
 void CodeGenVisitor::visit(WhileStatement *node) {
-
+  node->expr = node->expr->optimise();
   labelNum += 2;
   int temp = labelNum;
   middle << "  B L" << std::to_string(labelNum - 2) << "\n";
@@ -605,6 +616,7 @@ void CodeGenVisitor::printStatement(TypeId *type) {
 
 void CodeGenVisitor::visit(PrintStatement *node) {
   //std::cout << "visit0" << "\n";
+  node->expr = node->expr->optimise();
   node->expr->accept(this, "r0");
   TypeId *type = node->expr->type;
 	printMsg(type);
@@ -625,6 +637,7 @@ void CodeGenVisitor::printAssemblyOfPrintln() {
 }
 
 void CodeGenVisitor::visit(PrintlnStatement *node) {
+  node->expr = node->expr->optimise();
   node->expr->accept(this, "r0");
 	TypeId *type = node->expr->type;
 	
@@ -693,6 +706,8 @@ void CodeGenVisitor::visit(Null *node, std::string reg) {
 
 
 void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
+
+
    int oper = node -> op;
          std::string firstReg  = reg;
          int tmp = atoi(reg.erase(0,1).c_str()) + 1;
@@ -732,7 +747,7 @@ void CodeGenVisitor::visit(BinaryOperator *node, std::string reg) {
                     << firstReg << ", " << secondReg << "\n"
                      
                     << "  CMP " << secondReg << ", "<< firstReg << ", "
-                    << "  ASR #31" << "\n"
+                    << " ASR #31" << "\n"
 
                     << "  BLNE p_throw_overflow_error"<< "\n";
 
@@ -923,7 +938,7 @@ void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {
 
 //LHS PairElem
 void CodeGenVisitor::visit(PairElem *node){
-
+  node->expr = node->expr->optimise();
   //adr = true;
   node->expr->accept(this, "r5");
   //adr = false;
@@ -979,6 +994,7 @@ void CodeGenVisitor::visit(ArrayLiter *node, std::string reg) {
          << "  BL malloc\n"
          << "  MOV " << reg << ", r0\n";
   for(int i = 0; i < node->elems->size();) {
+    node->elems->operator[](i) = node->elems->operator [](i)->optimise();
     node->elems->operator[](i)->accept(this, "r5");
     middle << "  STR r5, [" << reg << ", #"<< ++i*elemSize << "]\n";
   }
@@ -1009,6 +1025,7 @@ void CodeGenVisitor::visit(NewPair *node, std::string reg) {
   middle << "  LDR r0, =8\n"
          << "  BL malloc\n"
          << "  MOV r4, r0\n";
+  node->fst = node->fst->optimise();
   node->fst->accept(this, "r5");
 
   middle << "  LDR r0, =" << node->fst->type->size() << "\n"
@@ -1020,6 +1037,7 @@ void CodeGenVisitor::visit(NewPair *node, std::string reg) {
      middle << "  STR r5, [r0]\n";
    }
    middle << "  STR r0, [r4]\n";
+   node->snd = node->snd->optimise();
    node->snd->accept(this, "r5");
    middle << "  LDR r0, =" << node->snd->type->size() << "\n"
           << "  BL malloc\n";

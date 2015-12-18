@@ -255,6 +255,7 @@ void SemanticVisitor::visit(BinaryOperator *node) {
 	  }
     node->type = new BoolTypeId();
 	}
+
 }
 
 void SemanticVisitor::visit(ArrayElem *node) {

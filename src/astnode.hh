@@ -43,6 +43,7 @@ class Expression : public AssignRhs {
 public: 
   Expression() { }
   virtual ~Expression() = 0; 
+  virtual Expression* optimise() = 0;
 };
 typedef std::vector<Expression*> ExpressionList;
 
@@ -74,6 +75,8 @@ public:
   void accept(SemanticVisitor *visitor);
   void accept(CodeGenVisitor *visitor);
   void accept(CodeGenVisitor *visitor, std::string reg);
+
+  Expression* optimise();
 };
 
 class VariableDeclaration : public Statement { 
@@ -141,6 +144,8 @@ public:
   ~FunctionCall();
   void accept(SemanticVisitor *visitor);
   void accept(CodeGenVisitor *visitor, std::string reg);
+
+  Expression* optimise();
 };
 
 class Program : public ASTnode{
@@ -275,6 +280,8 @@ public:
   Number(int value);
   void accept(SemanticVisitor *visitor);
   void accept(CodeGenVisitor *visitor, std::string reg);
+
+  Expression* optimise();
 };
 
 class Boolean : public Expression {
@@ -284,6 +291,8 @@ public:
   Boolean(bool value);
   void accept(SemanticVisitor *visitor);
   void accept(CodeGenVisitor *visitor, std::string reg);
+
+  Expression* optimise();
 };
 
 class Char : public Expression {
@@ -293,6 +302,8 @@ public:
   Char(char value);
   void accept(SemanticVisitor *visitor);
   void accept(CodeGenVisitor *visitor, std::string reg);
+
+  Expression* optimise();
 };
 
 class String : public Expression {
@@ -302,12 +313,16 @@ public:
   String(std::string value);
   void accept(SemanticVisitor *visitor);
   void accept(CodeGenVisitor *visitor, std::string reg);
+
+  Expression* optimise();
 };
 
 class Null : public Expression {
 public:
   void accept(SemanticVisitor *visitor);
   void accept(CodeGenVisitor *visitor, std::string reg);
+
+  Expression* optimise();
 };
 
 class BinaryOperator : public Expression {
@@ -320,6 +335,8 @@ public:
   ~BinaryOperator();
   void accept(SemanticVisitor *visitor);
   void accept(CodeGenVisitor *visitor, std::string reg);
+
+  Expression* optimise();
 };
 
 class ArrayElem : public AssignLhs, public Expression {
@@ -333,6 +350,8 @@ public:
   void accept(SemanticVisitor *visitor);
   void accept(CodeGenVisitor *visitor);
   void accept(CodeGenVisitor *visitor, std::string reg);
+
+  Expression* optimise();
 };
 
 class PairElem : public AssignLhs, public AssignRhs {
@@ -378,6 +397,8 @@ public:
   ~UnaryOperator();
   void accept(SemanticVisitor *visitor);
   void accept(CodeGenVisitor *visitor, std::string reg);
+
+  Expression* optimise();
 };
 
 #endif // ! ASTNODE_HH
