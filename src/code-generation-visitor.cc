@@ -85,9 +85,16 @@ void CodeGenVisitor::visit(FunctionDecList *node) {
   }
 }
 void CodeGenVisitor::visit(VariableDeclaration *node) {
-  std::cout << "variablecall you son of a bitch " <<node->id->id<<std::endl;
   if(node->rhs) {
    node->rhs->accept(this, "r4");
+  }
+  PairElem   *pairrhs = dynamic_cast<PairElem*>(node->rhs);
+  if (pairrhs) {
+    if(pairrhs->type->size() == 1) {
+                middle << "  LDRSB r4, [r4]\n";
+              } else {
+                middle << "  LDR r4, [r4]\n";
+              }
   }
   int sizeSoFar = 0;
   for (int i = currentScope->variables->size()-1; i >=0; i--) {
@@ -104,7 +111,6 @@ void CodeGenVisitor::visit(VariableDeclaration *node) {
   }
   currentScope->isDefined->insert(node->id->id);
   currentScope->addOffset(node->id->id, offset);
-  std::cout << "end of var " <<node->id->id <<std::endl;
 }
 
 void CodeGenVisitor::visit(FunctionDeclaration *node) {
@@ -162,9 +168,27 @@ void CodeGenVisitor::visit(Assignment *node) {
   BoolTypeId *boolType = new BoolTypeId();
   CharTypeId *charType = new CharTypeId();
   PairElem   *pairlhs = dynamic_cast<PairElem*>(node->lhs);
+  PairElem   *pairrhs = dynamic_cast<PairElem*>(node->rhs);
   ArrayElem *arrLhs = dynamic_cast<ArrayElem*>(node->lhs);
 
-  if(arrLhs) {
+
+
+  if (pairrhs) {
+    if(pairrhs->type->size() == 1) {
+                middle << "  LDRSB r4, [r4]\n";
+              } else {
+                middle << "  LDR r4, [r4]\n";
+              }
+  }
+
+  if (pairlhs) {
+    node->lhs->accept(this, "r5");
+    if(pairlhs->type->size() == 1) {
+            middle << "  STRB r4, [r5]\n";
+          } else {
+            middle << "  STR r4, [r5]\n";
+          }
+  } else if(arrLhs) {
     printMsgCheckArrayBounds();
       if(!p_print_array_elem ) {
           p_print_array_elem = true;
@@ -186,14 +210,7 @@ void CodeGenVisitor::visit(Assignment *node) {
                << "  STR r4, [r5]\n";
       } 
     }
-  } else if (pairlhs) {
-      if (node->lhs->type->equals(boolType) || node->lhs->type->equals(charType)) {
-        middle << "  STRB r4, [r5]\n";
-    } else {
-      middle << "  STR r4, [r5]\n";
-    }
   }
-
    else if(node->lhs->type->equals(boolType) || node->lhs->type->equals(charType)) {
     if (currentScope->searchOffset(node->lhs->getId()) == 0) {
       middle << "  STRB r4, [sp]\n";
@@ -871,7 +888,6 @@ void CodeGenVisitor::printMsgCheckArrayBounds() {
 
 void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {
   //TypeId *type = node->type;
-  std::cout<<"into array "<< std::endl;
   printMsgCheckArrayBounds();
   if(!p_print_array_elem ) {
       p_print_array_elem = true;
@@ -925,6 +941,7 @@ void CodeGenVisitor::visit(ArrayElem *node, std::string reg) {
 
 //LHS PairElem
 void CodeGenVisitor::visit(PairElem *node){
+
   //adr = true;
   node->expr->accept(this, "r5");
   //adr = false;
@@ -960,22 +977,10 @@ void CodeGenVisitor::visit(PairElem *node, std::string reg) {
   BoolTypeId *boolTypeId     = dynamic_cast<BoolTypeId*>(node->type);
 
   if (node->fst){
-    if(intTypeId || stringTypeId){
-      middle << "  LDR " << reg << ", [" << reg << "]"     << std::endl
-             << "  LDR " << reg << ", [" << reg << "]"     << std::endl;
-    } else if(charTypeId || boolTypeId){
-        middle << "  LDR "   << reg << ", [" << reg << "]" << std::endl
-               << "  LDRSB " << reg << ", [" << reg << "]" << std::endl;
-    }
-    
+      middle << "  LDR " << reg << ", [" << reg << "]"     << std::endl;
+
   } else {
-    if (intTypeId || stringTypeId) {
-      middle << "  LDR " << reg << ", [" << reg << ", #4]"     << std::endl
-             << "  LDR " << reg << ", [" << reg << "]"         << std::endl;
-    } else if (charTypeId || boolTypeId) {
-      middle << "  LDR "   << reg << ", [" << reg << ", #4]"   << std::endl
-             << "  LDRSB " << reg << ", [" << reg << "]"       << std::endl;
-    }           
+      middle << "  LDR " << reg << ", [" << reg << ", #4]"     << std::endl;
   }
 }
 
