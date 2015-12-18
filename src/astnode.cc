@@ -81,6 +81,10 @@ FunctionDeclaration::~FunctionDeclaration() {
     freePtr(block);
 }
 
+Expression* FunctionCall::optimise() {
+  return this;
+}
+
 FunctionCall::FunctionCall(Identifier *id, ExpressionList *parameters)
     : id(id), parameters(parameters) {}
 FunctionCall::FunctionCall(Identifier *id)
@@ -145,28 +149,50 @@ PrintlnStatement::~PrintlnStatement() {freePtr(expr);}
 
 Number::Number(int value) : value(value) {}
 
+Expression* Number::optimise() {
+  return this;
+}
+
 Boolean::Boolean(bool value) : value(value) {}
+
+Expression* Boolean::optimise() {
+  return this;
+}
 
 Char::Char(char value) : value(value) {}
 
+Expression* Char::optimise() {
+  return this;
+}
+
 String::String(std::string value) : value(value) {}
 
+Expression* String::optimise() {
+  return this;
+}
 
+Expression* Null::optimise() {
+  return this;
+}
 BinaryOperator::BinaryOperator(Expression *left, int op, Expression *right): 
                     left(left), right(right), op(op) { }
 BinaryOperator::~BinaryOperator() {freePtr(left); freePtr(right);}
 Expression* BinaryOperator::optimise(){
   this->left = this->left->optimise();
   this->right = this->right->optimise();
+  Number *numberLeft     = dynamic_cast<Number*>(this->left);
+  Boolean *boolLeft      = dynamic_cast<Boolean*>(this->left);
 
-  Number *numberLeft     = dynamic_cast<Number*>(left);
-  Boolean *boolLeft      = dynamic_cast<Boolean*>(left);
   //StringTypeId *stringTypeIdLeft  = dynamic_cast<StringTypeId*>(left);
   //CharTypeId *charTypeIdLeft      = dynamic_cast<CharTypeId*>(left);  
   
 
   Number *numberRight    = dynamic_cast<Number*>(right);
   Boolean *boolRight     = dynamic_cast<Boolean*>(right);
+
+  if (!((boolLeft && boolRight) || (numberLeft && numberRight))) {
+    return this;
+  }
   //StringTypeId *stringTypeIdRight = dynamic_cast<StringTypeId*>(right);
   //CharTypeId *charTypeIdRight     = dynamic_cast<CharTypeId*>(right);
 
@@ -178,7 +204,9 @@ Expression* BinaryOperator::optimise(){
           return new Boolean(boolLeft->value || boolRight->value);
        } else if (oper == tok::TOK_LOGAND){
           //Implementation code-gen for AND 
-          return new Boolean(boolLeft->value && boolRight->value);
+
+         return new Boolean(boolLeft->value && boolRight->value);
+
       }      
    } else if (oper >= tok::TOK_STAR && oper <= tok::TOK_MINUS){
            if(oper == tok :: TOK_STAR){
@@ -225,6 +253,9 @@ Expression* BinaryOperator::optimise(){
     return this;
 }
 
+Expression* ArrayElem::optimise() {
+  return this;
+}
 
 ArrayElem::ArrayElem(Identifier *id, ExpressionList *idxs) : id(id), 
               idxs(idxs) {}
@@ -271,8 +302,16 @@ NewPair::~NewPair() {freePtr(fst); freePtr(snd);}
 UnaryOperator::UnaryOperator(int op, Expression *expr) : op(op), expr(expr) {}
 UnaryOperator::~UnaryOperator() {freePtr(expr);}
 
+Expression* UnaryOperator::optimise() {
+  return this;
+}
+
 std::string Identifier::getId() {
   return id;
+}
+
+Expression* Identifier::optimise() {
+  return this;
 }
 
 std::string AssignLhs::getId() {

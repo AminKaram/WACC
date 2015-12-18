@@ -43,7 +43,7 @@ class Expression : public AssignRhs {
 public: 
   Expression() { }
   virtual ~Expression() = 0; 
-  virtual Expression* optimise();
+  virtual Expression* optimise() = 0;
 };
 typedef std::vector<Expression*> ExpressionList;
 
